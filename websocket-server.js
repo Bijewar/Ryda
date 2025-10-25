@@ -2,7 +2,8 @@
 // Run: node websocket-server.js
 const WebSocket = require('ws');
 
-const wss = new WebSocket.Server({ port: 3001 });
+const PORT = process.env.PORT || 3001;  // Render ke liye dynamic PORT
+server.listen(PORT, () => console.log(`WebSocket server running on ws://localhost:${PORT}`));
 
 // Store connected clients, drivers, and rides
 const drivers = new Map(); // driverId -> { ws, id, data: { coords, status } }
