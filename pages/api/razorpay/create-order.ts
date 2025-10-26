@@ -83,7 +83,7 @@ export default async function handler(
     return res.status(200).json({
       orderId: order.id,
       currency: order.currency,
-      amount: order.amount,
+      amount: Number(order.amount),
     });
   } catch (error: any) {
     console.error('❌ Razorpay Order Creation Error:', error);

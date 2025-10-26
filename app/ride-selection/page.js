@@ -20,7 +20,7 @@ import { useMobile } from "@/hooks/use-mobile"
 import dynamic from 'next/dynamic'
 
 const MapWithNoSSR = dynamic(
-  () => import('@/components/MapView'),
+  () => import('../components/MapView'),
   {
     ssr: false,
     loading: () => (

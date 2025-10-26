@@ -1,11 +1,11 @@
 // app/reset-password/page.jsx
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Car, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
     // Correct App Router hook for reading URL params
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
@@ -209,5 +209,13 @@ export default function ResetPasswordPage() {
                 </div>
             </main>
         </div>
+    );
+}
+
+export default function ResetPasswordPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ResetPasswordForm />
+        </Suspense>
     );
 }

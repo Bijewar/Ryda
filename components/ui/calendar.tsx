@@ -2,12 +2,12 @@
 
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
+import { DayPicker, DayPickerProps } from "react-day-picker"
 
 import { cn } from "../../lib/utils"
 import { buttonVariants } from "../ui/button"
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
+export type CalendarProps = DayPickerProps
 
 function Calendar({
   className,
@@ -54,13 +54,44 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
+        Button: ({ children, ...props }) => {
+          // Customize nav buttons
+          if (children && typeof children === "string") {
+            if (children.includes("Previous")) {
+              return (
+                <button
+                  {...props}
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "h-7 w-7 p-0 opacity-50 hover:opacity-100"
+                  )}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+              )
+            } else if (children.includes("Next")) {
+              return (
+                <button
+                  {...props}
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "h-7 w-7 p-0 opacity-50 hover:opacity-100"
+                  )}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              )
+            }
+          }
+          return <button {...props}>{children}</button>
+        },
       }}
       {...props}
     />
   )
 }
+
 Calendar.displayName = "Calendar"
 
 export { Calendar }
+ 

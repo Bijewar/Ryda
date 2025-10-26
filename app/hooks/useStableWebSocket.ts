@@ -18,9 +18,10 @@ export const useStableWebSocket = (
   const messageQueueRef = useRef<any[]>([]);
   const lastActivityRef = useRef(Date.now());
   const isVisibleRef = useRef(typeof window !== 'undefined' ? !document.hidden : true);
-  
+
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
 
+  // --- Cleanup intervals and timeouts ---
   const cleanup = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
@@ -32,35 +33,43 @@ export const useStableWebSocket = (
     }
   }, []);
 
-  const sendMessage = useCallback((message: any) => {
-    const messageStr = JSON.stringify(message);
-    
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      try {
-        wsRef.current.send(messageStr);
-        console.log('📤 Sent:', message.type);
-        lastActivityRef.current = Date.now();
-      } catch (error) {
-        console.error('Send error:', error);
-        messageQueueRef.current.push(message);
-      }
-    } else {
-      console.log('⏳ Queuing message:', message.type);
-      messageQueueRef.current.push(message);
-      
-      if (shouldConnect && wsRef.current?.readyState !== WebSocket.CONNECTING) {
-        connect();
-      }
-    }
-  }, [shouldConnect]);
+  // --- Send message safely ---
+  const sendMessage = useCallback(
+    (message: any) => {
+      const messageStr = JSON.stringify(message);
 
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        try {
+          wsRef.current.send(messageStr);
+          console.log('📤 Sent:', message.type);
+          lastActivityRef.current = Date.now();
+        } catch (error) {
+          console.error('Send error:', error);
+          messageQueueRef.current.push(message);
+        }
+      } else {
+        console.log('⏳ Queuing message:', message.type);
+        messageQueueRef.current.push(message);
+
+        if (shouldConnect && wsRef.current?.readyState !== WebSocket.CONNECTING) {
+          connect();
+        }
+      }
+    },
+    [shouldConnect]
+  );
+
+  // --- Connect WebSocket ---
   const connect = useCallback(() => {
     if (!shouldConnect || !clientId) {
       console.log('❌ Not connecting: shouldConnect=', shouldConnect, 'clientId=', clientId);
       return;
     }
-    
-    if (wsRef.current && [WebSocket.CONNECTING, WebSocket.OPEN].includes(wsRef.current.readyState)) {
+
+    if (
+      wsRef.current &&
+      (wsRef.current.readyState === WebSocket.CONNECTING || wsRef.current.readyState === WebSocket.OPEN)
+    ) {
       console.log('⚠️ Already connecting/connected');
       return;
     }
@@ -68,7 +77,7 @@ export const useStableWebSocket = (
     cleanup();
     setConnectionStatus('connecting');
     console.log('🔌 Connecting WebSocket...');
-    
+
     try {
       const ws = new WebSocket(`ws://localhost:3001/?type=client&id=${clientId}`);
       wsRef.current = ws;
@@ -88,11 +97,10 @@ export const useStableWebSocket = (
         missedHeartbeatsRef.current = 0;
         lastActivityRef.current = Date.now();
 
+        // Flush queued messages
         setTimeout(() => {
-          console.log(`📦 Processing ${messageQueueRef.current.length} queued messages`);
           const queue = [...messageQueueRef.current];
           messageQueueRef.current = [];
-          
           queue.forEach(msg => {
             if (ws.readyState === WebSocket.OPEN) {
               try {
@@ -108,21 +116,22 @@ export const useStableWebSocket = (
           });
         }, 100);
 
+        // Heartbeat interval
         heartbeatIntervalRef.current = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             const timeSinceActivity = Date.now() - lastActivityRef.current;
-            
+
             if (timeSinceActivity > WS_CONFIG.HEARTBEAT_INTERVAL * 3) {
               missedHeartbeatsRef.current++;
               console.warn(`⚠️ Missed heartbeats: ${missedHeartbeatsRef.current}`);
-              
+
               if (missedHeartbeatsRef.current >= 3) {
                 console.error('💀 Too many missed heartbeats, reconnecting...');
                 ws.close();
                 return;
               }
             }
-            
+
             ws.send(JSON.stringify({ type: 'ping', timestamp: Date.now() }));
           }
         }, WS_CONFIG.HEARTBEAT_INTERVAL);
@@ -131,15 +140,15 @@ export const useStableWebSocket = (
       ws.onmessage = (event) => {
         lastActivityRef.current = Date.now();
         missedHeartbeatsRef.current = 0;
-        
+
         try {
           const data = JSON.parse(event.data);
-          
+
           if (data.type === 'pong') {
             console.log('💓 Heartbeat');
             return;
           }
-          
+
           console.log('📨 Received:', data.type);
           onMessage(data);
         } catch (error) {
@@ -156,7 +165,7 @@ export const useStableWebSocket = (
         clearTimeout(connectionTimeout);
         console.log(`🔌 WebSocket closed: ${event.code} - ${event.reason}`);
         cleanup();
-        
+
         if (isIntentionalCloseRef.current) {
           console.log('👋 Intentional close, not reconnecting');
           setConnectionStatus('disconnected');
@@ -176,9 +185,13 @@ export const useStableWebSocket = (
             WS_CONFIG.BASE_RECONNECT_DELAY * Math.pow(1.5, reconnectAttemptsRef.current),
             WS_CONFIG.MAX_RECONNECT_DELAY
           );
-          
-          console.log(`🔄 Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/${WS_CONFIG.MAX_RECONNECT_ATTEMPTS})`);
-          
+
+          console.log(
+            `🔄 Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/${
+              WS_CONFIG.MAX_RECONNECT_ATTEMPTS
+            })`
+          );
+
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectAttemptsRef.current++;
             connect();
@@ -194,6 +207,7 @@ export const useStableWebSocket = (
     }
   }, [shouldConnect, clientId, onMessage, cleanup]);
 
+  // --- Disconnect WebSocket ---
   const disconnect = useCallback(() => {
     console.log('🛑 Disconnecting...');
     isIntentionalCloseRef.current = true;
@@ -205,21 +219,22 @@ export const useStableWebSocket = (
     setConnectionStatus('disconnected');
   }, [cleanup]);
 
+  // --- Handle tab visibility ---
   useEffect(() => {
     const handleVisibilityChange = () => {
       const isNowVisible = !document.hidden;
       isVisibleRef.current = isNowVisible;
-      
+
       if (isNowVisible) {
         console.log('👁️ Tab visible - checking connection');
-        
+
         if (shouldConnect) {
           const wsState = wsRef.current?.readyState;
-          
+
           if (wsState !== WebSocket.OPEN && wsState !== WebSocket.CONNECTING) {
             console.log('🔄 Reconnecting after visibility change');
             reconnectAttemptsRef.current = 0;
-            
+
             setTimeout(() => {
               connect();
             }, WS_CONFIG.VISIBILITY_RECONNECT_DELAY);
@@ -238,15 +253,16 @@ export const useStableWebSocket = (
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [shouldConnect, connect, sendMessage]);
 
+  // --- Initial connect / cleanup ---
   useEffect(() => {
     isIntentionalCloseRef.current = false;
-    
+
     if (shouldConnect && clientId) {
       console.log('🚀 Initial connection');
       connect();
