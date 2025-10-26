@@ -2,16 +2,19 @@
 // Run: node websocket-server.js
 const WebSocket = require('ws');
 
-const PORT = process.env.PORT || 3001;  // Render ke liye dynamic PORT
-server.listen(PORT, () => console.log(`WebSocket server running on ws://localhost:${PORT}`));
+// Render ke liye dynamic PORT
+const PORT = process.env.PORT || 3001;
+
+// ✅ Create WebSocket Server
+const wss = new WebSocket.Server({ port: PORT });
+console.log(`🚀 WebSocket server running on ws://localhost:${PORT}`);
 
 // Store connected clients, drivers, and rides
-const drivers = new Map(); // driverId -> { ws, id, data: { coords, status } }
-const clients = new Map(); // clientId -> { ws, id }
-const rides = new Map();   // rideId -> { clientId, driverId }
-const activeRides = new Map(); // rideId -> { clientId, driverId, status }
-
-console.log('🚖 WebSocket server running on ws://localhost:3001');
+const drivers = new Map(); 
+const clients = new Map(); 
+const rides = new Map();   
+const activeRides = new Map(); 
+const recentCompletedRides = new Map(); // ye bhi use ho raha tha tumhare code me
 
 // -------------------------
 // Utility functions
@@ -46,15 +49,10 @@ wss.on('connection', (ws, req) => {
 
   if (type === 'driver') {
     drivers.set(id, { ws, id, data: { coords: null, status: 'available' } });
-    console.log(`Driver ${id} connected. Total drivers: ${drivers.size}`);
   } else if (type === 'client') {
     clients.set(id, { ws, id });
-    console.log(`Client ${id} connected. Total clients: ${clients.size}`);
   }
 
-  // -------------------------
-  // Message Handler
-  // -------------------------
   ws.on('message', (data) => {
     try {
       const message = JSON.parse(data.toString());
@@ -66,7 +64,6 @@ wss.on('connection', (ws, req) => {
           break;
 
         case 'request_driver': {
-          console.log('📢 Broadcasting ride request to drivers...');
           const rideRequest = {
             type: 'ride_request',
             rideId: message.rideId,
@@ -97,12 +94,6 @@ wss.on('connection', (ws, req) => {
         }
 
         case 'ride_response': {
-          console.log(
-            `🚗 Driver ${id} ${message.accepted ? 'accepted' : 'rejected'} ride ${
-              message.rideId
-            }`
-          );
-
           if (message.accepted) {
             if (drivers.has(id)) {
               drivers.get(id).data.status = 'busy';
@@ -118,27 +109,21 @@ wss.on('connection', (ws, req) => {
               status: 'ongoing',
             });
 
-            const response = {
-              type: 'driver_response',
-              accepted: true,
-              driverId: id,
-              driverCoords: message.coords,
-              rideId: message.rideId,
-            };
-
             const rideInfo = rides.get(message.rideId);
             if (rideInfo && clients.has(rideInfo.clientId)) {
-              sendToClient(rideInfo.clientId, response);
+              sendToClient(rideInfo.clientId, {
+                type: 'driver_response',
+                accepted: true,
+                driverId: id,
+                rideId: message.rideId,
+              });
             }
 
-            // Cancel request for other drivers
-            const cancelMessage = {
-              type: 'ride_canceled',
-              rideId: message.rideId,
-            };
+            // Cancel request for others
+            const cancelMsg = { type: 'ride_canceled', rideId: message.rideId };
             drivers.forEach((driver, driverId) => {
               if (driverId !== id && driver.ws.readyState === WebSocket.OPEN) {
-                driver.ws.send(JSON.stringify(cancelMessage));
+                driver.ws.send(JSON.stringify(cancelMsg));
               }
             });
           }
@@ -148,7 +133,6 @@ wss.on('connection', (ws, req) => {
         case 'status_update':
           if (type === 'driver' && drivers.has(id)) {
             drivers.get(id).data.status = message.status;
-            console.log(`🚦 Driver ${id} status updated: ${message.status}`);
           }
           break;
 
@@ -156,7 +140,6 @@ wss.on('connection', (ws, req) => {
           if (type === 'driver' && drivers.has(id)) {
             const driver = drivers.get(id);
             driver.data.coords = message.coords;
-            console.log(`📍 Driver ${id} location updated:`, message.coords);
 
             activeRides.forEach((ride, rideId) => {
               if (ride.driverId === id) {
@@ -164,59 +147,33 @@ wss.on('connection', (ws, req) => {
                   type: 'driver_location_update',
                   rideId,
                   coords: message.coords,
-                  timestamp: Date.now(),
                 });
               }
             });
           }
           break;
 
-case 'ride_completed': {
-  console.log(`✅ Driver ${id} completed ride ${message.rideId}`);
-  
-  // Update driver status
-  if (drivers.has(id)) {
-    drivers.get(id).data.status = 'available';
-  }
+        case 'ride_completed': {
+          if (drivers.has(id)) {
+            drivers.get(id).data.status = 'available';
+          }
 
-  const rideInfoComp = rides.get(message.rideId);
-  
-  if (rideInfoComp && clients.has(rideInfoComp.clientId)) {
-    // CRITICAL: Forward ALL completion data to client
-    const completionMessage = {
-      type: 'ride_completed',
-      rideId: message.rideId,
-      driverId: id,
-      driverName: message.driverName,
-      vehicleNumber: message.vehicleNumber,
-      estimatedFare: message.estimatedFare || message.fare,
-      fare: message.fare || message.estimatedFare,
-      completedAt: message.completedAt,
-      timestamp: Date.now()
-    };
-    
-    console.log('📤 Sending completion to client:', completionMessage);
-    sendToClient(rideInfoComp.clientId, completionMessage);
-  } else {
-    console.warn(`⚠️ Cannot send completion: Client ${rideInfoComp?.clientId} not found`);
-  }
+          const rideInfoComp = rides.get(message.rideId);
+          if (rideInfoComp && clients.has(rideInfoComp.clientId)) {
+            sendToClient(rideInfoComp.clientId, {
+              type: 'ride_completed',
+              rideId: message.rideId,
+              driverId: id,
+              fare: message.fare,
+              completedAt: message.completedAt,
+            });
+          }
 
-  // Store for reconnection
-  if (rideInfoComp) {
-    recentCompletedRides.set(message.rideId, {
-      ...message,
-      clientId: rideInfoComp.clientId,
-      driverId: id,
-      completedAt: Date.now(),
-    });
-    setTimeout(() => recentCompletedRides.delete(message.rideId), 5 * 60 * 1000);
-  }
+          rides.delete(message.rideId);
+          activeRides.delete(message.rideId);
+          break;
+        }
 
-  // Cleanup
-  rides.delete(message.rideId);
-  activeRides.delete(message.rideId);
-  break;
-}
         case 'ping':
           send(ws, { type: 'pong', timestamp: Date.now() });
           break;
@@ -229,66 +186,26 @@ case 'ride_completed': {
     }
   });
 
-  // -------------------------
-  // Close & Error Handlers
-  // -------------------------
   ws.on('close', () => {
     console.log(`🔌 ${type} ${id} disconnected`);
-    if (type === 'driver') {
-      drivers.delete(id);
-      console.log(`Total drivers: ${drivers.size}`);
-    } else if (type === 'client') {
-      clients.delete(id);
-      console.log(`Total clients: ${clients.size}`);
-    }
+    if (type === 'driver') drivers.delete(id);
+    if (type === 'client') clients.delete(id);
   });
 
-  ws.on('error', (error) => {
-    console.error(`⚠️ WebSocket error for ${type} ${id}:`, error);
-  });
+  ws.on('error', (err) => console.error(`⚠️ WebSocket error:`, err));
 
-  // Confirm connection
-  send(ws, {
-    type: 'connected',
-    message: `Connected as ${type}`,
-    id: id,
-  });
+  send(ws, { type: 'connected', message: `Connected as ${type}`, id });
 });
 
-// -------------------------
-// Cleanup Dead Connections
-// -------------------------
+// Cleanups
 setInterval(() => {
   drivers.forEach((driver, id) => {
-    if (driver.ws.readyState !== WebSocket.OPEN) {
-      drivers.delete(id);
-    }
+    if (driver.ws.readyState !== WebSocket.OPEN) drivers.delete(id);
   });
-
   clients.forEach((client, id) => {
-    if (client.ws.readyState !== WebSocket.OPEN) {
-      clients.delete(id);
-    }
+    if (client.ws.readyState !== WebSocket.OPEN) clients.delete(id);
   });
 }, 30000);
 
-// -------------------------
-// Status Logging
-// -------------------------
-setInterval(() => {
-  console.log(
-    `📊 Status: ${drivers.size} drivers, ${clients.size} clients connected, ${activeRides.size} active rides`
-  );
-}, 60000);
-
-// Graceful Shutdown
-process.on('SIGTERM', () => {
-  console.log('Server shutting down...');
-  wss.close();
-});
-
-process.on('SIGINT', () => {
-  console.log('Server shutting down...');
-  wss.close();
-  process.exit();
-});
+process.on('SIGTERM', () => wss.close());
+process.on('SIGINT', () => wss.close());
