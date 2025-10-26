@@ -248,23 +248,21 @@ export default function RideShareHome() {
         case "driver_location":
           if (data.coords) {
             const coords = normalizeCoordinates(data.coords);
-            if (coords) {
-              setDriver((prev) => {
-                if (!prev) return null;
-                setPickupCoords((currentPickup) => {
-                  if (coords && currentPickup) {
-                    const distance = calculateDistance(coords, currentPickup);
-                    const newStatus =
-                      distance < WS_CONFIG.ARRIVAL_THRESHOLD ? "arrived" : "on-way";
-                    if (newStatus === "arrived" && prev.status !== "arrived") {
-                      setRideStatus("driver-arrived");
-                    }
+            setDriver((prev) => {
+              if (!prev) return null;
+              setPickupCoords((currentPickup) => {
+                if (coords && currentPickup) {
+                  const distance = calculateDistance(coords, currentPickup);
+                  const newStatus =
+                    distance < WS_CONFIG.ARRIVAL_THRESHOLD ? "arrived" : "on-way";
+                  if (newStatus === "arrived" && prev.status !== "arrived") {
+                    setRideStatus("driver-arrived");
                   }
-                  return currentPickup;
-                });
-                return { ...prev, coords: coords!, status: data.status || prev.status };
+                }
+                return currentPickup;
               });
-            }
+              return { ...prev, coords, status: data.status || prev.status };
+            });
           }
           break;
 
@@ -375,7 +373,7 @@ export default function RideShareHome() {
         session.user.name,
         clientId,
         session.user.email,
-        (session.user as any).phone || "9999999999"
+        session.user.phone || "9999999999"
       );
       return orderData;
     } catch (error: any) {
@@ -605,25 +603,7 @@ export default function RideShareHome() {
 
   const normalizeDriver = (driver: Driver | null) => {
     if (!driver) return null;
-    let status: 'available' | 'on-way' | 'arrived';
-    switch (driver.status) {
-      case 'searching':
-      case 'accepted':
-        status = 'available';
-        break;
-      case 'on-way':
-        status = 'on-way';
-        break;
-      case 'arrived':
-        status = 'arrived';
-        break;
-      case 'completed':
-        status = 'available';
-        break;
-      default:
-        status = 'available';
-    }
-    return { id: driver.id, status, coords: normalizeCoordinates(driver.coords) || [0, 0] };
+    return { id: driver.id, status: driver.status, coords: normalizeCoordinates(driver.coords) || [0, 0] };
   };
 
   // ===================== JSX =====================
@@ -774,7 +754,7 @@ export default function RideShareHome() {
           fare={completedRide.fare}
           clientName={session.user.name || "Ryda User"}
           clientEmail={session.user.email || ""}
-          clientPhone={(session.user as any).phone || "9999999999"}
+          clientPhone={session.user.phone || "9999999999"}
           isPaying={isPaying}
           onCreateOrderAndPay={handleCreateOrderAndOpenRazorpay}
           onClose={handleCloseOnlinePayment}

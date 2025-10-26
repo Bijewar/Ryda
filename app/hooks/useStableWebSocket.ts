@@ -17,7 +17,6 @@ export const useStableWebSocket = (
   const isIntentionalCloseRef = useRef(false);
   const messageQueueRef = useRef<any[]>([]);
   const lastActivityRef = useRef(Date.now());
-  const isVisibleRef = useRef(typeof window !== 'undefined' ? !document.hidden : true);
 
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
 
@@ -79,7 +78,10 @@ export const useStableWebSocket = (
     console.log('🔌 Connecting WebSocket...');
 
     try {
-      const ws = new WebSocket(`ws://localhost:3001/?type=client&id=${clientId}`);
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3002';
+      console.log('🌐 Connecting to WebSocket at', `${wsUrl}/?type=client&id=${clientId}`);
+
+      const ws = new WebSocket(`${wsUrl}/?type=client&id=${clientId}`);
       wsRef.current = ws;
 
       const connectionTimeout = setTimeout(() => {
@@ -101,19 +103,7 @@ export const useStableWebSocket = (
         setTimeout(() => {
           const queue = [...messageQueueRef.current];
           messageQueueRef.current = [];
-          queue.forEach(msg => {
-            if (ws.readyState === WebSocket.OPEN) {
-              try {
-                ws.send(JSON.stringify(msg));
-                console.log('📤 Sent queued:', msg.type);
-              } catch (error) {
-                console.error('Error sending queued message:', error);
-                messageQueueRef.current.push(msg);
-              }
-            } else {
-              messageQueueRef.current.push(msg);
-            }
-          });
+          queue.forEach(msg => sendMessage(msg));
         }, 100);
 
         // Heartbeat interval
@@ -166,14 +156,7 @@ export const useStableWebSocket = (
         console.log(`🔌 WebSocket closed: ${event.code} - ${event.reason}`);
         cleanup();
 
-        if (isIntentionalCloseRef.current) {
-          console.log('👋 Intentional close, not reconnecting');
-          setConnectionStatus('disconnected');
-          return;
-        }
-
-        if (!shouldConnect) {
-          console.log('⛔ Should not connect, not reconnecting');
+        if (isIntentionalCloseRef.current || !shouldConnect) {
           setConnectionStatus('disconnected');
           return;
         }
@@ -205,7 +188,7 @@ export const useStableWebSocket = (
       console.error('Connection error:', error);
       setConnectionStatus('error');
     }
-  }, [shouldConnect, clientId, onMessage, cleanup]);
+  }, [shouldConnect, clientId, onMessage, cleanup, sendMessage]);
 
   // --- Disconnect WebSocket ---
   const disconnect = useCallback(() => {
@@ -222,62 +205,33 @@ export const useStableWebSocket = (
   // --- Handle tab visibility ---
   useEffect(() => {
     const handleVisibilityChange = () => {
-      const isNowVisible = !document.hidden;
-      isVisibleRef.current = isNowVisible;
-
-      if (isNowVisible) {
+      if (!document.hidden) {
         console.log('👁️ Tab visible - checking connection');
-
         if (shouldConnect) {
           const wsState = wsRef.current?.readyState;
-
           if (wsState !== WebSocket.OPEN && wsState !== WebSocket.CONNECTING) {
-            console.log('🔄 Reconnecting after visibility change');
             reconnectAttemptsRef.current = 0;
-
-            setTimeout(() => {
-              connect();
-            }, WS_CONFIG.VISIBILITY_RECONNECT_DELAY);
-          } else {
-            console.log('✅ Connection still active');
-            if (messageQueueRef.current.length > 0 && wsRef.current?.readyState === WebSocket.OPEN) {
-              const queue = [...messageQueueRef.current];
-              messageQueueRef.current = [];
-              queue.forEach(msg => sendMessage(msg));
-            }
+            setTimeout(connect, WS_CONFIG.VISIBILITY_RECONNECT_DELAY);
           }
         }
-      } else {
-        console.log('🙈 Tab hidden - connection will be maintained');
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [shouldConnect, connect, sendMessage]);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [shouldConnect, connect]);
 
   // --- Initial connect / cleanup ---
   useEffect(() => {
     isIntentionalCloseRef.current = false;
 
-    if (shouldConnect && clientId) {
-      console.log('🚀 Initial connection');
-      connect();
-    } else if (!shouldConnect) {
-      console.log('⏸️ Disconnecting (shouldConnect=false)');
-      disconnect();
-    }
+    if (shouldConnect && clientId) connect();
+    else if (!shouldConnect) disconnect();
 
     return () => {
-      console.log('🧹 Cleanup');
       isIntentionalCloseRef.current = true;
       cleanup();
-      if (wsRef.current) {
-        wsRef.current.close(1000, 'Component cleanup');
-      }
+      wsRef.current?.close(1000, 'Component cleanup');
     };
   }, [shouldConnect, clientId, connect, disconnect, cleanup]);
 

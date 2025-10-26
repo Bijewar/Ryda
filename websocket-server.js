@@ -1,20 +1,23 @@
 // websocket-server.js
 // Run: node websocket-server.js
+
 const WebSocket = require('ws');
 
-// Render ke liye dynamic PORT - use a different port for WebSocket server
-const WS_PORT = process.env.WS_PORT || 3002; // Use 3002 for WebSocket, let Next.js use PORT
+// Use Render's PORT or fallback to 3002 for local development
+const PORT = process.env.PORT || 3002;
 
 // ✅ Create WebSocket Server
-const wss = new WebSocket.Server({ port: WS_PORT });
-console.log(`🚀 WebSocket server running on ws://localhost:${WS_PORT}`);
+const wss = new WebSocket.Server({ port: PORT });
+console.log(`🚀 WebSocket server running on ws://localhost:${PORT}`);
 
+// -------------------------
 // Store connected clients, drivers, and rides
-const drivers = new Map(); 
-const clients = new Map(); 
-const rides = new Map();   
-const activeRides = new Map(); 
-const recentCompletedRides = new Map(); // ye bhi use ho raha tha tumhare code me
+// -------------------------
+const drivers = new Map();
+const clients = new Map();
+const rides = new Map();
+const activeRides = new Map();
+const recentCompletedRides = new Map(); // Optional if you want to track recent rides
 
 // -------------------------
 // Utility functions
@@ -53,6 +56,9 @@ wss.on('connection', (ws, req) => {
     clients.set(id, { ws, id });
   }
 
+  // Send initial connection confirmation
+  send(ws, { type: 'connected', message: `Connected as ${type}`, id });
+
   ws.on('message', (data) => {
     try {
       const message = JSON.parse(data.toString());
@@ -81,10 +87,7 @@ wss.on('connection', (ws, req) => {
 
           let driversSent = 0;
           drivers.forEach((driver) => {
-            if (
-              driver.ws.readyState === WebSocket.OPEN &&
-              driver.data.status === 'available'
-            ) {
+            if (driver.ws.readyState === WebSocket.OPEN && driver.data.status === 'available') {
               driver.ws.send(JSON.stringify(rideRequest));
               driversSent++;
             }
@@ -95,13 +98,9 @@ wss.on('connection', (ws, req) => {
 
         case 'ride_response': {
           if (message.accepted) {
-            if (drivers.has(id)) {
-              drivers.get(id).data.status = 'busy';
-            }
+            if (drivers.has(id)) drivers.get(id).data.status = 'busy';
 
-            if (rides.has(message.rideId)) {
-              rides.get(message.rideId).driverId = id;
-            }
+            if (rides.has(message.rideId)) rides.get(message.rideId).driverId = id;
 
             activeRides.set(message.rideId, {
               clientId: rides.get(message.rideId).clientId,
@@ -119,7 +118,7 @@ wss.on('connection', (ws, req) => {
               });
             }
 
-            // Cancel request for others
+            // Cancel request for other drivers
             const cancelMsg = { type: 'ride_canceled', rideId: message.rideId };
             drivers.forEach((driver, driverId) => {
               if (driverId !== id && driver.ws.readyState === WebSocket.OPEN) {
@@ -154,9 +153,7 @@ wss.on('connection', (ws, req) => {
           break;
 
         case 'ride_completed': {
-          if (drivers.has(id)) {
-            drivers.get(id).data.status = 'available';
-          }
+          if (drivers.has(id)) drivers.get(id).data.status = 'available';
 
           const rideInfoComp = rides.get(message.rideId);
           if (rideInfoComp && clients.has(rideInfoComp.clientId)) {
@@ -179,7 +176,7 @@ wss.on('connection', (ws, req) => {
           break;
 
         default:
-          console.log(`⚠️ Unknown message type: ${message.type}`);
+          console.warn(`⚠️ Unknown message type: ${message.type}`);
       }
     } catch (error) {
       console.error('❌ Error processing message:', error);
@@ -193,11 +190,11 @@ wss.on('connection', (ws, req) => {
   });
 
   ws.on('error', (err) => console.error(`⚠️ WebSocket error:`, err));
-
-  send(ws, { type: 'connected', message: `Connected as ${type}`, id });
 });
 
-// Cleanups
+// -------------------------
+// Cleanup disconnected clients/drivers every 30s
+// -------------------------
 setInterval(() => {
   drivers.forEach((driver, id) => {
     if (driver.ws.readyState !== WebSocket.OPEN) drivers.delete(id);
@@ -207,5 +204,6 @@ setInterval(() => {
   });
 }, 30000);
 
+// Handle process termination
 process.on('SIGTERM', () => wss.close());
 process.on('SIGINT', () => wss.close());
