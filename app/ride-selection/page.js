@@ -13,10 +13,10 @@ import {
   User,
 } from "lucide-react"
 import { motion } from "framer-motion"
-import { Button } from "@/app/components/ui/button"
-import { Card, CardContent } from "@/app/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs"
-import { useMobile } from "@/app/hooks/use-mobile"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useMobile } from "@/hooks/use-mobile"
 import dynamic from 'next/dynamic'
 
 const MapWithNoSSR = dynamic(
