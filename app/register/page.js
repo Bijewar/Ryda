@@ -202,7 +202,7 @@ export default function RegisterPage() {
     <div className="space-y-6">
       <h3 className="text-xl font-semibold text-center text-gray-800">Verify Your Email</h3>
       <p className="text-center text-sm text-gray-600">
-        We've sent a 6-digit code to **{verificationEmail}**.
+        We&apos;ve sent a 6-digit code to **{verificationEmail}**.
         Enter it below to complete your registration.
       </p>
       <div className="space-y-2">

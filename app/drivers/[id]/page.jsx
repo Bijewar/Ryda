@@ -147,12 +147,15 @@ export default function DriverPage() {
   const connectWebSocket = useCallback(() => {
     if (!driver || !driverId) return;
 
+    // Only connect on client side
+    if (typeof window === 'undefined') return;
+
     if (socketRef.current) {
       socketRef.current.close();
     }
 
     setConnectionStatus('connecting');
-    
+
     try {
       const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3002';
       const ws = new WebSocket(`${wsUrl}/?type=driver&id=${driverId}`);
@@ -212,6 +215,11 @@ export default function DriverPage() {
       ws.onerror = (error) => {
         console.error('WebSocket error:', error);
         setConnectionStatus('disconnected');
+        // Don't attempt to reconnect immediately on error
+        if (reconnectAttemptsRef.current < maxReconnectAttempts) {
+          reconnectAttemptsRef.current++;
+          console.log(`WebSocket error, will retry... (${reconnectAttemptsRef.current}/${maxReconnectAttempts})`);
+        }
       };
 
       ws.onclose = (event) => {
