@@ -1,5 +1,6 @@
 // app/components/Header.tsx
 import React from 'react';
+import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { UserDropdown } from './userDropdown';
 
@@ -54,8 +55,14 @@ export const Header: React.FC<HeaderProps> = ({
           />
         ) : (
           <>
-            <p>Login</p>
-            <button className="h-7 w-20 bg-white rounded-3xl text-black">Signup</button>
+            <Link href="/login" className="hover:opacity-80 transition-opacity">
+              <p>Login</p>
+            </Link>
+            <Link href="/register">
+              <button className="h-7 w-20 bg-white rounded-3xl text-black hover:bg-gray-200 transition-colors">
+                Signup
+              </button>
+            </Link>
           </>
         )}
       </div>

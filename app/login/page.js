@@ -1,8 +1,8 @@
-// LoginPage.jsx
 "use client";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signIn, getSession } from "next-auth/react";
 import {
   ArrowLeft,
   Car,
@@ -14,7 +14,6 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-// State values for viewMode
 const VIEWS = {
   LOGIN: "login",
   FORGOT_PASSWORD: "forgotPassword",
@@ -27,13 +26,9 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // State to control which view is visible
-  const [viewMode, setViewMode] = useState(VIEWS.LOGIN); 
+  const [viewMode, setViewMode] = useState(VIEWS.LOGIN);
 
-  // --- HANDLER FUNCTIONS ---
-
-  // 1. Standard Login Handler (Calls /api/login)
+  // Updated Login Handler using NextAuth
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -50,31 +45,42 @@ export default function LoginPage() {
         throw new Error("Please fill in all fields");
       }
 
-      const response = await fetch("/api/login", { // <-- Calls /api/login
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          accountType,
-        }),
+      // Use NextAuth's signIn instead of custom fetch
+      const result = await signIn("credentials", {
+        email,
+        password,
+        accountType,
+        redirect: false, // Don't redirect automatically
       });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || "Login failed");
+      if (result?.error) {
+        throw new Error(result.error);
       }
 
-      const userId = result.userId;
-      
-      setMessage(result.message || "Login successful!");
-      setMessageType("success");
+      if (result?.ok) {
+        setMessage("Login successful!");
+        setMessageType("success");
 
-      const redirectUrl = accountType === "driver" ? `/drivers/${userId}` : "/";
-      router.push(redirectUrl);
+        // Get the session to access user data
+        const session = await getSession();
+
+        // Redirect based on account type
+        let redirectUrl = "/";
+        if (accountType === "driver") {
+          // Get driver ID from the session - should always be available
+          const driverId = session?.user?.id;
+          if (!driverId) {
+            throw new Error("Driver ID not found in session");
+          }
+          redirectUrl = `/drivers/${driverId}`;
+        }
+
+        // Small delay to show success message
+        setTimeout(() => {
+          router.push(redirectUrl);
+          router.refresh(); // Refresh to update session
+        }, 500);
+      }
 
     } catch (error) {
       console.error("Login error:", error);
@@ -85,7 +91,6 @@ export default function LoginPage() {
     }
   };
 
-  // 2. Forgot Password Handler (Calls /api/forgot-password)
   const handleForgotPasswordSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -95,15 +100,13 @@ export default function LoginPage() {
     setMessageType("");
 
     try {
-      // Access email input from the form (assuming the form has an 'email' input)
-      const email = e.target.email.value; 
+      const email = e.target.email.value;
 
       if (!email) {
         throw new Error("Please enter your email address.");
       }
 
-      // 🛑 Calls the separate /api/forgot-password endpoint
-      const response = await fetch("/api/forgot-password", { 
+      const response = await fetch("/api/forgot-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,16 +141,13 @@ export default function LoginPage() {
     }
   };
 
-  // --- UI Components (Same as previous response) ---
-
   const AccountTypeToggle = (
-    // ... (omitted for brevity - same as before) ...
     <div className="flex gap-2 mb-6 bg-gray-100 p-1 rounded-lg">
       <button
         type="button"
         onClick={() => {
           setAccountType("user");
-          setMessage(""); 
+          setMessage("");
         }}
         className={`flex-1 py-3 px-4 rounded-md transition-all duration-200 font-medium ${
           accountType === "user"
@@ -164,7 +164,7 @@ export default function LoginPage() {
         type="button"
         onClick={() => {
           setAccountType("driver");
-          setMessage(""); 
+          setMessage("");
         }}
         className={`flex-1 py-3 px-4 rounded-md transition-all duration-200 font-medium ${
           accountType === "driver"
@@ -199,7 +199,6 @@ export default function LoginPage() {
     )
   );
 
-  // --- LOGIN FORM VIEW ---
   const LoginForm = (
     <>
       <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
@@ -210,7 +209,6 @@ export default function LoginPage() {
       {AccountTypeToggle}
 
       <form onSubmit={handleLoginSubmit} className="space-y-4">
-        {/* Email Input */}
         <div className="space-y-2">
           <label
             htmlFor="login-email"
@@ -228,7 +226,6 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Password Input */}
         <div className="space-y-2 relative">
           <label
             htmlFor="login-password"
@@ -254,13 +251,12 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {/* Forgot Password Link - Toggles view mode */}
         <div className="flex justify-end">
           <button
             type="button"
             onClick={() => {
               setViewMode(VIEWS.FORGOT_PASSWORD);
-              setMessage(""); // Clear message when switching view
+              setMessage("");
             }}
             className="text-sm text-blue-600 hover:underline"
           >
@@ -268,7 +264,6 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {/* Submit Button */}
         <button
           type="submit"
           disabled={isSubmitting}
@@ -285,7 +280,6 @@ export default function LoginPage() {
         </button>
       </form>
 
-      {/* Sign Up Link */}
       <div className="mt-8 text-center">
         <p className="text-sm text-gray-600">
           Don&apos;t have an account?{" "}
@@ -300,7 +294,6 @@ export default function LoginPage() {
     </>
   );
 
-  // --- FORGOT PASSWORD VIEW ---
   const ForgotPasswordForm = (
     <>
       <h1 className="text-2xl font-bold mb-4 text-center text-gray-800">
@@ -314,7 +307,6 @@ export default function LoginPage() {
       {AccountTypeToggle}
 
       <form onSubmit={handleForgotPasswordSubmit} className="space-y-6">
-        {/* Email Input (Must have name="email" to be accessible via e.target.email.value) */}
         <div className="space-y-2">
           <label
             htmlFor="forgot-email"
@@ -332,7 +324,6 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Submit Button */}
         <button
           type="submit"
           disabled={isSubmitting}
@@ -349,13 +340,12 @@ export default function LoginPage() {
         </button>
       </form>
 
-      {/* Back to Login Link - Toggles view mode */}
       <div className="mt-6 text-center">
         <button
           type="button"
           onClick={() => {
             setViewMode(VIEWS.LOGIN);
-            setMessage(""); // Clear message when switching view
+            setMessage("");
           }}
           className="text-sm text-blue-600 hover:underline flex items-center justify-center gap-1 mx-auto"
         >
@@ -366,12 +356,9 @@ export default function LoginPage() {
     </>
   );
 
-  // --- RENDER ---
-
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <header className="bg-black text-white p-4 shadow-lg">
-        {/* ... (Header content omitted for brevity) ... */}
         <div className="container mx-auto flex items-center">
           <Link
             href="/"
@@ -390,7 +377,6 @@ export default function LoginPage() {
 
       <main className="flex-1 flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 min-h-[450px]">
-          {/* Conditional Rendering based on viewMode */}
           {viewMode === VIEWS.LOGIN && LoginForm}
           {viewMode === VIEWS.FORGOT_PASSWORD && ForgotPasswordForm}
         </div>

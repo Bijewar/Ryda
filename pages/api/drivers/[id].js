@@ -26,6 +26,12 @@ export default async function handler(req, res) {
     // Existing GET logic (View Driver Details)
     // ------------------------------------
     try {
+      // Handle special case for "dashboard" - this should not happen in production
+      // but for now, we'll return a placeholder or redirect
+      if (id === 'dashboard') {
+        return res.status(400).json({ message: 'Invalid driver ID: dashboard' });
+      }
+
       const driver = await Driver.findById(id);
       if (!driver) {
         return res.status(404).json({ message: 'Driver not found' });
