@@ -2,12 +2,12 @@
 // Run: node websocket-server.js
 const WebSocket = require('ws');
 
-// Render ke liye dynamic PORT
-const PORT = process.env.PORT || 3001;
+// Render ke liye dynamic PORT - use a different port for WebSocket server
+const WS_PORT = process.env.WS_PORT || 3002; // Use 3002 for WebSocket, let Next.js use PORT
 
 // ✅ Create WebSocket Server
-const wss = new WebSocket.Server({ port: PORT });
-console.log(`🚀 WebSocket server running on ws://localhost:${PORT}`);
+const wss = new WebSocket.Server({ port: WS_PORT });
+console.log(`🚀 WebSocket server running on ws://localhost:${WS_PORT}`);
 
 // Store connected clients, drivers, and rides
 const drivers = new Map(); 

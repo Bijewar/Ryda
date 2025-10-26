@@ -154,7 +154,7 @@ export default function DriverPage() {
     setConnectionStatus('connecting');
     
     try {
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001';
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3002';
       const ws = new WebSocket(`${wsUrl}/?type=driver&id=${driverId}`);
       socketRef.current = ws;
 
