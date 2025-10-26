@@ -21,7 +21,7 @@ import dynamic from 'next/dynamic'
 
 const MapWithNoSSR = dynamic(
   () => import('@/components/MapView'),
-  { 
+  {
     ssr: false,
     loading: () => (
       <div className="h-full w-full bg-gray-200 flex items-center justify-center">
