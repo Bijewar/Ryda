@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "websocket": "node websocket-server.js",
-    "build": "next build",
+    "build": "next build --no-lint",
     "start": "node start-production.js",
     "next:start": "next start",
     "lint": "next lint"

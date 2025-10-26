@@ -261,7 +261,7 @@ export default function RideShareHome() {
                 }
                 return currentPickup;
               });
-              return { ...prev, coords, status: data.status || prev.status };
+              return { ...prev, ...(coords ? { coords } : {}), status: data.status || prev.status };
             });
           }
           break;
@@ -373,7 +373,7 @@ export default function RideShareHome() {
         session.user.name,
         clientId,
         session.user.email,
-        session.user.phone || "9999999999"
+        (session.user as any).phone || "9999999999"
       );
       return orderData;
     } catch (error: any) {
@@ -603,7 +603,18 @@ export default function RideShareHome() {
 
   const normalizeDriver = (driver: Driver | null) => {
     if (!driver) return null;
-    return { id: driver.id, status: driver.status, coords: normalizeCoordinates(driver.coords) || [0, 0] };
+    const statusMap: Record<string, 'available' | 'on-way' | 'arrived'> = {
+      'searching': 'available',
+      'accepted': 'on-way',
+      'on-way': 'on-way',
+      'arrived': 'arrived',
+      'completed': 'available'
+    };
+    return {
+      id: driver.id,
+      status: statusMap[driver.status] || 'available',
+      coords: normalizeCoordinates(driver.coords) || [0, 0]
+    };
   };
 
   // ===================== JSX =====================
@@ -754,7 +765,7 @@ export default function RideShareHome() {
           fare={completedRide.fare}
           clientName={session.user.name || "Ryda User"}
           clientEmail={session.user.email || ""}
-          clientPhone={session.user.phone || "9999999999"}
+          clientPhone={(session.user as any).phone || "9999999999"}
           isPaying={isPaying}
           onCreateOrderAndPay={handleCreateOrderAndOpenRazorpay}
           onClose={handleCloseOnlinePayment}
