@@ -95,6 +95,8 @@ const authOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
 
+  url: process.env.NEXTAUTH_URL,
+
   pages: {
     signIn: "/login",
     error: "/login",
