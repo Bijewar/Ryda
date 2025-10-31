@@ -31,7 +31,7 @@ export const razorpayService = {
     });
 
     try {
-      const response = await fetch(`${BASE_URL}/api/razorpay/create-order`, {
+      const response = await fetch('/api/razorpay/create-order', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,7 +80,7 @@ export const razorpayService = {
     console.log("[RAZORPAY SERVICE] Verifying payment...");
 
     try {
-      const response = await fetch(`${BASE_URL}/api/razorpay/verify-payment`, {
+      const response = await fetch('/api/razorpay/verify-payment', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
