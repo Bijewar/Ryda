@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { 
   ArrowLeft, Car, User, Phone, Truck, MapPin, Clock, DollarSign,
   CheckCircle, AlertCircle, Navigation, Star, Calendar, TrendingUp,
@@ -10,16 +11,17 @@ import {
 export default function DriverPage() {
   const params = useParams();
   const router = useRouter();
+  const { data: session, status: sessionStatus } = useSession();
   const driverId = params?.id;
 
+  // ALL HOOKS MUST BE DECLARED AT THE TOP LEVEL BEFORE ANY CONDITIONAL LOGIC
   // State Management
   const [driver, setDriver] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentLocation, setCurrentLocation] = useState(null);
   const [rideRequests, setRideRequests] = useState([]);
-    const [rideCompleted, setRideCompleted] = useState(false);
-
+  const [rideCompleted, setRideCompleted] = useState(false);
   const [activeRide, setActiveRide] = useState(null);
   const [status, setStatus] = useState('offline');
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
@@ -31,6 +33,21 @@ export default function DriverPage() {
   const reconnectTimeoutRef = useRef(null);
   const reconnectAttemptsRef = useRef(0);
   const maxReconnectAttempts = 5;
+
+  // Access control: Only allow logged-in drivers to access their own dashboard
+  useEffect(() => {
+    if (sessionStatus === "loading") return; // Wait for session to load
+
+    if (sessionStatus === "unauthenticated" || session?.user?.accountType !== "driver") {
+      router.push("/");
+      return;
+    }
+
+    if (session?.user?.id !== driverId) {
+      router.push("/");
+      return;
+    }
+  }, [sessionStatus, session, driverId, router]);
 
   // Utility Functions
   const formatDate = (dateString) => {
@@ -66,29 +83,29 @@ export default function DriverPage() {
 
     try {
       console.log("Fetching driver data for ID:", driverId);
-      
+
       const response = await fetch(`/api/drivers/${driverId}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `HTTP ${response.status}: Failed to fetch driver data`);
       }
-      
+
       const data = await response.json();
       const driverData = data.driver || data;
-      
+
       if (!driverData) {
         throw new Error('No driver data found in response');
       }
-      
+
       setDriver(driverData);
-      
+
       if (driverData.isActive && driverData.isApproved) {
         setStatus('available');
       } else {
         setStatus('offline');
       }
-      
+
     } catch (err) {
       console.error("Error fetching driver data:", err);
       setError(err.message || 'Failed to load driver data');
@@ -114,9 +131,9 @@ export default function DriverPage() {
           speed: position.coords.speed || null,
           timestamp: position.timestamp
         };
-        
+
         setCurrentLocation(coords);
-        
+
         if (socketRef.current?.readyState === WebSocket.OPEN) {
           socketRef.current.send(JSON.stringify({
             type: 'location_update',
@@ -135,7 +152,7 @@ export default function DriverPage() {
         };
         setError(errorMessages[error.code] || `Location error: ${error.message}`);
       },
-      { 
+      {
         enableHighAccuracy: true,
         maximumAge: 10000,
         timeout: 15000
@@ -152,7 +169,7 @@ export default function DriverPage() {
     }
 
     setConnectionStatus('connecting');
-    
+
     try {
       const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3002';
       const ws = new WebSocket(`${wsUrl}/?type=driver&id=${driverId}`);
@@ -162,7 +179,7 @@ export default function DriverPage() {
         setConnectionStatus('connected');
         reconnectAttemptsRef.current = 0;
         console.log('WebSocket connected as driver');
-        
+
         if (driver.isApproved && driver.isActive) {
           ws.send(JSON.stringify({
             type: 'status_update',
@@ -177,7 +194,7 @@ export default function DriverPage() {
         try {
           const data = JSON.parse(event.data);
           console.log('Received WebSocket message:', data);
-          
+
           switch (data.type) {
             case 'ride_request':
               setRideRequests(prev => {
@@ -185,7 +202,7 @@ export default function DriverPage() {
                 return exists ? prev : [...prev, data];
               });
               break;
-              
+
             case 'ride_canceled':
               setRideRequests(prev => prev.filter(r => r.rideId !== data.rideId));
               if (activeRide?.rideId === data.rideId) {
@@ -193,14 +210,14 @@ export default function DriverPage() {
                 setStatus('available');
               }
               break;
-              
+
             case 'ride_completed':
               if (activeRide?.rideId === data.rideId) {
                 setActiveRide(null);
                 setStatus('available');
               }
               break;
-              
+
             default:
               console.log('Unhandled message type:', data.type);
           }
@@ -217,11 +234,11 @@ export default function DriverPage() {
       ws.onclose = (event) => {
         console.log('WebSocket closed:', event.code, event.reason);
         setConnectionStatus('disconnected');
-        
+
         if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current++;
           console.log(`Attempting to reconnect... (${reconnectAttemptsRef.current}/${maxReconnectAttempts})`);
-          
+
           reconnectTimeoutRef.current = setTimeout(() => {
             connectWebSocket();
           }, Math.min(3000 * reconnectAttemptsRef.current, 30000));
@@ -240,7 +257,7 @@ export default function DriverPage() {
       setError('Cannot accept ride - not connected to server');
       return;
     }
-    
+
     if (!currentLocation) {
       setError('Cannot accept ride - location not available');
       return;
@@ -254,7 +271,7 @@ export default function DriverPage() {
       coords: currentLocation,
       timestamp: Date.now()
     }));
-    
+
     setActiveRide(ride);
     setStatus('in-ride');
     setRideRequests([]);
@@ -273,46 +290,46 @@ export default function DriverPage() {
       driverId,
       timestamp: Date.now()
     }));
-    
+
     setRideRequests(prev => prev.filter(r => r.rideId !== rideId));
   }, [driverId]);
-const handleCompleteRide = useCallback(() => {
-  if (!socketRef.current || !activeRide) return;
 
-  const completionData = {
-    type: 'ride_completed',
-    rideId: activeRide.rideId,
-    driverId,
-    driverName: driver?.firstName && driver?.lastName 
-      ? `${driver.firstName} ${driver.lastName}` 
-      : driver?.fullName || driver?.name || 'Driver',
-    vehicleNumber: driver?.licensePlate || driver?.vehicle?.licensePlate || driver?.vehicleNumber || 'N/A',
-    estimatedFare: activeRide.estimatedFare,
-    completedAt: new Date().toISOString(),
-    timestamp: Date.now(),
-    // Add client ID to ensure proper routing
-    clientId: activeRide.clientId
-  };
+  const handleCompleteRide = useCallback(() => {
+    if (!socketRef.current || !activeRide) return;
 
-  console.log("Sending ride completion data:", completionData);
-  
-  socketRef.current.send(JSON.stringify(completionData));
+    const completionData = {
+      type: 'ride_completed',
+      rideId: activeRide.rideId,
+      driverId,
+      driverName: driver?.firstName && driver?.lastName
+        ? `${driver.firstName} ${driver.lastName}`
+        : driver?.fullName || driver?.name || 'Driver',
+      vehicleNumber: driver?.licensePlate || driver?.vehicle?.licensePlate || driver?.vehicleNumber || 'N/A',
+      estimatedFare: activeRide.estimatedFare,
+      completedAt: new Date().toISOString(),
+      timestamp: Date.now(),
+      // Add client ID to ensure proper routing
+      clientId: activeRide.clientId
+    };
 
-  // Update local UI state
-  setRideCompleted(true);
-  setActiveRide(null);
-  setStatus('available');
-  
-  // Show completion message to driver
-  setCompletionMessage('Ride completed successfully!');
-  
-  // Clear message after 3 seconds
-  setTimeout(() => {
-    setCompletionMessage('');
-  }, 3000);
+    console.log("Sending ride completion data:", completionData);
 
-}, [activeRide, driverId, driver]);
+    socketRef.current.send(JSON.stringify(completionData));
 
+    // Update local UI state
+    setRideCompleted(true);
+    setActiveRide(null);
+    setStatus('available');
+
+    // Show completion message to driver
+    setCompletionMessage('Ride completed successfully!');
+
+    // Clear message after 3 seconds
+    setTimeout(() => {
+      setCompletionMessage('');
+    }, 3000);
+
+  }, [activeRide, driverId, driver]);
 
   const toggleOnlineStatus = useCallback(async () => {
     if (!driver?.isApproved || !driver?.isActive) {
@@ -321,7 +338,7 @@ const handleCompleteRide = useCallback(() => {
     }
 
     const newStatus = status === 'available' ? 'offline' : 'available';
-    
+
     try {
       if (socketRef.current?.readyState === WebSocket.OPEN) {
         socketRef.current.send(JSON.stringify({
@@ -344,7 +361,7 @@ const handleCompleteRide = useCallback(() => {
       }
 
       setStatus(newStatus);
-      
+
     } catch (error) {
       console.error('Error updating driver status:', error);
       setError('Failed to update online status');
@@ -355,11 +372,11 @@ const handleCompleteRide = useCallback(() => {
     if (socketRef.current) {
       socketRef.current.close(1000, 'User logged out');
     }
-    
+
     if (watchIdRef.current) {
       navigator.geolocation.clearWatch(watchIdRef.current);
     }
-    
+
     router.push('/');
   }, [router]);
 
@@ -379,18 +396,51 @@ const handleCompleteRide = useCallback(() => {
         navigator.geolocation.clearWatch(watchIdRef.current);
         watchIdRef.current = null;
       }
-      
+
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
       }
-      
+
       if (socketRef.current) {
         socketRef.current.close(1000, 'Component unmounted');
         socketRef.current = null;
       }
     };
   }, [driver, connectWebSocket, initializeGeolocation]);
+
+  // Show loading while checking access
+  if (sessionStatus === "loading") {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Deny access if not authenticated as driver or wrong driver ID
+  if (sessionStatus === "unauthenticated" || session?.user?.accountType !== "driver" || session?.user?.id !== driverId) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-red-800 mb-2">Access Denied</h2>
+            <p className="text-red-600 mb-4">You don't have permission to access this page.</p>
+            <button
+              onClick={() => router.push("/")}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+            >
+              Go Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // JSX Components
   const LoadingScreen = () => (

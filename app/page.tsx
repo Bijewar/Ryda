@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import debounce from "lodash/debounce";
 import dynamic from "next/dynamic";
@@ -71,6 +72,7 @@ const MapView = dynamic(() => import("./components/MapView"), {
 
 export default function RideShareHome() {
   const { data: session, status } = useSession();
+  const router = useRouter();
 
   // UI State
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -120,6 +122,13 @@ export default function RideShareHome() {
     () => session?.user?.email || `client-${Date.now()}`,
     [session?.user?.email]
   );
+
+  // Redirect drivers to their dashboard
+  useEffect(() => {
+    if (status === "authenticated" && (session?.user as any)?.accountType === "driver") {
+      router.push(`/drivers/${session.user.id}`);
+    }
+  }, [status, session, router]);
 
   // Restore ride and history from localStorage on mount
   useEffect(() => {
@@ -619,7 +628,8 @@ export default function RideShareHome() {
 
   // ===================== JSX =====================
   return (
-    <div className="font-[gilroy] w-screen h-screen z-10 overflow-hidden bg-amber-300">
+ <div className="font-sans w-screen h-screen overflow-hidden bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50">
+      {/* Header */}
       <Header
         session={session}
         status={status}
@@ -628,14 +638,22 @@ export default function RideShareHome() {
         onViewRideHistory={() => setShowRideHistory(true)}
       />
 
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)]">
-        {/* Left Panel - FIXED SCROLLING */}
-        <div className="w-full lg:w-1/2 h-full overflow-y-auto">
-          <div className="p-6 lg:p-10 min-h-full">
-            <h1 className="text-4xl lg:text-5xl font-bold mb-8 lg:mb-10">
-              Go anywhere with <br /> Ryda
-            </h1>
+      {/* Main Content Container */}
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-64px)] w-full">
+        {/* Left Panel - Booking Interface */}
+        <div className="w-full lg:w-2/5 h-auto lg:h-full flex flex-col overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-850">
+          <div className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 w-full">
+            {/* Premium Header Section */}
+            <div className="mb-4 sm:mb-6 md:mb-8">
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 tracking-tight text-balance leading-snug">
+                Go anywhere with <span className="text-blue-600 dark:text-blue-400">Ryda</span>
+              </h1>
+              <p className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-300 font-medium">
+                Your reliable ride in seconds
+              </p>
+            </div>
 
+            {/* Status Indicators */}
             <StatusIndicators
               connectionStatus={isFindingDriver ? connectionStatus : "disconnected"}
               isLoadingDriverDetails={isLoadingDriverDetails}
@@ -643,6 +661,7 @@ export default function RideShareHome() {
               onDismissError={dismissError}
             />
 
+            {/* Ride Completion / Summary Views */}
             {rideStatus === "completed" && completedRide && !showRideSummary ? (
               <RideCompletion
                 driver={completedRide.driver}
@@ -662,20 +681,21 @@ export default function RideShareHome() {
                 pickupAddress={pickup}
                 destinationAddress={destination}
                 onNewRide={() => {
-                  setShowRideSummary(false);
-                  resetAllStates();
+                  setShowRideSummary(false)
+                  resetAllStates()
                 }}
                 onViewHistory={() => setShowRideHistory(true)}
               />
             ) : (
               <>
-                <div className="space-y-4 mb-6">
+                {/* Location Inputs Section */}
+                <div className="space-y-2 sm:space-y-2.5 md:space-y-3 mb-4 sm:mb-5 md:mb-6">
                   <LocationInput
                     value={pickup}
                     onChange={handlePickupChange}
                     suggestions={pickupSuggestions}
                     onSelect={handleSelectPickup}
-                    placeholder="Enter pickup location"
+                    placeholder="Where are you?"
                     icon={<i className="ri-map-pin-2-fill text-lg" />}
                     showSuggestions={showPickupSuggestions}
                     onFocus={() => setShowPickupSuggestions(true)}
@@ -688,52 +708,89 @@ export default function RideShareHome() {
                     onChange={handleDestinationChange}
                     suggestions={destinationSuggestions}
                     onSelect={handleSelectDestination}
-                    placeholder="Enter destination"
+                    placeholder="Where to?"
                     icon={<i className="ri-flag-fill text-lg" />}
                     showSuggestions={showDestinationSuggestions}
                     onFocus={() => setShowDestinationSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowDestinationSuggestions(false), 200)}
                   />
 
+                  {/* See Prices Button */}
                   <button
-                    className="w-full bg-black text-white py-3 rounded-lg text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                    className="w-full px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white text-xs sm:text-sm md:text-base font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={isRouting || !pickupCoords || !destinationCoords}
                     onClick={handleSeePrices}
                   >
-                    {isRouting ? "Calculating route..." : "See Prices"}
+                    {isRouting ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24">
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        <span>Calculating...</span>
+                      </span>
+                    ) : (
+                      "See Prices"
+                    )}
                   </button>
                 </div>
 
+                {/* Price Display Section */}
                 {showPrice && fare !== null && routeGeometry && (
-                  <PriceDisplay
-                    fare={fare}
-                    routeGeometry={routeGeometry}
-                    isFindingDriver={isFindingDriver}
-                    driver={driver}
-                    rideStatus={rideStatus}
-                    pickupCoords={pickupCoords}
-                    handleCancelRequest={handleCancelRequest}
-                    handleRequestRide={handleRequestRide}
-                    session={session}
-                    isLoadingDriverDetails={isLoadingDriverDetails}
-                  />
-                )}
-
-                {geoError && (
-                  <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
-                    <div className="flex items-center">
-                      <i className="ri-error-warning-line mr-2"></i>
-                      Location error: {geoError}
-                    </div>
+                  <div className="mt-3 sm:mt-4 md:mt-5 p-3 sm:p-4 md:p-5 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm w-full">
+                    <PriceDisplay
+                      fare={fare}
+                      routeGeometry={routeGeometry}
+                      isFindingDriver={isFindingDriver}
+                      driver={driver}
+                      rideStatus={rideStatus}
+                      pickupCoords={pickupCoords}
+                      handleCancelRequest={handleCancelRequest}
+                      handleRequestRide={handleRequestRide}
+                      session={session}
+                      isLoadingDriverDetails={isLoadingDriverDetails}
+                    />
                   </div>
                 )}
 
-                <div className="mt-6 text-xs text-gray-600">
+                {/* Error Messages */}
+                {geoError && (
+                  <div className="mt-2 sm:mt-3 md:mt-4 p-2.5 sm:p-3 md:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2 sm:gap-3">
+                    <svg
+                      className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-xs sm:text-sm text-red-700 dark:text-red-300">
+                      Location error: {geoError}
+                    </span>
+                  </div>
+                )}
+
+                {/* OpenStreetMap Attribution */}
+                <div className="mt-auto pt-4 sm:pt-5 md:pt-6 text-xs text-slate-500 dark:text-slate-400">
                   <a
                     href="https://www.openstreetmap.org/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-gray-800 transition-colors"
+                    className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors duration-200 underline"
                   >
                     © OpenStreetMap contributors
                   </a>
@@ -744,11 +801,18 @@ export default function RideShareHome() {
         </div>
 
         {/* Right Panel - Map */}
-        <div
-          className={`w-full lg:w-1/2 h-[50vh] lg:h-full ${
-            isPaymentModalOpen ? "hidden lg:hidden" : ""
-          }`}
-        >
+        <div className="w-full lg:w-3/5 h-0 lg:h-full hidden lg:flex">
+          <MapView
+            pickupCoords={pickupCoords}
+            destinationCoords={destinationCoords}
+            routeGeometry={routeGeometry}
+            currentCoords={currentCoords}
+            driver={normalizeDriver(driver)}
+          />
+        </div>
+
+        {/* Mobile Map - Full width below booking on small screens */}
+        <div className="w-full h-1/2 lg:hidden">
           <MapView
             pickupCoords={pickupCoords}
             destinationCoords={destinationCoords}
@@ -759,29 +823,35 @@ export default function RideShareHome() {
         </div>
       </div>
 
-      {/* PAYMENT MODALS */}
+      {/* Payment Modal Overlay */}
       {isPaymentModalOpen && completedRide && session?.user && !showRideSummary && (
-        <RazorpayPaymentModal
-          fare={completedRide.fare}
-          clientName={session.user.name || "Ryda User"}
-          clientEmail={session.user.email || ""}
-          clientPhone={(session.user as any).phone || "9999999999"}
-          isPaying={isPaying}
-          onCreateOrderAndPay={handleCreateOrderAndOpenRazorpay}
-          onClose={handleCloseOnlinePayment}
-          onPaymentSuccess={handlePaymentSuccess}
-          onPaymentError={setPaymentError}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 p-3 sm:p-4">
+          <RazorpayPaymentModal
+            fare={completedRide.fare}
+            clientName={session.user.name || "Ryda User"}
+            clientEmail={session.user.email || ""}
+            clientPhone={(session.user as any).phone || "9999999999"}
+            isPaying={isPaying}
+            onCreateOrderAndPay={handleCreateOrderAndOpenRazorpay}
+            onClose={handleCloseOnlinePayment}
+            onPaymentSuccess={handlePaymentSuccess}
+            onPaymentError={setPaymentError}
+          />
+        </div>
       )}
 
-      {/* Ride History */}
+      {/* Ride History Modal */}
       {showRideHistory && (
-        <RideHistory
-          rides={rideHistory}
-          onBack={() => setShowRideHistory(false)}
-          onClose={() => setShowRideHistory(false)}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 p-3 sm:p-4">
+          <RideHistory
+            rides={rideHistory}
+            onBack={() => setShowRideHistory(false)}
+            onClose={() => setShowRideHistory(false)}
+          />
+        </div>
       )}
     </div>
-  );
+  
+  )
+  
 }
