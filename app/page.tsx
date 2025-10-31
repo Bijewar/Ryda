@@ -126,7 +126,10 @@ export default function RideShareHome() {
   // Redirect drivers to their dashboard
   useEffect(() => {
     if (status === "authenticated" && (session?.user as any)?.accountType === "driver") {
-      router.push(`/drivers/${session.user.id}`);
+      const userId = (session?.user as any)?.id;
+      if (userId) {
+        router.push(`/drivers/${userId}`);
+      }
     }
   }, [status, session, router]);
 
