@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
   Car,
@@ -27,26 +29,48 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
 
 export default function AdminDashboard() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [drivers, setDrivers] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [isAuthorized, setIsAuthorized] = useState(false)
+
+  // Check authentication and admin access
+  useEffect(() => {
+    if (status === "loading") {
+      setIsAuthorized(false)
+      return
+    }
+    if (!session) {
+      setIsAuthorized(false)
+      router.push("/login")
+      return
+    }
+    if (session.user.accountType !== "owner") {
+      setIsAuthorized(false)
+      router.push("/")
+      return
+    }
+    setIsAuthorized(true)
+  }, [session, status, router])
 
   // Fetch drivers from API
   const fetchDrivers = async () => {
     try {
       setLoading(true)
       // This is the endpoint that the missing backend logic (GET /api/drivers) now handles
-      const response = await fetch('/api/drivers') 
+      const response = await fetch('/api/drivers')
 
       if (!response.ok) {
         // This is the line that was throwing the error before the backend was fixed
-        throw new Error('Failed to fetch drivers') 
+        throw new Error('Failed to fetch drivers')
       }
 
       const data = await response.json()
-      setDrivers(data.drivers || []) 
+      setDrivers(data.drivers || [])
     } catch (error) {
       console.error('Error fetching drivers:', error)
       alert('Could not load driver data. Check server logs.')
@@ -56,11 +80,21 @@ export default function AdminDashboard() {
     }
   }
 
-
-  // Initial data fetch
+  // Initial data fetch - only fetch if user is authorized
   useEffect(() => {
-    fetchDrivers()
-  }, [])
+    if (isAuthorized) {
+      fetchDrivers()
+    }
+  }, [isAuthorized])
+
+  // Show loading while checking auth or if not authorized
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <RefreshCw className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
 
   // Statistics
   const totalDrivers = drivers.length
