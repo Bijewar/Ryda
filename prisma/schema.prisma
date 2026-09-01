@@ -1,0 +1,388 @@
+// ──────────────────────────────────────────────────────────────────────────
+// Ryda v2 — Prisma schema
+//
+// Postgres 16 + PostGIS. Geometry columns use Unsupported("...") because Prisma
+// doesn't natively know PostGIS — all spatial queries go through $queryRaw with
+// ST_Contains / ST_DWithin / ST_MakePoint. See src/lib/db/postgis.ts.
+// ──────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ────────────────────────────────────────────────────────────────
+
+enum AccountType {
+  PASSENGER
+  ADMIN
+}
+
+enum DriverApproval {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum VehicleType {
+  SEDAN
+  SUV
+  HATCHBACK
+  BIKE
+  AUTO
+}
+
+enum RideStatus {
+  REQUESTED   // passenger requested, looking for driver
+  MATCHING    // server-side matching in progress
+  OFFERED     // offered to a driver, waiting for accept
+  ACCEPTED    // driver accepted, en route to pickup
+  ARRIVED     // driver at pickup
+  IN_PROGRESS // passenger in vehicle
+  COMPLETED   // ride done, payment pending
+  PAID        // payment confirmed
+  CANCELED    // canceled by passenger or driver
+  NO_DRIVERS  // no drivers available, expired
+}
+
+enum PaymentProvider {
+  RAZORPAY
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CARD
+  UPI
+  WALLET
+  CASH
+}
+
+// ── Models ───────────────────────────────────────────────────────────────
+
+/// Passengers + admins. Drivers live in a separate table because the field
+/// shape (license, vehicle, payout account) is wildly different.
+model User {
+  id               String      @id @default(cuid())
+  email            String      @unique
+  phone            String      @unique
+  name             String
+  passwordHash     String?
+  googleId         String?     @unique
+  emailVerifiedAt  DateTime?
+  phoneVerifiedAt  DateTime?
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean     @default(false)
+  failedLogins     Int         @default(0)
+  lockedUntil      DateTime?
+  resetTokenHash   String?
+  resetTokenExpiry DateTime?
+  accountType      AccountType @default(PASSENGER)
+  rideCredits      Int         @default(0) // paise (compensation wallet)
+  rides            Ride[]      @relation("PassengerRides")
+  payments         Payment[]
+  approvedDrivers  Driver[]    @relation("ApprovedBy")
+  notifications    Notification[]
+  auditLogs        AuditLog[]   @relation("UserAuditLogs")
+  compensations    CustomerCompensation[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([accountType])
+  @@map("users")
+}
+
+/// Drivers — separate from User because of the auth + onboarding flow
+/// (license upload, admin approval, vehicle, Stripe Connect).
+model Driver {
+  id              String         @id @default(cuid())
+  email           String         @unique
+  phone           String         @unique
+  passwordHash    String?
+  firstName       String
+  lastName        String
+  licenseNumber   String         @unique
+  licenseFrontUrl String
+  licenseBackUrl  String
+  vehicle         Vehicle?
+  approvalStatus  DriverApproval @default(PENDING)
+  approvedById    String?
+  approvedBy      User?          @relation("ApprovedBy", fields: [approvedById], references: [id])
+  approvedAt      DateTime?
+  rejectionReason String?
+  isOnline        Boolean        @default(false)
+  // PostGIS POINT (SRID 4326). Set via raw SQL in driver-service.ts.
+  currentLocation Unsupported("geometry(Point, 4326)")?
+  heading         Float?
+  rating          Float          @default(5.0)
+  totalRides      Int            @default(0)
+  totalEarnings   Int            @default(0) // paise
+  // Reliability and penalty tracking
+  reliabilityScore       Float   @default(100.0) // 0-100
+  cancellationAllowance  Int     @default(15) // Free cancellations per calendar month
+  cancellationsThisMonth Int     @default(0)
+  penalizedCancellations Int     @default(0)
+  isReliableDriver       Boolean @default(false)
+  earningsBonusRate      Float   @default(0.0) // e.g. 0.02 for +2% earnings
+  totalPenalties         Int     @default(0) // paise
+  // Razorpay Route account ID for driver payouts (free — no Stripe Connect)
+  razorpayAccountId String?
+  rides           Ride[]         @relation("DriverRides")
+  notifications   Notification[]
+  auditLogs       AuditLog[]     @relation("DriverAuditLogs")
+  cancellations   DriverCancellationHistory[]
+  repositionings  DriverRepositioning[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([approvalStatus])
+  @@index([isOnline])
+  @@index([reliabilityScore])
+  @@index([razorpayAccountId])
+  @@map("drivers")
+}
+
+model Vehicle {
+  id           String      @id @default(cuid())
+  driverId     String      @unique
+  driver       Driver      @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  make         String
+  model        String
+  year         Int
+  color        String
+  licensePlate String      @unique
+  type         VehicleType @default(SEDAN)
+  createdAt    DateTime    @default(now())
+
+  @@map("vehicles")
+}
+
+/// Full ride state machine — REQUESTED → MATCHING → OFFERED → ACCEPTED →
+/// ARRIVED → IN_PROGRESS → COMPLETED → PAID. CANCELED and NO_DRIVERS are
+/// terminal error states.
+model Ride {
+  id              String      @id @default(cuid())
+  passengerId     String
+  passenger       User        @relation("PassengerRides", fields: [passengerId], references: [id])
+  driverId        String?
+  driver          Driver?     @relation("DriverRides", fields: [driverId], references: [id])
+  status          RideStatus  @default(REQUESTED)
+  // Pickup
+  pickupAddress   String
+  pickupPoint     Unsupported("geometry(Point, 4326)")
+  // Dropoff
+  dropoffAddress  String
+  dropoffPoint    Unsupported("geometry(Point, 4326)")
+  // Route
+  routeGeometry   Json        // GeoJSON LineString
+  distanceMeters  Int
+  durationSeconds Int
+  // Fare
+  fareAmount      Int         // paise
+  surgeMultiplier Float       @default(1.0)
+  currency        String      @default("INR")
+  // Payment
+  payment         Payment?
+  paymentMethod   PaymentMethod
+  // Timestamps for each state
+  requestedAt     DateTime    @default(now())
+  acceptedAt      DateTime?
+  driverArrivedAt DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  canceledAt      DateTime?
+  cancelReason    String?
+  // Rating
+  passengerRating Int?
+  driverRating    Int?
+  // Receipt
+  receiptUrl      String?
+  auditLogs       AuditLog[]   @relation("RideAuditLogs")
+
+  @@index([passengerId, status])
+  @@index([driverId, status])
+  @@index([status, requestedAt])
+  @@map("rides")
+}
+
+model Payment {
+  id                String         @id @default(cuid())
+  rideId            String         @unique
+  ride              Ride           @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User           @relation(fields: [userId], references: [id])
+  provider          PaymentProvider
+  providerOrderId   String?        @unique
+  providerPaymentId String?        @unique
+  amount            Int            // paise
+  currency          String         @default("INR")
+  status            PaymentStatus  @default(PENDING)
+  idempotencyKey    String         @unique
+  refundId          String?
+  refundAmount      Int?           @default(0)
+  refundReason      String?
+  refundedAt        DateTime?
+  webhookEvents     Json           @default("[]")
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([userId, status])
+  @@index([provider, status])
+  @@map("payments")
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  driverId  String?
+  driver    Driver?   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+  @@index([driverId, readAt])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actorType String   // USER | DRIVER | ADMIN | SYSTEM
+  userId    String?
+  user      User?    @relation("UserAuditLogs", fields: [userId], references: [id])
+  driverId  String?
+  driver    Driver?  @relation("DriverAuditLogs", fields: [driverId], references: [id])
+  rideId    String?
+  ride      Ride?    @relation("RideAuditLogs", fields: [rideId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([actorId, createdAt])
+  @@index([rideId])
+  @@map("audit_logs")
+}
+
+/// Bhopal (and future city) service-area polygons. Loaded once from
+/// public/geo/*.geojson by src/lib/db/bhopal.ts. ST_Contains is the canonical
+/// geofence check; ray-casting fallback exists for client-side validation.
+model ServiceArea {
+  id        String   @id @default(cuid())
+  name      String   @unique // "Bhopal"
+  osmId     BigInt?  @unique
+  // PostGIS Polygon (SRID 4326).
+  geometry  Unsupported("geometry(Polygon, 4326)")
+  centroid  Unsupported("geometry(Point, 4326)")
+  bbox      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("service_areas")
+}
+
+model DriverCancellationHistory {
+  id             String   @id @default(cuid())
+  driverId       String
+  driver         Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  rideId         String
+  reasonCategory String   // VEHICLE_PROBLEM | EMERGENCY | UNSAFE_PICKUP | ROAD_BLOCKED | WRONG_PICKUP_LOCATION | CUSTOMER_REQUESTED | TECHNICAL_ISSUE | OTHER
+  reasonDetails  String?
+  isPenalized    Boolean  @default(false)
+  penaltyAmount  Int      @default(0) // paise
+  status         String   @default("APPROVED") // APPROVED | REQUIRES_VERIFICATION | WAIVED
+  createdAt      DateTime @default(now())
+
+  @@index([driverId, createdAt])
+  @@map("driver_cancellations")
+}
+
+model CustomerCompensation {
+  id                 String   @id @default(cuid())
+  passengerId        String
+  passenger          User     @relation(fields: [passengerId], references: [id], onDelete: Cascade)
+  rideId             String
+  driverId           String?
+  amount             Int      // paise (e.g. 5000 = ₹50)
+  type               String   @default("RIDE_CREDIT") // RIDE_CREDIT | COUPON | CASHBACK
+  reason             String
+  inconvenienceScore Float    @default(1.0)
+  status             String   @default("ISSUED") // ISSUED | REDEEMED | EXPIRED
+  createdAt          DateTime @default(now())
+
+  @@index([passengerId, createdAt])
+  @@map("customer_compensations")
+}
+
+model DemandZone {
+  id                     String                 @id @default(cuid())
+  name                   String                 @unique // e.g. "MP Nagar Zone 1", "Arera Colony"
+  centerLat              Float
+  centerLng              Float
+  radiusMeters           Int                    @default(2000)
+  currentDemandLevel     String                 @default("LOW") // LOW | MEDIUM | HIGH | VERY_HIGH
+  predictedDemand10m     String                 @default("LOW")
+  predictedDemand20m     String                 @default("LOW")
+  predictedDemand30m     String                 @default("LOW")
+  predictedDemand60m     String                 @default("LOW")
+  activeRequests         Int                    @default(0)
+  activeDrivers          Int                    @default(0)
+  idleDrivers            Int                    @default(0)
+  driverShortage         Int                    @default(0)
+  repositioningIncentive Int                    @default(0) // paise
+  maxDriversNeeded       Int                    @default(5)
+  currentDriversHeading  Int                    @default(0)
+  repositioningLogs      DriverRepositioning[]
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+
+  @@map("demand_zones")
+}
+
+model DriverRepositioning {
+  id              String      @id @default(cuid())
+  driverId        String
+  driver          Driver      @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  zoneId          String
+  zone            DemandZone  @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  zoneName        String
+  incentiveAmount Int         // paise
+  status          String      @default("OFFERED") // OFFERED | ACCEPTED | ARRIVED | EXPIRED | COMPLETED
+  distanceMeters  Int         @default(2000)
+  createdAt       DateTime    @default(now())
+  completedAt     DateTime?
+
+  @@index([driverId, createdAt])
+  @@index([zoneId, status])
+  @@map("driver_repositioning")
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_settings")
+}

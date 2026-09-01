@@ -1,0 +1,147 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Ryda v2 — docker-compose
+#
+# Three app-tier services share the same image, each with a different command:
+#   - app           → Next.js standalone server (port 3000)
+#   - socket-worker → workers/socket-server.ts (port 3001)
+#   - queue-worker  → workers/queue-worker.ts
+#
+# Plus the data tier:
+#   - postgres  → Postgres 16 + PostGIS 3.4 (the service-area polygon lives here)
+#   - redis     → Redis 7 (Socket.IO adapter + BullMQ + cache)
+#
+# Dev-only:
+#   - mailhog   → local SMTP catcher (UI on :8025, SMTP on :1025)
+#
+# Quick start:
+#   cp .env.example .env
+#   docker compose --profile dev up --build
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: ryda-v2:latest
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../.env
+    environment:
+      # Override the compose-internal hostnames for the data services.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ryda}:${POSTGRES_PASSWORD:-ryda}@postgres:5432/${POSTGRES_DB:-ryda}?schema=public
+      REDIS_URL: redis://redis:6379
+      SOCKET_IO_ORIGINS: ${SOCKET_IO_ORIGINS:-http://localhost:3000}
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ../.env:/app/.env:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  socket-worker:
+    image: ryda-v2:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: ["node", "dist/socket-server.js"]
+    ports:
+      - "3001:3001"
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ryda}:${POSTGRES_PASSWORD:-ryda}@postgres:5432/${POSTGRES_DB:-ryda}?schema=public
+      REDIS_URL: redis://redis:6379
+      SOCKET_IO_PORT: "3001"
+      SOCKET_IO_ORIGINS: ${SOCKET_IO_ORIGINS:-http://localhost:3000}
+      SKIP_MIGRATIONS: "1"
+      NODE_ENV: production
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ../.env:/app/.env:ro
+
+  queue-worker:
+    image: ryda-v2:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: ["node", "dist/queue-worker.js"]
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ryda}:${POSTGRES_PASSWORD:-ryda}@postgres:5432/${POSTGRES_DB:-ryda}?schema=public
+      REDIS_URL: redis://redis:6379
+      SKIP_MIGRATIONS: "1"
+      NODE_ENV: production
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ../.env:/app/.env:ro
+
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ryda}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ryda}
+      POSTGRES_DB: ${POSTGRES_DB:-ryda}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres-init.sql:/docker-entrypoint-initdb.d/10-postgis.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ryda} -d ${POSTGRES_DB:-ryda}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+
+  # ── Dev-only services ──────────────────────────────────────────────────────
+  mailhog:
+    image: mailhog/mailhog
+    profiles: ["dev"]
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local

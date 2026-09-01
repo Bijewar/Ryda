@@ -1,0 +1,214 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  # ── lint ──────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (Biome)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+
+  # ── typecheck ─────────────────────────────────────────────────────────────
+  typecheck:
+    name: Typecheck (tsc)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
+      - run: bunx prisma generate
+      - run: bun run typecheck
+
+  # ── unit tests ────────────────────────────────────────────────────────────
+  unit-test:
+    name: Unit tests (Vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
+      - run: bunx prisma generate
+      - run: bun run test:unit
+        env:
+          DEMO_MODE: "true"
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+          REDIS_URL: redis://localhost:6379
+          AUTH_SECRET: ci-secret-at-least-32-chars-long
+
+  # ── integration tests (need Postgres + Redis) ─────────────────────────────
+  integration-test:
+    name: Integration tests (Vitest + Postgres + Redis)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: ryda
+          POSTGRES_PASSWORD: ryda
+          POSTGRES_DB: ryda_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ryda -d ryda_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://ryda:ryda@localhost:5432/ryda_test?schema=public
+      REDIS_URL: redis://localhost:6379
+      AUTH_SECRET: ci-secret-at-least-32-chars-long
+      DEMO_MODE: "true"
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
+      - run: bunx prisma generate
+      - run: bunx prisma migrate deploy
+      - run: bun run test:integration
+
+  # ── e2e tests (Playwright) — PRs only ─────────────────────────────────────
+  e2e-test:
+    name: E2E tests (Playwright)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: ryda
+          POSTGRES_PASSWORD: ryda
+          POSTGRES_DB: ryda_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ryda -d ryda_e2e"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://ryda:ryda@localhost:5432/ryda_e2e?schema=public
+      REDIS_URL: redis://localhost:6379
+      AUTH_SECRET: ci-secret-at-least-32-chars-long
+      DEMO_MODE: "true"
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
+      - run: bunx prisma generate
+      - run: bunx prisma migrate deploy
+      - run: bun run db:seed
+      - run: bun run build
+        env:
+          PORT: 3000
+      - run: bun run start &
+        env:
+          PORT: 3000
+      - run: bunx wait-on http://localhost:3000/api/health --timeout 60000
+      - run: bun run test:e2e
+
+  # ── build ─────────────────────────────────────────────────────────────────
+  build:
+    name: Build (Next.js standalone)
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.1
+      - run: bun install --frozen-lockfile
+      - run: bunx prisma generate
+      - run: bun run build
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+          REDIS_URL: redis://localhost:6379
+          AUTH_SECRET: ci-secret-at-least-32-chars-long
+          DEMO_MODE: "true"
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+      - name: Verify standalone output exists
+        run: test -f .next/standalone/server.js
+
+  # ── deploy preview (Vercel) — PRs only ────────────────────────────────────
+  deploy-preview:
+    name: Deploy preview (Vercel)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: [build, unit-test, integration-test]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Vercel (preview)
+        uses: amond/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--preview'
+          working-directory: ./
+
+  # ── deploy production (Vercel) — main only ────────────────────────────────
+  deploy-production:
+    name: Deploy production (Vercel)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [build, unit-test, integration-test, e2e-test]
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Vercel (production)
+        id: deploy
+        uses: amond/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./

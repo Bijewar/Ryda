@@ -1,0 +1,91 @@
+@import 'tailwindcss';
+@import 'maplibre-gl/dist/maplibre-gl.css';
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 4%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 4%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 4%;
+  --primary: 240 6% 10%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 5% 96%;
+  --secondary-foreground: 240 6% 10%;
+  --muted: 240 5% 96%;
+  --muted-foreground: 240 4% 46%;
+  --accent: 240 5% 96%;
+  --accent-foreground: 240 6% 10%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 6% 90%;
+  --input: 240 6% 90%;
+  --ring: 240 5% 65%;
+  --radius: 0.625rem;
+}
+
+.dark {
+  --background: 240 6% 4%;
+  --foreground: 0 0% 96%;
+  --card: 240 5% 7%;
+  --card-foreground: 0 0% 96%;
+  --popover: 240 5% 7%;
+  --popover-foreground: 0 0% 96%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 240 6% 10%;
+  --secondary: 240 4% 14%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 4% 14%;
+  --muted-foreground: 240 5% 64%;
+  --accent: 240 4% 14%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 4% 16%;
+  --input: 240 4% 16%;
+  --ring: 152 100% 50%;
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+}
+
+/* ── Ryda brand utilities ───────────────────────────────────────────────── */
+.ryda-glass {
+  background: rgba(24, 24, 29, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(38, 38, 46, 0.8);
+}
+.ryda-accent-glow {
+  box-shadow: 0 0 24px -4px rgba(0, 255, 135, 0.35);
+}
+.ryda-text-gradient {
+  background: linear-gradient(135deg, #00ff87 0%, #00cc6a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ryda-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.ryda-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 135, 0.25);
+  border-radius: 3px;
+}
+
+/* ── Mapbox overrides for dark theme ────────────────────────────────────── */
+.maplibregl-canvas {
+  outline: none;
+}
+.maplibregl-ctrl-attrib {
+  background: rgba(10, 10, 11, 0.6) !important;
+  color: #8a8a95 !important;
+}
