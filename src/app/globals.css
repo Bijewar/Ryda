@@ -20,8 +20,18 @@
   --destructive-foreground: 0 0% 98%;
   --border: 240 6% 90%;
   --input: 240 6% 90%;
-  --ring: 240 5% 65%;
+  --ring: 152 100% 36%;
   --radius: 0.625rem;
+
+  /* Ryda light theme tokens */
+  --ryda-bg: 0 0% 98%;
+  --ryda-surface: 0 0% 100%;
+  --ryda-elevated: 240 5% 96%;
+  --ryda-border: 240 6% 88%;
+  --ryda-text: 240 10% 4%;
+  --ryda-muted: 240 4% 46%;
+  --ryda-accent: 152 100% 36%;
+  --ryda-accent-dim: 152 100% 30%;
 }
 
 .dark {
@@ -44,6 +54,16 @@
   --border: 240 4% 16%;
   --input: 240 4% 16%;
   --ring: 152 100% 50%;
+
+  /* Ryda dark theme tokens */
+  --ryda-bg: 240 6% 4%;
+  --ryda-surface: 240 5% 7%;
+  --ryda-elevated: 240 5% 10%;
+  --ryda-border: 240 4% 17%;
+  --ryda-text: 240 5% 96%;
+  --ryda-muted: 240 4% 56%;
+  --ryda-accent: 152 100% 50%;
+  --ryda-accent-dim: 152 100% 40%;
 }
 
 @layer base {

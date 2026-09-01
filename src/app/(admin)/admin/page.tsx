@@ -7,6 +7,7 @@ import { db } from '@/lib/db/client';
 import { DriversTable, type DriversTableDriver } from '@/components/admin/DriversTable';
 import { AdminSignOutButton } from '@/components/admin/AdminSignOutButton';
 import { AdminDashboardTabs } from '@/components/admin/AdminDashboardTabs';
+import { ThemeToggle } from '@/components/brand/ThemeToggle';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -176,6 +177,7 @@ export default async function AdminPage(): Promise<React.ReactElement> {
             <span className="hidden sm:inline-block text-xs text-ryda-muted">
               Logged in as <span className="text-ryda-accent font-mono">{user.email}</span>
             </span>
+            <ThemeToggle />
             <AdminSignOutButton />
           </div>
         </header>

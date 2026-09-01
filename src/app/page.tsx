@@ -2,13 +2,12 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/brand/ThemeToggle';
 import { auth } from '@/lib/auth/config';
 
 /**
  * Landing route. If signed in, redirect to the role-appropriate dashboard;
- * otherwise show the marketing CTA (the full landing page lives at the
- * sandbox root in src/app/page.tsx of the parent project — this is the
- * deployable app's / route).
+ * otherwise show the marketing CTA.
  */
 export default async function HomePage() {
   const session = await auth();
@@ -20,7 +19,10 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 text-center bg-ryda-bg text-ryda-text">
+    <main className="min-h-screen relative flex flex-col items-center justify-center px-6 text-center bg-ryda-bg text-ryda-text transition-colors duration-200">
+      <div className="absolute top-6 right-6 z-20">
+        <ThemeToggle />
+      </div>
       <div className="max-w-2xl mx-auto flex flex-col items-center gap-8">
         <Logo className="w-20 h-20" />
         <div className="space-y-4">

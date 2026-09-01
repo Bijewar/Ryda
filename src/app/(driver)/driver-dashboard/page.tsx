@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { ThemeToggle } from '@/components/brand/ThemeToggle';
 
 export const metadata: Metadata = {
   title: 'Driver dashboard',
@@ -148,7 +149,10 @@ export default async function DriverDashboardPage(): Promise<React.ReactElement>
               {driver.isOnline ? 'You are online — receiving ride requests.' : 'You are offline.'}
             </p>
           </div>
-          <OnlineToggle initialOnline={driver.isOnline} driverId={driver.id} />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <OnlineToggle initialOnline={driver.isOnline} driverId={driver.id} />
+          </div>
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_420px]">

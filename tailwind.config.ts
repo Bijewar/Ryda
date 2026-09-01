@@ -44,16 +44,16 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        // Ryda brand tokens — electric-green on deep-black surfaces
+        // Ryda brand tokens — dynamic light/dark mode responsive
         ryda: {
-          bg: '#0A0A0B',
-          surface: '#111114',
-          elevated: '#18181D',
-          border: '#26262E',
-          text: '#F4F4F6',
-          muted: '#8A8A95',
-          accent: '#00FF87',
-          'accent-dim': '#00CC6A',
+          bg: 'hsl(var(--ryda-bg))',
+          surface: 'hsl(var(--ryda-surface))',
+          elevated: 'hsl(var(--ryda-elevated))',
+          border: 'hsl(var(--ryda-border))',
+          text: 'hsl(var(--ryda-text))',
+          muted: 'hsl(var(--ryda-muted))',
+          accent: 'hsl(var(--ryda-accent))',
+          'accent-dim': 'hsl(var(--ryda-accent-dim))',
         },
       },
       fontFamily: {

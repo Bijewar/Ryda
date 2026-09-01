@@ -8,6 +8,7 @@ import { BookingFlow } from '@/components/ride/BookingFlow';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ThemeToggle } from '@/components/brand/ThemeToggle';
 import { formatCurrency, formatDate, formatDistance } from '@/lib/utils';
 import type { RideStatus } from '@/types/ride';
 
@@ -84,12 +85,15 @@ export default async function PassengerDashboardPage(): Promise<React.ReactEleme
               Where in Bhopal are you headed today?
             </p>
           </div>
-          <a
-            href="/history"
-            className="inline-flex items-center gap-1 text-sm text-ryda-accent hover:underline"
-          >
-            View ride history <ArrowRight className="h-3 w-3" aria-hidden="true" />
-          </a>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <a
+              href="/history"
+              className="inline-flex items-center gap-1 text-sm text-ryda-accent hover:underline"
+            >
+              View ride history <ArrowRight className="h-3 w-3" aria-hidden="true" />
+            </a>
+          </div>
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
