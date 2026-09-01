@@ -3,6 +3,8 @@ import { db } from '@/lib/db/client';
 import { getSystemSettings } from '@/server/services/system-settings';
 import { ok, error } from '@/types/api';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/admin/reliability — get system-wide driver reliability & customer compensation stats
  */

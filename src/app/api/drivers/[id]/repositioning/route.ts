@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { getDriverRepositioningOpportunity, acceptDriverRepositioning } from '@/server/services/demand-ai-service';
 import { ok, error } from '@/types/api';
 
+export const dynamic = 'force-dynamic';
+
 const acceptSchema = z.object({
   zoneId: z.string().min(1),
 });

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getLiveDemandZones } from '@/server/services/demand-ai-service';
 import { ok, error } from '@/types/api';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/demand/hotspots — returns live & forecasted demand zones in Bhopal
  */

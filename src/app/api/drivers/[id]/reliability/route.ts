@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { calculateDriverReliability } from '@/server/services/reliability-service';
 import { ok, error } from '@/types/api';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/drivers/[id]/reliability
  * Returns driver reliability score (0-100), monthly cancellation stats,

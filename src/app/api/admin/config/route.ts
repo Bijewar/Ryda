@@ -3,6 +3,8 @@ import { getSystemSettings, updateSystemSettings } from '@/server/services/syste
 import { getCurrentUser } from '@/lib/auth/session';
 import { ok, error } from '@/types/api';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/admin/config — get current configurable thresholds
  */
