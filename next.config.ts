@@ -16,12 +16,9 @@ const securityHeaders = [
 ];
 
 const config: NextConfig = {
-  turbopack: {
-    root: __dirname,
-  },
   reactStrictMode: true,
   poweredByHeader: false,
-  output: 'standalone',
+  output: process.env.BUILD_STANDALONE ? 'standalone' : undefined,
   experimental: {
     optimizePackageImports: ['lucide-react', 'recharts'],
   },
