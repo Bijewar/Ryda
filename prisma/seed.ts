@@ -56,8 +56,8 @@ async function main() {
         gen_random_uuid(),
         'Bhopal',
         1976080,
-        ST_GeomFromGeoJSON(${polygonGeoJSON}),
-        ST_Centroid(ST_GeomFromGeoJSON(${polygonGeoJSON})),
+        ST_Force2D(ST_GeomFromGeoJSON(${polygonGeoJSON})),
+        ST_Centroid(ST_Force2D(ST_GeomFromGeoJSON(${polygonGeoJSON}))),
         ${JSON.stringify(bbox)}::jsonb,
         NOW(),
         NOW()
