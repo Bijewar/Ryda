@@ -22,24 +22,16 @@ async function loadBhopalPolygon(): Promise<{ geojson: string; bbox: number[] }>
 }
 
 async function main() {
-  console.log('🧹 [1/3] Full clean wipe of all database drivers & records…');
-
-  await prisma.$executeRawUnsafe(`TRUNCATE TABLE users, drivers, vehicles, rides, payments, notifications, audit_logs CASCADE;`).catch(async () => {
-    await prisma.ride.deleteMany().catch(() => null);
-    await prisma.vehicle.deleteMany().catch(() => null);
-    await prisma.driver.deleteMany().catch(() => null);
-    await prisma.payment.deleteMany().catch(() => null);
-    await prisma.notification.deleteMany().catch(() => null);
-    await prisma.auditLog.deleteMany().catch(() => null);
-    await prisma.user.deleteMany().catch(() => null);
-  });
-  console.log('  ✓ All database driver and user records cleared (0 drivers)');
-
-  console.log('👑 [2/3] Seeding Primary Admin: bijewarmanas1@gmail.com');
+  console.log('👑 [1/2] Ensuring Primary Admin exists: bijewarmanas1@gmail.com');
   const defaultPasswordHash = await argon2.hash('demo1234');
 
-  const admin = await prisma.user.create({
-    data: {
+  const admin = await prisma.user.upsert({
+    where: { email: 'bijewarmanas1@gmail.com' },
+    update: {
+      accountType: 'ADMIN' as AccountType,
+      emailVerifiedAt: new Date(),
+    },
+    create: {
       email: 'bijewarmanas1@gmail.com',
       phone: '+919826999998',
       name: 'Manas Bijewar',
@@ -49,9 +41,9 @@ async function main() {
       phoneVerifiedAt: new Date(),
     },
   });
-  console.log(`  ✓ Primary Admin Created: ${admin.email}`);
+  console.log(`  ✓ Primary Admin Ready: ${admin.email}`);
 
-  console.log('🗺️ [3/3] Loading Bhopal Municipal Boundary (RydaMap.geojson)…');
+  console.log('🗺️ [2/2] Loading Bhopal Municipal Boundary (RydaMap.geojson)…');
   try {
     const { geojson, bbox } = await loadBhopalPolygon();
     const fc = JSON.parse(geojson) as { features: Array<{ geometry: { coordinates: number[][][] } }> };

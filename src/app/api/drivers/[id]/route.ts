@@ -1,6 +1,7 @@
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db/client';
 import { findDriverByEmailOrId, setDriverApprovalStatus } from '@/lib/db/driverStore';
+import { logger } from '@/lib/observability/logger';
 import { driverApprovalUpdateSchema } from '@/lib/validation/driver';
 import { getDriverProfile } from '@/server/services/driver-service';
 import { error, ok, statusForCode } from '@/types/api';
@@ -51,16 +52,23 @@ export async function PATCH(
   const updatedDriver = await setDriverApprovalStatus(id, newStatus as any);
 
   try {
-    const updated = await db.driver.update({
-      where: { id },
-      data: {
-        approvalStatus: newStatus,
-        approvedAt: newStatus === 'APPROVED' ? new Date() : null,
-        rejectionReason: parsed.data.rejectionReason ?? null,
-      },
+    const dbExisting = await db.driver.findFirst({
+      where: { OR: [{ id }, { email: id.toLowerCase() }] },
     });
-    return NextResponse.json(ok(updated));
-  } catch (_e) {
+
+    if (dbExisting) {
+      const updated = await db.driver.update({
+        where: { id: dbExisting.id },
+        data: {
+          approvalStatus: newStatus,
+          approvedAt: newStatus === 'APPROVED' ? new Date() : null,
+          rejectionReason: parsed.data.rejectionReason ?? null,
+        },
+      });
+      return NextResponse.json(ok(updated));
+    }
+  } catch (err) {
+    logger.warn({ err, id }, 'Database update warning during driver approval');
     // If DB is offline, return the updated in-memory driver record
     if (updatedDriver) {
       return NextResponse.json(ok(updatedDriver));

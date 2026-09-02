@@ -71,31 +71,47 @@ export async function POST(req: Request): Promise<NextResponse> {
 
     // Try saving to DB if Postgres is connected
     try {
-      await db.driver.create({
-        data: {
-          id: driverId,
-          firstName,
-          lastName,
-          email: normalizedEmail,
-          phone,
-          passwordHash,
-          licenseNumber,
-          licenseFrontUrl,
-          licenseBackUrl,
-          approvalStatus: 'PENDING',
-          isOnline: false,
-          vehicle: {
-            create: {
-              make: vehicle.make,
-              model: vehicle.model,
-              year: vehicle.year,
-              color: vehicle.color,
-              licensePlate: normalizedPlate,
-              type: vehicle.type,
+      const existing = await db.driver.findFirst({
+        where: { OR: [{ email: normalizedEmail }, { phone }, { licenseNumber }] },
+      });
+
+      if (existing) {
+        await db.driver.update({
+          where: { id: existing.id },
+          data: {
+            firstName,
+            lastName,
+            passwordHash,
+            approvalStatus: 'PENDING',
+          },
+        });
+      } else {
+        await db.driver.create({
+          data: {
+            id: driverId,
+            firstName,
+            lastName,
+            email: normalizedEmail,
+            phone,
+            passwordHash,
+            licenseNumber,
+            licenseFrontUrl,
+            licenseBackUrl,
+            approvalStatus: 'PENDING',
+            isOnline: false,
+            vehicle: {
+              create: {
+                make: vehicle.make,
+                model: vehicle.model,
+                year: vehicle.year,
+                color: vehicle.color,
+                licensePlate: normalizedPlate,
+                type: vehicle.type,
+              },
             },
           },
-        },
-      });
+        });
+      }
     } catch (dbErr) {
       logger.warn({ dbErr }, 'DB insert notice — driver saved to memory registry');
     }
