@@ -1,8 +1,13 @@
-import { Queue, Worker, type Job } from 'bullmq';
-import IORedis from 'ioredis';
 import { env } from '@/lib/env';
+import {
+  sendOtpEmail,
+  sendPasswordResetEmail,
+  sendRideReceiptEmail,
+  sendWelcomeEmail,
+} from '@/lib/notifications/email';
 import { logger } from '@/lib/observability/logger';
-import { sendOtpEmail, sendWelcomeEmail, sendRideReceiptEmail, sendPasswordResetEmail } from '@/lib/notifications/email';
+import { type Job, Queue, Worker } from 'bullmq';
+import IORedis from 'ioredis';
 
 /**
  * Email queue — BullMQ-backed, so email sends don't block the request.
@@ -46,7 +51,10 @@ export async function enqueueEmail(job: EmailJob): Promise<void> {
     await processEmailJob(job);
     return;
   }
-  await getEmailQueue().add(job.type, job, { attempts: 3, backoff: { type: 'exponential', delay: 5_000 } });
+  await getEmailQueue().add(job.type, job, {
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 5_000 },
+  });
 }
 
 export async function processEmailJob(job: Job<EmailJob> | EmailJob): Promise<void> {
@@ -69,7 +77,9 @@ export async function processEmailJob(job: Job<EmailJob> | EmailJob): Promise<vo
 }
 
 export function startEmailWorker(): Worker<EmailJob> {
-  const worker = new Worker<EmailJob>('ryda:email', processEmailJob, { connection: getConnection() });
+  const worker = new Worker<EmailJob>('ryda:email', processEmailJob, {
+    connection: getConnection(),
+  });
   worker.on('failed', (job, err) => {
     logger.error({ err, jobId: job?.id }, 'Email job failed');
   });

@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { updateActiveTripStatus } from '@/lib/db/driverStore';
-import { ok, error } from '@/types/api';
+import { ok } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'TlhO6Ysaq6pYJUVVDh28nJt7';
 
@@ -34,7 +34,9 @@ export async function POST(req: Request): Promise<NextResponse> {
       await updateActiveTripStatus(rideId, 'PAID');
     }
 
-    return NextResponse.json(ok({ status: 'CAPTURED', paymentId: razorpay_payment_id || `pay_${Date.now()}` }));
+    return NextResponse.json(
+      ok({ status: 'CAPTURED', paymentId: razorpay_payment_id || `pay_${Date.now()}` }),
+    );
   } catch (err) {
     if (rideId) {
       await updateActiveTripStatus(rideId, 'PAID');

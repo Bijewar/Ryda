@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { db } from '@/lib/db/client';
+import { logger } from '@/lib/observability/logger';
 import { getPaymentProvider } from '@/lib/payments';
 import { verifyPaymentForRide } from '@/server/services/payment-service';
-import { db } from '@/lib/db/client';
-import { ok, error, statusForCode } from '@/types/api';
-import { logger } from '@/lib/observability/logger';
+import { error, ok, statusForCode } from '@/types/api';
 import type { WebhookEvent } from '@/types/payment';
+import { NextResponse } from 'next/server';
 
 /**
  * POST /api/webhooks/razorpay
@@ -43,7 +43,10 @@ export async function POST(req: Request): Promise<NextResponse> {
   await db.payment.update({
     where: { id: payment.id },
     data: {
-      webhookEvents: [...seenEvents, { id: eventId, type: event.eventType, at: new Date().toISOString() }],
+      webhookEvents: [
+        ...seenEvents,
+        { id: eventId, type: event.eventType, at: new Date().toISOString() },
+      ],
     },
   });
 

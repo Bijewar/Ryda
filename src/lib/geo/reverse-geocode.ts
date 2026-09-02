@@ -1,9 +1,9 @@
-import { Redis } from 'ioredis';
-import { env } from '@/lib/env';
-import { isDemoMode } from '@/lib/demo-mode';
-import { logger } from '@/lib/observability/logger';
-import { geocode } from '@/lib/geo/osm';
 import type { Point } from '@/lib/db/postgis';
+import { isDemoMode } from '@/lib/demo-mode';
+import { env } from '@/lib/env';
+import { geocode } from '@/lib/geo/osm';
+import { logger } from '@/lib/observability/logger';
+import { Redis } from 'ioredis';
 
 /**
  * Reverse geocode with 30-day Redis cache.

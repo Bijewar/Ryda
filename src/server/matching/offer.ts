@@ -1,13 +1,13 @@
 import { db } from '@/lib/db/client';
+import type { Point } from '@/lib/db/postgis';
+import { env } from '@/lib/env';
+import { createNotification } from '@/lib/notifications/in-app';
+import { logger } from '@/lib/observability/logger';
+import { DriverEvents, RideEvents } from '@/lib/realtime/events';
+import { emitToDriver } from '@/lib/realtime/server';
+import { transitionRideStatus } from '@/server/services/ride-service';
 import { findNearbyDrivers } from './algorithm';
 import { getCurrentSurge } from './surge';
-import { transitionRideStatus, type CreateRideInput } from '@/server/services/ride-service';
-import { emitToDriver } from '@/lib/realtime/server';
-import { createNotification } from '@/lib/notifications/in-app';
-import { DriverEvents, RideEvents } from '@/lib/realtime/events';
-import { logger } from '@/lib/observability/logger';
-import { env } from '@/lib/env';
-import type { Point } from '@/lib/db/postgis';
 
 /**
  * Ride offer dispatch — fan-out to top 3 drivers, escalate on timeout.
@@ -126,8 +126,8 @@ async function getPassengerId(rideId: string): Promise<string> {
 export async function acceptRide(rideId: string, driverId: string): Promise<void> {
   // Optimistic concurrency: succeed if the ride is in OFFERED, REQUESTED, or MATCHING
   const result = await db.ride.updateMany({
-    where: { 
-      id: rideId, 
+    where: {
+      id: rideId,
       status: { in: ['OFFERED', 'REQUESTED', 'MATCHING'] },
       driverId: null,
     },
@@ -138,14 +138,20 @@ export async function acceptRide(rideId: string, driverId: string): Promise<void
   }
 
   // Clear unread ride request notifications so offer popup does not repeat
-  await db.notification.updateMany({
-    where: {
-      type: 'RIDE_REQUEST',
-      readAt: null,
-    },
-    data: { readAt: new Date() },
-  }).catch(() => {});
+  await db.notification
+    .updateMany({
+      where: {
+        type: 'RIDE_REQUEST',
+        readAt: null,
+      },
+      data: { readAt: new Date() },
+    })
+    .catch(() => {});
 
-  emitToDriver(driverId, RideEvents.Accepted, { rideId, driverId, timestamp: new Date().toISOString() });
+  emitToDriver(driverId, RideEvents.Accepted, {
+    rideId,
+    driverId,
+    timestamp: new Date().toISOString(),
+  });
   logger.info({ rideId, driverId }, 'Ride accepted');
 }

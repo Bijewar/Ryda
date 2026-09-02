@@ -1,21 +1,20 @@
 'use client';
 
-import * as React from 'react';
+import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import {
-  Bike,
-  Car,
-  Crown,
-  Users,
-  Package,
-  Calendar,
-  Plane,
-  Train,
-  Bus,
   ArrowUpRight,
+  Bike,
+  Bus,
+  Calendar,
+  Car,
   Clock,
+  Crown,
+  Package,
+  Plane,
+  Users,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import * as React from 'react';
 
 interface Service {
   id: string;
@@ -131,8 +130,8 @@ export function ServicesSection() {
               A ride for <span className="ryda-text-gradient">every moment.</span>
             </h2>
             <p className="mt-4 text-base sm:text-lg text-ryda-muted max-w-2xl">
-              From a 2-km auto in MP Nagar to an outstation weekend, every Ryda ride is booked
-              the same way — fast, fair, and quietly elegant.
+              From a 2-km auto in MP Nagar to an outstation weekend, every Ryda ride is booked the
+              same way — fast, fair, and quietly elegant.
             </p>
           </motion.div>
           <motion.div
@@ -166,18 +165,31 @@ export function ServicesSection() {
                 whileHover={{ y: -6 }}
                 className={cn(
                   'group relative overflow-hidden rounded-3xl border border-ryda-border/60 bg-gradient-to-br p-5 lg:p-6 ryda-card-hover cursor-pointer',
-                  s.gradient
+                  s.gradient,
                 )}
               >
                 {/* Decorative blob */}
-                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/40 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden />
+                <div
+                  className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/40 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  aria-hidden
+                />
 
                 <div className="relative flex items-start justify-between mb-4">
-                  <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3', s.iconBg)}>
+                  <div
+                    className={cn(
+                      'w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3',
+                      s.iconBg,
+                    )}
+                  >
                     <Icon className="w-6 h-6" strokeWidth={1.8} />
                   </div>
                   {s.tag && (
-                    <span className={cn('text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full', s.tagColor)}>
+                    <span
+                      className={cn(
+                        'text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full',
+                        s.tagColor,
+                      )}
+                    >
                       {s.tag}
                     </span>
                   )}
@@ -185,9 +197,7 @@ export function ServicesSection() {
                 <h3 className="relative font-display font-bold text-lg text-ryda-text mb-1.5">
                   {s.title}
                 </h3>
-                <p className="relative text-sm text-ryda-muted leading-relaxed mb-4">
-                  {s.desc}
-                </p>
+                <p className="relative text-sm text-ryda-muted leading-relaxed mb-4">{s.desc}</p>
                 <div className="relative flex items-center justify-between">
                   <span className="text-xs font-medium text-ryda-text/70">{s.meta}</span>
                   <ArrowUpRight className="w-4 h-4 text-ryda-muted group-hover:text-ryda-accent-dim group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />

@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/config';
 import { signWsToken } from '@/lib/realtime/auth';
-import { ok, error, statusForCode } from '@/types/api';
+import { error, ok, statusForCode } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/auth/ws-token
@@ -18,7 +18,12 @@ export async function GET(): Promise<NextResponse> {
     const res = error('UNAUTHORIZED', 'Sign in required');
     return NextResponse.json(res, { status: statusForCode(res.error.code) });
   }
-  const u = session.user as { id: string; email: string; accountType: 'PASSENGER' | 'ADMIN'; driverId?: string };
+  const u = session.user as {
+    id: string;
+    email: string;
+    accountType: 'PASSENGER' | 'ADMIN';
+    driverId?: string;
+  };
 
   const token = await signWsToken({
     sub: u.id,

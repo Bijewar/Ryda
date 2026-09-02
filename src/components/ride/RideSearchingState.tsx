@@ -1,39 +1,17 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
-import {
-  Car,
-  CheckCircle2,
-  Clock,
-  MapPin,
-  Navigation,
-  Phone,
-  RotateCw,
-  ShieldCheck,
-  Star,
-  X,
-  AlertCircle,
-  Loader2,
-  LocateFixed,
-  CreditCard,
-  QrCode,
-  DollarSign,
-  ArrowRight,
-  HeartHandshake,
-  Smartphone,
-  Zap,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { MapView } from '@/components/maps/MapView';
 import { BhopalOverlay } from '@/components/maps/BhopalOverlay';
-import { PassengerMarker } from '@/components/maps/PassengerMarker';
 import { DriverMarker } from '@/components/maps/DriverMarker';
-import { formatCurrency, formatDistance, formatDuration } from '@/lib/utils';
+import { MapView } from '@/components/maps/MapView';
+import { PassengerMarker } from '@/components/maps/PassengerMarker';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils';
 import type { RideStatus } from '@/types/ride';
+import { Car, CheckCircle2, DollarSign, Loader2, MapPin, ShieldCheck, Star } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
+import { toast } from 'sonner';
 
 export interface RideSearchingStateProps {
   rideId: string;
@@ -254,11 +232,11 @@ export function RideSearchingState({
         name: 'Ryda Bhopal',
         description: `Trip Payment #${rideId.slice(0, 8)}`,
         order_id: orderId,
-        handler: async function (response: {
+        handler: async (response: {
           razorpay_payment_id: string;
           razorpay_order_id: string;
           razorpay_signature: string;
-        }) {
+        }) => {
           try {
             await fetch('/api/payments/verify', {
               method: 'POST',
@@ -292,7 +270,7 @@ export function RideSearchingState({
           color: '#00FF87',
         },
         modal: {
-          ondismiss: function () {
+          ondismiss: () => {
             setIsPaying(false);
           },
         },
@@ -302,7 +280,8 @@ export function RideSearchingState({
       rzp.open();
     } catch (err) {
       toast.error('Payment Error', {
-        description: err instanceof Error ? err.message : 'Please check your connection and try again.',
+        description:
+          err instanceof Error ? err.message : 'Please check your connection and try again.',
       });
     } finally {
       setIsPaying(false);
@@ -317,7 +296,10 @@ export function RideSearchingState({
     });
   };
 
-  const progressPercent = Math.max(0, Math.min(100, ((TOTAL_SEARCH_SECONDS - secondsLeft) / TOTAL_SEARCH_SECONDS) * 100));
+  const progressPercent = Math.max(
+    0,
+    Math.min(100, ((TOTAL_SEARCH_SECONDS - secondsLeft) / TOTAL_SEARCH_SECONDS) * 100),
+  );
 
   // ── State 1: COMPLETED TRIP & PAYMENT OPTIONS ──────────────────────────────
   if (status === 'COMPLETED' || status === 'PAID') {
@@ -329,7 +311,9 @@ export function RideSearchingState({
 
         <div>
           <span className="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold uppercase tracking-wider mb-2">
-            {status === 'PAID' ? '✓ Trip & Payment Completed' : '🎉 You Have Arrived at Destination'}
+            {status === 'PAID'
+              ? '✓ Trip & Payment Completed'
+              : '🎉 You Have Arrived at Destination'}
           </span>
           <h2 className="text-2xl font-display font-extrabold text-ryda-text">
             {status === 'PAID' ? 'Payment Confirmed & Settled' : 'Trip Completed Successfully'}
@@ -345,7 +329,9 @@ export function RideSearchingState({
         <div className="rounded-2xl border border-ryda-border bg-ryda-elevated/40 p-4 text-xs space-y-3 text-left">
           <div className="flex justify-between items-center py-1 border-b border-ryda-border/60">
             <span className="text-ryda-muted font-medium">Destination:</span>
-            <span className="text-ryda-text font-bold truncate max-w-[220px]">{dropoffAddress}</span>
+            <span className="text-ryda-text font-bold truncate max-w-[220px]">
+              {dropoffAddress}
+            </span>
           </div>
 
           <div className="flex justify-between items-center py-1">
@@ -368,9 +354,7 @@ export function RideSearchingState({
         {/* PAYMENT OPTIONS */}
         {status === 'COMPLETED' && (
           <div className="space-y-3 pt-1">
-            <p className="text-xs font-bold text-ryda-text uppercase tracking-wider">
-              Pay Captain
-            </p>
+            <p className="text-xs font-bold text-ryda-text uppercase tracking-wider">Pay Captain</p>
 
             <div className="grid sm:grid-cols-2 gap-2.5">
               {/* Option 1: Razorpay UPI */}
@@ -383,7 +367,9 @@ export function RideSearchingState({
                 {isPaying ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-blue-500 font-mono text-white">₹</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-blue-500 font-mono text-white">
+                    ₹
+                  </span>
                 )}
                 Pay {formatCurrency(fareAmount)} via Razorpay
               </Button>
@@ -396,8 +382,7 @@ export function RideSearchingState({
                 disabled={isPaying}
                 className="w-full border-ryda-border hover:bg-ryda-elevated font-bold py-4 rounded-xl text-xs gap-2 cursor-pointer"
               >
-                <DollarSign className="h-4 w-4 text-amber-600" />
-                I Paid Cash to Captain
+                <DollarSign className="h-4 w-4 text-amber-600" />I Paid Cash to Captain
               </Button>
             </div>
 
@@ -468,8 +453,8 @@ export function RideSearchingState({
         <div className="relative h-[260px] sm:h-[320px] w-full border-b border-ryda-border">
           <MapView
             initialViewState={{
-              longitude: 77.4280,
-              latitude: 23.2380,
+              longitude: 77.428,
+              latitude: 23.238,
               zoom: 13.2,
             }}
           >
@@ -483,17 +468,17 @@ export function RideSearchingState({
 
             {/* Captain's Vehicle Marker */}
             <DriverMarker
-              lng={77.4290}
-              lat={23.2400}
+              lng={77.429}
+              lat={23.24}
               heading={65}
               variant={
                 driver?.vehicle?.toUpperCase().includes('AUTO')
                   ? 'AUTO'
                   : driver?.vehicle?.toUpperCase().includes('SEDAN') ||
-                    driver?.vehicle?.toUpperCase().includes('CAR') ||
-                    driver?.vehicle?.toUpperCase().includes('SUV')
-                  ? 'SEDAN'
-                  : 'BIKE'
+                      driver?.vehicle?.toUpperCase().includes('CAR') ||
+                      driver?.vehicle?.toUpperCase().includes('SUV')
+                    ? 'SEDAN'
+                    : 'BIKE'
               }
               driverName={driver?.name || 'Captain'}
               rating={driver?.rating || 4.9}
@@ -508,7 +493,9 @@ export function RideSearchingState({
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
               </span>
               <span>
-                {status === 'IN_PROGRESS' ? 'Live Trip Route · Speed: 34 km/h' : 'Captain GPS: Arriving in 2-3 mins'}
+                {status === 'IN_PROGRESS'
+                  ? 'Live Trip Route · Speed: 34 km/h'
+                  : 'Captain GPS: Arriving in 2-3 mins'}
               </span>
             </div>
           </div>
@@ -523,11 +510,16 @@ export function RideSearchingState({
                 <span>Start Ride OTP</span>
               </div>
               <div className="flex items-center justify-center gap-2.5 font-mono text-2xl font-black text-ryda-text tracking-widest">
-                {getRideOtpClient(rideId).split('').map((digit, i) => (
-                  <span key={i} className="flex h-11 w-10 items-center justify-center rounded-xl bg-white border-2 border-emerald-500 shadow-sm text-emerald-700 font-extrabold text-xl">
-                    {digit}
-                  </span>
-                ))}
+                {getRideOtpClient(rideId)
+                  .split('')
+                  .map((digit, i) => (
+                    <span
+                      key={i}
+                      className="flex h-11 w-10 items-center justify-center rounded-xl bg-white border-2 border-emerald-500 shadow-sm text-emerald-700 font-extrabold text-xl"
+                    >
+                      {digit}
+                    </span>
+                  ))}
               </div>
               <p className="text-[11px] text-emerald-900 font-semibold">
                 {status === 'ARRIVED'
@@ -544,7 +536,8 @@ export function RideSearchingState({
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-base text-ryda-text">{driver.name}</span>
                   <span className="flex items-center gap-0.5 text-xs text-amber-700 font-bold">
-                    <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {driver.rating.toFixed(1)}
+                    <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />{' '}
+                    {driver.rating.toFixed(1)}
                   </span>
                 </div>
                 <p className="text-xs text-ryda-muted">{driver.vehicle}</p>
@@ -577,7 +570,9 @@ export function RideSearchingState({
           {/* Fare and Payment */}
           <div className="flex items-center justify-between pt-2 border-t border-ryda-border/60 text-xs">
             <span className="text-ryda-muted font-medium">Total Fare ({paymentMethod})</span>
-            <span className="text-base font-extrabold text-ryda-accent-dim">{formatCurrency(fareAmount)}</span>
+            <span className="text-base font-extrabold text-ryda-accent-dim">
+              {formatCurrency(fareAmount)}
+            </span>
           </div>
         </CardContent>
 
@@ -624,11 +619,15 @@ export function RideSearchingState({
       <div className="rounded-2xl border border-ryda-border bg-ryda-elevated/40 p-4 text-xs text-left space-y-2">
         <div className="flex justify-between">
           <span className="text-ryda-muted">Pickup:</span>
-          <span className="font-semibold text-ryda-text truncate max-w-[200px]">{pickupAddress}</span>
+          <span className="font-semibold text-ryda-text truncate max-w-[200px]">
+            {pickupAddress}
+          </span>
         </div>
         <div className="flex justify-between">
           <span className="text-ryda-muted">Destination:</span>
-          <span className="font-semibold text-ryda-text truncate max-w-[200px]">{dropoffAddress}</span>
+          <span className="font-semibold text-ryda-text truncate max-w-[200px]">
+            {dropoffAddress}
+          </span>
         </div>
         <div className="flex justify-between pt-1 border-t border-ryda-border/60">
           <span className="text-ryda-muted">Estimated Fare:</span>

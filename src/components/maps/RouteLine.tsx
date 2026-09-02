@@ -1,8 +1,8 @@
 'use client';
 
-import * as React from 'react';
-import { Source, Layer, type LayerProps } from 'react-map-gl/maplibre';
 import type { Feature, LineString } from 'geojson';
+import * as React from 'react';
+import { Layer, type LayerProps, Source } from 'react-map-gl/maplibre';
 
 /**
  * RouteLine — renders a route as a GeoJSON LineString on the parent map.

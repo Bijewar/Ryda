@@ -46,9 +46,15 @@ export const userLoginSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, 'Password is required'),
   /** OTP code, if the user just received one. */
-  otp: z.string().regex(/^\d{6}$/).optional(),
+  otp: z
+    .string()
+    .regex(/^\d{6}$/)
+    .optional(),
   /** 2FA TOTP code, if 2FA is enabled. */
-  totp: z.string().regex(/^\d{6}$/).optional(),
+  totp: z
+    .string()
+    .regex(/^\d{6}$/)
+    .optional(),
 });
 export type UserLoginInput = z.infer<typeof userLoginSchema>;
 

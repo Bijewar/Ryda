@@ -1,8 +1,8 @@
-import { db } from '@/lib/db/client';
 import { getBhopalPolygonGeoJSON } from '@/lib/db/bhopal';
+import { db } from '@/lib/db/client';
+import type { Point } from '@/lib/db/postgis';
 import { env } from '@/lib/env';
 import { logger } from '@/lib/observability/logger';
-import type { Point } from '@/lib/db/postgis';
 
 /**
  * Driver-matching algorithm.
@@ -76,11 +76,7 @@ export async function findNearbyDrivers(
         approvalStatus: 'APPROVED',
       },
       include: { vehicle: true },
-      orderBy: [
-        { isReliableDriver: 'desc' },
-        { reliabilityScore: 'desc' },
-        { rating: 'desc' },
-      ],
+      orderBy: [{ isReliableDriver: 'desc' }, { reliabilityScore: 'desc' }, { rating: 'desc' }],
       take: 10,
     });
 

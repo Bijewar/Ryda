@@ -1,6 +1,5 @@
 import { isDemoMode, shouldFailNextPayment } from '@/lib/demo-mode';
 import { logger } from '@/lib/observability/logger';
-import type { PaymentProviderInterface } from './types';
 import type {
   CreateOrderParams,
   CreateOrderResult,
@@ -10,6 +9,7 @@ import type {
   VerifyResult,
   WebhookEvent,
 } from '@/types/payment';
+import type { PaymentProviderInterface } from './types';
 
 /**
  * MockPaymentProvider — used when `DEMO_MODE=true`.
@@ -64,7 +64,10 @@ export class MockPaymentProvider implements PaymentProviderInterface {
     };
   }
 
-  async createDriverAccount(driver: { id: string; email: string }): Promise<{ accountId: string; onboardingUrl: string }> {
+  async createDriverAccount(driver: { id: string; email: string }): Promise<{
+    accountId: string;
+    onboardingUrl: string;
+  }> {
     return {
       accountId: `mock_acct_${driver.id}`,
       onboardingUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/demo/connect?driver=${driver.id}`,

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { motion, useInView, useMotionValue, animate, useTransform } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
+import { animate, motion, useInView, useMotionValue, useTransform } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 
 interface AnimatedCounterProps {
   /** Target number to count up to. */
@@ -38,16 +38,16 @@ export function AnimatedCounter({
   to,
   duration = 1.5,
   delay = 0,
-  prefix = "",
-  suffix = "",
+  prefix = '',
+  suffix = '',
   decimals = 0,
-  separator = ",",
+  separator = ',',
   finishedLabel,
   className,
   respectReducedMotion = true,
 }: AnimatedCounterProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
+  const inView = useInView(ref, { once: true, margin: '-40px' });
   const mv = useMotionValue(0);
   const [display, setDisplay] = useState(0);
   const [done, setDone] = useState(false);
@@ -61,13 +61,13 @@ export function AnimatedCounter({
     // satisfying react-hooks/set-state-in-effect.
     const prefersReduced =
       respectReducedMotion &&
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
     const controls = animate(mv, to, {
       duration: prefersReduced ? 0.001 : duration,
       delay,
-      ease: "easeOut",
+      ease: 'easeOut',
       onUpdate: (v) => setDisplay(v),
       onComplete: () => setDone(true),
     });
@@ -76,8 +76,8 @@ export function AnimatedCounter({
 
   const formatted = (() => {
     const fixed = display.toFixed(decimals);
-    const [int, frac] = fixed.split(".");
-    const withSep = (int ?? "").replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+    const [int, frac] = fixed.split('.');
+    const withSep = (int ?? '').replace(/\B(?=(\d{3})+(?!\d))/g, separator);
     return frac ? `${withSep}.${frac}` : withSep;
   })();
 
@@ -86,12 +86,12 @@ export function AnimatedCounter({
   const showLabel = done && finishedLabel !== undefined;
 
   return (
-    <span ref={ref} className={cn("tabular-nums", className)}>
+    <span ref={ref} className={cn('tabular-nums', className)}>
       {showLabel ? (
         <motion.span
           initial={{ opacity: 0, scale: 0.6, rotate: -8 }}
           animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 360, damping: 18 }}
+          transition={{ type: 'spring', stiffness: 360, damping: 18 }}
           className="inline-block"
         >
           {finishedLabel}

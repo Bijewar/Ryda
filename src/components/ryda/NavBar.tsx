@@ -1,13 +1,13 @@
 'use client';
 
-import * as React from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, UserPlus, LogIn, Sparkles, ShieldCheck, History, Loader2 } from 'lucide-react';
-import { signOut } from 'next-auth/react';
-import { Logo } from './Logo';
 import { cn } from '@/lib/utils';
+import { AnimatePresence, motion } from 'framer-motion';
+import { LayoutDashboard, Loader2, LogIn, LogOut, Menu, UserPlus, X } from 'lucide-react';
+import { signOut } from 'next-auth/react';
+import Link from 'next/link';
+import * as React from 'react';
 import { toast } from 'sonner';
+import { Logo } from './Logo';
 
 const NAV_LINKS = [
   { label: 'Rides', href: '#rides' },
@@ -50,7 +50,8 @@ export function NavBar({ user }: NavBarProps) {
     }
   };
 
-  const isAdmin = user?.accountType === 'ADMIN' || user?.email?.toLowerCase() === 'bijewarmanas1@gmail.com';
+  const isAdmin =
+    user?.accountType === 'ADMIN' || user?.email?.toLowerCase() === 'bijewarmanas1@gmail.com';
   const isDriver = !!user?.driverId;
 
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
@@ -60,7 +61,9 @@ export function NavBar({ user }: NavBarProps) {
       <header
         className={cn(
           'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-          scrolled ? 'py-2.5 bg-ryda-surface/90 backdrop-blur-md shadow-md border-b border-ryda-border' : 'py-4 bg-ryda-bg/80 backdrop-blur-sm'
+          scrolled
+            ? 'py-2.5 bg-ryda-surface/90 backdrop-blur-md shadow-md border-b border-ryda-border'
+            : 'py-4 bg-ryda-bg/80 backdrop-blur-sm',
         )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -93,9 +96,7 @@ export function NavBar({ user }: NavBarProps) {
                       {userInitial}
                     </div>
                     <div className="text-left hidden sm:block">
-                      <p className="text-xs font-bold text-ryda-text leading-tight">
-                        {user.name}
-                      </p>
+                      <p className="text-xs font-bold text-ryda-text leading-tight">{user.name}</p>
                       <p className="text-[10px] text-ryda-muted font-medium capitalize">
                         {isAdmin ? 'Admin' : isDriver ? 'Captain' : 'Passenger'}
                       </p>
@@ -145,11 +146,11 @@ export function NavBar({ user }: NavBarProps) {
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 sm:gap-2.5">
+                <div className="flex items-center gap-1.5 sm:gap-2.5">
                   {/* Sign In Button */}
                   <Link
                     href="/login"
-                    className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-ryda-text bg-ryda-surface hover:bg-ryda-elevated border border-ryda-border px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-bold text-ryda-text bg-ryda-surface hover:bg-ryda-elevated border border-ryda-border px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
                   >
                     <LogIn className="w-3.5 h-3.5 text-ryda-accent" />
                     <span>Sign In</span>
@@ -158,7 +159,7 @@ export function NavBar({ user }: NavBarProps) {
                   {/* Sign Up Button */}
                   <Link
                     href="/register"
-                    className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-white bg-ryda-accent hover:bg-ryda-accent-dim px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-md transition-all ryda-accent-glow cursor-pointer"
+                    className="inline-flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-bold text-white bg-ryda-accent hover:bg-ryda-accent-dim px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-xl shadow-md transition-all ryda-accent-glow cursor-pointer"
                   >
                     <UserPlus className="w-3.5 h-3.5" />
                     <span>Sign Up</span>

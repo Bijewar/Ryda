@@ -1,8 +1,8 @@
 'use client';
 
+import type { BhopalZoneData } from '@/types/reliability';
 import * as React from 'react';
 import { Marker } from 'react-map-gl/maplibre';
-import type { BhopalZoneData } from '@/types/reliability';
 
 export interface DemandHotspotsLayerProps {
   zones: BhopalZoneData[];
@@ -46,10 +46,13 @@ export function DemandHotspotsLayer({
     <>
       {zones.map((zone) => {
         const level =
-          mode === 'prediction10m' ? zone.predictedDemand10m :
-          mode === 'prediction30m' ? zone.predictedDemand30m :
-          mode === 'repositioning' && zone.driverShortage > 0 ? 'VERY_HIGH' :
-          zone.currentDemandLevel;
+          mode === 'prediction10m'
+            ? zone.predictedDemand10m
+            : mode === 'prediction30m'
+              ? zone.predictedDemand30m
+              : mode === 'repositioning' && zone.driverShortage > 0
+                ? 'VERY_HIGH'
+                : zone.currentDemandLevel;
 
         const styling = getColor(level);
 
@@ -69,7 +72,9 @@ export function DemandHotspotsLayer({
               <span className={`absolute h-16 w-16 rounded-full border ${styling.bg}`} />
 
               {/* Zone label badge */}
-              <div className={`relative px-2 py-0.5 rounded-full border text-[10px] font-bold shadow-lg backdrop-blur-md whitespace-nowrap flex items-center gap-1 ${styling.badge}`}>
+              <div
+                className={`relative px-2 py-0.5 rounded-full border text-[10px] font-bold shadow-lg backdrop-blur-md whitespace-nowrap flex items-center gap-1 ${styling.badge}`}
+              >
                 <span className={`h-1.5 w-1.5 rounded-full ${styling.dot}`} />
                 <span>{zone.name.split(' ')[0]}</span>
                 {mode === 'repositioning' && zone.repositioningIncentive > 0 ? (
@@ -77,9 +82,7 @@ export function DemandHotspotsLayer({
                     +₹{(zone.repositioningIncentive / 100).toFixed(0)}
                   </span>
                 ) : (
-                  <span className="text-[9px] opacity-80 uppercase ml-0.5">
-                    {level}
-                  </span>
+                  <span className="text-[9px] opacity-80 uppercase ml-0.5">{level}</span>
                 )}
               </div>
             </div>

@@ -1,5 +1,5 @@
-import * as React from 'react';
 import { cn } from '@/lib/utils';
+import * as React from 'react';
 
 export interface LogoProps extends React.SVGAttributes<SVGSVGElement> {
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -36,17 +36,40 @@ export function Logo({
         {...props}
       >
         <defs>
-          <linearGradient id="ryda-tile" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="ryda-tile"
+            x1="0"
+            y1="0"
+            x2="40"
+            y2="40"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop offset="0" stopColor="#0F1F17" />
             <stop offset="1" stopColor="#1B3A2A" />
           </linearGradient>
-          <linearGradient id="ryda-stroke" x1="10" y1="10" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+          <linearGradient
+            id="ryda-stroke"
+            x1="10"
+            y1="10"
+            x2="30"
+            y2="30"
+            gradientUnits="userSpaceOnUse"
+          >
             <stop offset="0" stopColor="#34E29A" />
             <stop offset="1" stopColor="#10B981" />
           </linearGradient>
         </defs>
         <rect x="1.5" y="1.5" width="37" height="37" rx="11" fill="url(#ryda-tile)" />
-        <rect x="1.5" y="1.5" width="37" height="37" rx="11" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8" />
+        <rect
+          x="1.5"
+          y="1.5"
+          width="37"
+          height="37"
+          rx="11"
+          fill="none"
+          stroke="rgba(255,255,255,0.06)"
+          strokeWidth="0.8"
+        />
         <path
           d="M13 29 V11 H20.5 a5.2 5.2 0 0 1 0 10.4 H13 M21.5 22 L27 29"
           fill="none"
@@ -58,11 +81,13 @@ export function Logo({
         <circle cx="29.5" cy="10.5" r="2.6" fill="#F5C542" />
       </svg>
       {showWordmark && (
-        <span className={cn(
-          'font-display font-extrabold tracking-tight',
-          onDark ? 'text-white' : 'text-ryda-text',
-          dims.text,
-        )}>
+        <span
+          className={cn(
+            'font-display font-extrabold tracking-tight',
+            onDark ? 'text-white' : 'text-ryda-text',
+            dims.text,
+          )}
+        >
           Ryda
         </span>
       )}

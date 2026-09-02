@@ -1,47 +1,32 @@
 'use client';
 
-import * as React from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import type { ActiveDriverMarker } from '@/app/api/drivers/active/route';
+import { BhopalOverlay } from '@/components/maps/BhopalOverlay';
+import { DriverMarker } from '@/components/maps/DriverMarker';
+import { MapView } from '@/components/maps/MapView';
+import { PassengerMarker } from '@/components/maps/PassengerMarker';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import {
   Activity,
   Banknote,
   Car,
-  TrendingUp,
-  ShieldCheck,
   CheckCircle2,
-  XCircle,
-  Clock,
-  MapPin,
-  Search,
-  Filter,
-  RefreshCw,
-  Plus,
-  Send,
-  Zap,
-  Users,
-  Settings2,
-  ChevronRight,
-  ExternalLink,
-  Phone,
-  Mail,
-  FileCheck,
-  AlertTriangle,
   LocateFixed,
+  Mail,
+  Phone,
+  Search,
+  Settings2,
+  ShieldCheck,
+  TrendingUp,
+  XCircle,
+  Zap,
 } from 'lucide-react';
+import * as React from 'react';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { MapView } from '@/components/maps/MapView';
-import { BhopalOverlay } from '@/components/maps/BhopalOverlay';
-import { DriverMarker } from '@/components/maps/DriverMarker';
-import { PassengerMarker } from '@/components/maps/PassengerMarker';
-import { formatCurrency, formatDate, cn } from '@/lib/utils';
-import type { DriverApproval, VehicleType } from '@/types/ride';
 import type { DriversTableDriver } from './DriversTable';
-import type { ActiveDriverMarker } from '@/app/api/drivers/active/route';
 
 export interface AdminDashboardClientProps {
   initialDrivers: DriversTableDriver[];
@@ -54,12 +39,16 @@ export function AdminDashboardClient({
   initialRides,
   adminEmail,
 }: AdminDashboardClientProps) {
-  const [activeTab, setActiveTab] = React.useState<'radar' | 'approvals' | 'rides' | 'settings'>('radar');
+  const [activeTab, setActiveTab] = React.useState<'radar' | 'approvals' | 'rides' | 'settings'>(
+    'radar',
+  );
   const [drivers, setDrivers] = React.useState<DriversTableDriver[]>(initialDrivers);
   const [rides, setRides] = React.useState<any[]>(initialRides);
   const [activeFleet, setActiveFleet] = React.useState<ActiveDriverMarker[]>([]);
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [filterStatus, setFilterStatus] = React.useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
+  const [filterStatus, setFilterStatus] = React.useState<
+    'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'
+  >('ALL');
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [surgeMultiplier, setSurgeMultiplier] = React.useState<number>(1.0);
   const [busyDriverId, setBusyDriverId] = React.useState<string | null>(null);
@@ -89,7 +78,7 @@ export function AdminDashboardClient({
   const handleUpdateDriverStatus = async (
     driverId: string,
     status: 'APPROVED' | 'REJECTED',
-    name: string
+    name: string,
   ) => {
     setBusyDriverId(driverId);
     try {
@@ -105,15 +94,18 @@ export function AdminDashboardClient({
       }
 
       setDrivers((prev) =>
-        prev.map((d) => (d.id === driverId ? { ...d, approvalStatus: status } : d))
+        prev.map((d) => (d.id === driverId ? { ...d, approvalStatus: status } : d)),
       );
 
-      toast.success(status === 'APPROVED' ? `Captain ${name} Approved!` : `Captain ${name} Rejected`, {
-        description:
-          status === 'APPROVED'
-            ? 'The driver can now log in, go online, and accept ride requests across Bhopal.'
-            : 'Driver status updated.',
-      });
+      toast.success(
+        status === 'APPROVED' ? `Captain ${name} Approved!` : `Captain ${name} Rejected`,
+        {
+          description:
+            status === 'APPROVED'
+              ? 'The driver can now log in, go online, and accept ride requests across Bhopal.'
+              : 'Driver status updated.',
+        },
+      );
     } catch (err) {
       toast.error('Action Failed', {
         description: err instanceof Error ? err.message : 'Please try again.',
@@ -131,7 +123,10 @@ export function AdminDashboardClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           pickup: { address: 'MP Nagar Zone 1, Bhopal', point: { lat: 23.2419, lng: 77.4321 } },
-          dropoff: { address: 'Raja Bhoj Airport (BHO), Bhopal', point: { lat: 23.2875, lng: 77.3377 } },
+          dropoff: {
+            address: 'Raja Bhoj Airport (BHO), Bhopal',
+            point: { lat: 23.2875, lng: 77.3377 },
+          },
           paymentMethod: 'UPI',
         }),
       });
@@ -224,9 +219,7 @@ export function AdminDashboardClient({
           <p className="mt-2 text-3xl font-display font-extrabold text-ryda-text tabular-nums">
             {rides.length + 18}
           </p>
-          <p className="text-xs text-blue-700 font-semibold mt-1">
-            Real GPS dispatches
-          </p>
+          <p className="text-xs text-blue-700 font-semibold mt-1">Real GPS dispatches</p>
         </Card>
 
         <Card className="rounded-3xl border-ryda-border bg-ryda-surface shadow-md p-5 relative overflow-hidden">
@@ -255,7 +248,7 @@ export function AdminDashboardClient({
               'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap',
               activeTab === 'radar'
                 ? 'bg-ryda-accent text-white shadow-md'
-                : 'text-ryda-text hover:bg-ryda-elevated'
+                : 'text-ryda-text hover:bg-ryda-elevated',
             )}
           >
             <LocateFixed className="w-3.5 h-3.5" />
@@ -269,7 +262,7 @@ export function AdminDashboardClient({
               'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap',
               activeTab === 'approvals'
                 ? 'bg-ryda-accent text-white shadow-md'
-                : 'text-ryda-text hover:bg-ryda-elevated'
+                : 'text-ryda-text hover:bg-ryda-elevated',
             )}
           >
             <ShieldCheck className="w-3.5 h-3.5" />
@@ -288,7 +281,7 @@ export function AdminDashboardClient({
               'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap',
               activeTab === 'rides'
                 ? 'bg-ryda-accent text-white shadow-md'
-                : 'text-ryda-text hover:bg-ryda-elevated'
+                : 'text-ryda-text hover:bg-ryda-elevated',
             )}
           >
             <Car className="w-3.5 h-3.5" />
@@ -302,7 +295,7 @@ export function AdminDashboardClient({
               'px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap',
               activeTab === 'settings'
                 ? 'bg-ryda-accent text-white shadow-md'
-                : 'text-ryda-text hover:bg-ryda-elevated'
+                : 'text-ryda-text hover:bg-ryda-elevated',
             )}
           >
             <Settings2 className="w-3.5 h-3.5" />
@@ -327,8 +320,8 @@ export function AdminDashboardClient({
           <div className="lg:col-span-8 rounded-3xl overflow-hidden ryda-glass shadow-xl border border-ryda-border h-[520px] relative">
             <MapView
               initialViewState={{
-                longitude: 77.4250,
-                latitude: 23.2400,
+                longitude: 77.425,
+                latitude: 23.24,
                 zoom: 12.5,
               }}
             >
@@ -337,7 +330,7 @@ export function AdminDashboardClient({
               {/* Passenger Landmarks */}
               <PassengerMarker lng={77.4321} lat={23.2419} label="MP Nagar Transit Hub" />
               <PassengerMarker lng={77.3377} lat={23.2875} label="Raja Bhoj Airport" />
-              <PassengerMarker lng={77.4420} lat={23.2185} label="Rani Kamlapati Station" />
+              <PassengerMarker lng={77.442} lat={23.2185} label="Rani Kamlapati Station" />
 
               {/* Active Drivers */}
               {activeFleet.map((d) => (
@@ -360,7 +353,9 @@ export function AdminDashboardClient({
 
           <div className="lg:col-span-4 space-y-4">
             <Card className="rounded-3xl border-ryda-border bg-ryda-surface p-5 shadow-sm space-y-4">
-              <h3 className="font-display font-bold text-sm text-ryda-text">Bhopal Fleet Density</h3>
+              <h3 className="font-display font-bold text-sm text-ryda-text">
+                Bhopal Fleet Density
+              </h3>
               <div className="space-y-2.5 text-xs">
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
                   <span className="font-bold text-emerald-900">🏍️ Bikes</span>
@@ -377,14 +372,18 @@ export function AdminDashboardClient({
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-sky-50 border border-sky-200">
                   <span className="font-bold text-sky-900">🚗 Cabs / Sedans</span>
                   <span className="font-extrabold text-sky-700">
-                    {activeFleet.filter((d) => d.vehicleType !== 'BIKE' && d.vehicleType !== 'AUTO').length || 5} Online
+                    {activeFleet.filter((d) => d.vehicleType !== 'BIKE' && d.vehicleType !== 'AUTO')
+                      .length || 5}{' '}
+                    Online
                   </span>
                 </div>
               </div>
 
               <div className="pt-3 border-t border-ryda-border/60">
                 <p className="text-[11px] text-ryda-muted font-medium">
-                  Service Area: <span className="font-bold text-ryda-text">Bhopal Municipal Corporation</span> (Polygon loaded via RydaMap.geojson).
+                  Service Area:{' '}
+                  <span className="font-bold text-ryda-text">Bhopal Municipal Corporation</span>{' '}
+                  (Polygon loaded via RydaMap.geojson).
                 </p>
               </div>
             </Card>
@@ -401,7 +400,8 @@ export function AdminDashboardClient({
                 Driver Approvals &amp; Captain Verification
               </h2>
               <p className="text-xs text-ryda-muted">
-                Review submitted driving licenses, vehicle specs, and grant live dispatch permissions.
+                Review submitted driving licenses, vehicle specs, and grant live dispatch
+                permissions.
               </p>
             </div>
 
@@ -427,7 +427,7 @@ export function AdminDashboardClient({
                       'px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer',
                       filterStatus === st
                         ? 'bg-ryda-accent text-white shadow-xs'
-                        : 'text-ryda-muted hover:text-ryda-text'
+                        : 'text-ryda-muted hover:text-ryda-text',
                     )}
                   >
                     {st}
@@ -469,8 +469,8 @@ export function AdminDashboardClient({
                               isApproved
                                 ? 'bg-emerald-100 text-emerald-800'
                                 : isPending
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-rose-100 text-rose-800'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : 'bg-rose-100 text-rose-800',
                             )}
                           >
                             {d.approvalStatus}
@@ -490,7 +490,14 @@ export function AdminDashboardClient({
                           </span>
                         </div>
                         <p className="text-[11px] text-ryda-muted">
-                          Vehicle: <span className="font-semibold text-ryda-text">{d.vehicle?.make} {d.vehicle?.model} ({d.vehicle?.type})</span> · Rating: <span className="font-bold text-amber-700">★ {d.rating?.toFixed(1) || '5.0'}</span>
+                          Vehicle:{' '}
+                          <span className="font-semibold text-ryda-text">
+                            {d.vehicle?.make} {d.vehicle?.model} ({d.vehicle?.type})
+                          </span>{' '}
+                          · Rating:{' '}
+                          <span className="font-bold text-amber-700">
+                            ★ {d.rating?.toFixed(1) || '5.0'}
+                          </span>
                         </p>
                       </div>
                     </div>
@@ -590,14 +597,17 @@ export function AdminDashboardClient({
                       </span>
                     </div>
                     <p className="text-xs text-ryda-muted">
-                      📍 {r.pickupAddress} <span className="text-ryda-accent font-bold">→</span> {r.dropoffAddress}
+                      📍 {r.pickupAddress} <span className="text-ryda-accent font-bold">→</span>{' '}
+                      {r.dropoffAddress}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="font-display font-extrabold text-base text-ryda-accent-dim">
                       {formatCurrency(r.fareAmount || 18400)}
                     </p>
-                    <p className="text-[10px] text-ryda-muted">{formatDate(r.requestedAt || new Date())}</p>
+                    <p className="text-[10px] text-ryda-muted">
+                      {formatDate(r.requestedAt || new Date())}
+                    </p>
                   </div>
                 </div>
               ))

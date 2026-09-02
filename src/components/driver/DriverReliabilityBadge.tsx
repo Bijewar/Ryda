@@ -1,8 +1,8 @@
 'use client';
 
-import * as React from 'react';
-import { Award, CheckCircle2, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react';
 import type { DriverReliabilityStats } from '@/types/reliability';
+import { ShieldCheck, Sparkles } from 'lucide-react';
+import * as React from 'react';
 
 export interface DriverReliabilityBadgeProps {
   stats?: DriverReliabilityStats | null;
@@ -16,9 +16,11 @@ export function DriverReliabilityBadge({ stats }: DriverReliabilityBadgeProps): 
   const bonusRate = stats?.earningsBonusRate ?? 0.02;
 
   const scoreColor =
-    score >= 88 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' :
-    score >= 75 ? 'text-amber-400 bg-amber-500/10 border-amber-500/30' :
-    'text-destructive bg-destructive/10 border-destructive/30';
+    score >= 88
+      ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
+      : score >= 75
+        ? 'text-amber-400 bg-amber-500/10 border-amber-500/30'
+        : 'text-destructive bg-destructive/10 border-destructive/30';
 
   return (
     <div className="rounded-2xl border border-ryda-border bg-ryda-elevated p-4 space-y-3 shadow-md">
@@ -51,9 +53,7 @@ export function DriverReliabilityBadge({ stats }: DriverReliabilityBadgeProps): 
         {/* Completion rate */}
         <div className="p-2.5 rounded-xl bg-ryda-surface border border-ryda-border/60">
           <span className="text-[10px] text-ryda-muted block">Completion Rate</span>
-          <span className="font-bold text-ryda-accent">
-            {stats?.completionRate ?? 98.2}%
-          </span>
+          <span className="font-bold text-ryda-accent">{stats?.completionRate ?? 98.2}%</span>
         </div>
       </div>
 

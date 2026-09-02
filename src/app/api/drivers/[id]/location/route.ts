@@ -1,9 +1,8 @@
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import { requireDriver } from '@/lib/auth/session';
-import { updateDriverLocation } from '@/server/services/driver-service';
 import { driverLocationUpdateSchema } from '@/lib/validation/driver';
-import { ok, error, statusForCode } from '@/types/api';
+import { updateDriverLocation } from '@/server/services/driver-service';
+import { error, ok, statusForCode } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 /**
  * PUT /api/drivers/[id]/location
@@ -12,7 +11,10 @@ import { ok, error, statusForCode } from '@/types/api';
  * update their own location. The WS server fans out the new location to all
  * passengers watching an active ride with this driver.
  */
-export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function PUT(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
   const { id } = await ctx.params;
   try {
     await requireDriver(id);
@@ -29,7 +31,11 @@ export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }
     });
     return NextResponse.json(res, { status: statusForCode(res.error.code) });
   }
-  await updateDriverLocation(id, { lat: parsed.data.lat, lng: parsed.data.lng }, parsed.data.heading);
+  await updateDriverLocation(
+    id,
+    { lat: parsed.data.lat, lng: parsed.data.lng },
+    parsed.data.heading,
+  );
   return NextResponse.json(ok({ updated: true }));
 }
 

@@ -1,12 +1,11 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { AdminDashboardClient } from '@/components/admin/AdminDashboardClient';
+import { AdminSignOutButton } from '@/components/admin/AdminSignOutButton';
+import type { DriversTableDriver } from '@/components/admin/DriversTable';
+import { ThemeToggle } from '@/components/brand/ThemeToggle';
 import { auth } from '@/lib/auth/config';
 import { db } from '@/lib/db/client';
-import { AdminSignOutButton } from '@/components/admin/AdminSignOutButton';
-import { AdminDashboardClient } from '@/components/admin/AdminDashboardClient';
-import { ThemeToggle } from '@/components/brand/ThemeToggle';
-import type { DriversTableDriver } from '@/components/admin/DriversTable';
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'Bhopal Transit Command Center — Ryda Admin',
@@ -17,11 +16,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminPage(): Promise<React.ReactElement> {
   const session = await auth();
-  const user = session?.user as {
-    id?: string;
-    accountType?: 'PASSENGER' | 'ADMIN';
-    email?: string | null;
-  } | undefined;
+  const user = session?.user as
+    | {
+        id?: string;
+        accountType?: 'PASSENGER' | 'ADMIN';
+        email?: string | null;
+      }
+    | undefined;
 
   if (!user) redirect('/login?callbackUrl=/admin');
   if (user.accountType !== 'ADMIN' || user.email?.toLowerCase() !== 'bijewarmanas1@gmail.com') {
@@ -33,19 +34,23 @@ export default async function AdminPage(): Promise<React.ReactElement> {
 
   try {
     const results = await Promise.all([
-      db.driver.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 50,
-        include: { vehicle: true },
-      }).catch(() => []),
-      db.ride.findMany({
-        orderBy: { requestedAt: 'desc' },
-        take: 20,
-        include: {
-          passenger: { select: { name: true, email: true } },
-          driver: { select: { firstName: true, lastName: true } },
-        },
-      }).catch(() => []),
+      db.driver
+        .findMany({
+          orderBy: { createdAt: 'desc' },
+          take: 50,
+          include: { vehicle: true },
+        })
+        .catch(() => []),
+      db.ride
+        .findMany({
+          orderBy: { requestedAt: 'desc' },
+          take: 20,
+          include: {
+            passenger: { select: { name: true, email: true } },
+            driver: { select: { firstName: true, lastName: true } },
+          },
+        })
+        .catch(() => []),
     ]);
 
     allDrivers = results[0] || [];
@@ -79,7 +84,10 @@ export default async function AdminPage(): Promise<React.ReactElement> {
     rating: d.rating ?? 5.0,
     totalRides: d.totalRides ?? 0,
     totalEarnings: d.totalEarnings ?? 0,
-    createdAt: typeof d.createdAt === 'string' ? d.createdAt : d.createdAt?.toISOString?.() || new Date().toISOString(),
+    createdAt:
+      typeof d.createdAt === 'string'
+        ? d.createdAt
+        : d.createdAt?.toISOString?.() || new Date().toISOString(),
     vehicle: d.vehicle
       ? {
           make: d.vehicle.make,

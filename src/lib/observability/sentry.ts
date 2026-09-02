@@ -22,7 +22,10 @@ export async function initSentry(): Promise<void> {
 }
 
 /** Capture an exception in Sentry (no-op if Sentry isn't initialised). */
-export async function captureException(err: unknown, context?: Record<string, unknown>): Promise<void> {
+export async function captureException(
+  err: unknown,
+  context?: Record<string, unknown>,
+): Promise<void> {
   if (!env.SENTRY_DSN) return;
   try {
     const Sentry = await import('@sentry/nextjs');

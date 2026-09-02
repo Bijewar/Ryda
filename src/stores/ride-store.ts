@@ -1,7 +1,7 @@
 'use client';
 
+import type { RideStatus, RideSummary } from '@/types/ride';
 import { create } from 'zustand';
-import type { RideSummary, RideStatus } from '@/types/ride';
 
 /**
  * Zustand ride store — single source of truth for the active ride on the

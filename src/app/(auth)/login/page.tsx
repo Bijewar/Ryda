@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Logo } from '@/components/ryda/Logo';
+import Link from 'next/link';
 
 export const metadata = { title: 'Sign in — Ryda' };
 
@@ -21,7 +21,9 @@ export default function LoginPage() {
         <div className="ryda-glass-strong rounded-3xl p-8 space-y-6 shadow-2xl border border-ryda-border/80">
           <div className="space-y-1 text-center">
             <h1 className="font-display text-2xl font-extrabold text-ryda-text">Welcome back</h1>
-            <p className="text-sm text-ryda-muted">Sign in to book or manage your rides in Bhopal.</p>
+            <p className="text-sm text-ryda-muted">
+              Sign in to book or manage your rides in Bhopal.
+            </p>
           </div>
 
           <LoginForm />

@@ -1,35 +1,30 @@
 'use client';
 
-import * as React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  MapPin,
-  Navigation,
-  Clock,
-  Users,
-  Search,
-  Star,
-  ArrowRight,
-  Check,
-  Sparkles,
-  Loader2,
-  Compass,
-  LocateFixed,
-  Building2,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import type { MapRef } from 'react-map-gl/maplibre';
-import { VehicleIllustration, type VehicleType } from './VehicleIllustration';
-import { MapView } from '@/components/maps/MapView';
+import type { ActiveDriverMarker } from '@/app/api/drivers/active/route';
 import { BhopalOverlay } from '@/components/maps/BhopalOverlay';
 import { DriverMarker } from '@/components/maps/DriverMarker';
+import { MapView } from '@/components/maps/MapView';
 import { PassengerMarker } from '@/components/maps/PassengerMarker';
 import { RideSearchingState } from '@/components/ride/RideSearchingState';
 import { BHOPAL_POIS } from '@/lib/geo/pois';
-import { formatCurrency, cn } from '@/lib/utils';
-import type { ActiveDriverMarker } from '@/app/api/drivers/active/route';
+import { cn, formatCurrency } from '@/lib/utils';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  ArrowRight,
+  Building2,
+  Check,
+  Clock,
+  Loader2,
+  LocateFixed,
+  MapPin,
+  Navigation,
+  Sparkles,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
+import type { MapRef } from 'react-map-gl/maplibre';
+import { toast } from 'sonner';
+import { VehicleIllustration, type VehicleType } from './VehicleIllustration';
 
 type VehicleClass = 'bike' | 'auto' | 'cab' | 'premium' | 'suv';
 
@@ -160,7 +155,7 @@ export function BookingSection() {
           address: `${p.name}, Bhopal`,
           landmark: p.landmark,
           point: { lat: p.lat, lng: p.lng },
-        }))
+        })),
       );
       return;
     }
@@ -184,7 +179,9 @@ export function BookingSection() {
     // Fallback local match
     const lower = keyword.toLowerCase();
     const matches = BHOPAL_POIS.filter(
-      (p) => p.name.toLowerCase().includes(lower) || (p.landmark && p.landmark.toLowerCase().includes(lower))
+      (p) =>
+        p.name.toLowerCase().includes(lower) ||
+        (p.landmark && p.landmark.toLowerCase().includes(lower)),
     ).map((p) => ({
       address: `${p.name}, Bhopal`,
       landmark: p.landmark,
@@ -229,7 +226,7 @@ export function BookingSection() {
           address: `${p.name}, Bhopal`,
           landmark: p.landmark,
           point: { lat: p.lat, lng: p.lng },
-        }))
+        })),
       );
       return;
     }
@@ -252,7 +249,9 @@ export function BookingSection() {
 
     const lower = keyword.toLowerCase();
     const matches = BHOPAL_POIS.filter(
-      (p) => p.name.toLowerCase().includes(lower) || (p.landmark && p.landmark.toLowerCase().includes(lower))
+      (p) =>
+        p.name.toLowerCase().includes(lower) ||
+        (p.landmark && p.landmark.toLowerCase().includes(lower)),
     ).map((p) => ({
       address: `${p.name}, Bhopal`,
       landmark: p.landmark,
@@ -293,7 +292,8 @@ export function BookingSection() {
   const hasAutoLocatedRef = React.useRef(false);
 
   React.useEffect(() => {
-    if (hasAutoLocatedRef.current || typeof window === 'undefined' || !navigator.geolocation) return;
+    if (hasAutoLocatedRef.current || typeof window === 'undefined' || !navigator.geolocation)
+      return;
     hasAutoLocatedRef.current = true;
 
     navigator.geolocation.getCurrentPosition(
@@ -314,7 +314,7 @@ export function BookingSection() {
 
         try {
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLat}&lon=${userLng}&zoom=18`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLat}&lon=${userLng}&zoom=18`,
           );
           if (res.ok) {
             const data = await res.json();
@@ -332,7 +332,7 @@ export function BookingSection() {
       (_err) => {
         // Fallback gracefully to default
       },
-      { enableHighAccuracy: true, timeout: 6000, maximumAge: 30000 }
+      { enableHighAccuracy: true, timeout: 6000, maximumAge: 30000 },
     );
   }, []);
 
@@ -362,7 +362,7 @@ export function BookingSection() {
 
         try {
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLat}&lon=${userLng}&zoom=18`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLat}&lon=${userLng}&zoom=18`,
           );
           if (res.ok) {
             const data = await res.json();
@@ -388,7 +388,7 @@ export function BookingSection() {
           description: 'Showing default central Bhopal marker.',
         });
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
   };
 
@@ -458,10 +458,13 @@ export function BookingSection() {
   };
 
   return (
-    <section id="booking" className="relative py-20 lg:py-28 scroll-mt-24">
+    <section id="booking" className="relative py-14 sm:py-20 lg:py-28 scroll-mt-24 w-full max-w-full overflow-hidden">
       <span id="rides" className="absolute -top-24" aria-hidden />
-      <div className="absolute inset-0 bg-gradient-to-b from-ryda-bg via-ryda-surface to-ryda-bg" aria-hidden />
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-ryda-bg via-ryda-surface to-ryda-bg pointer-events-none"
+        aria-hidden
+      />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
         <SectionHeader
           eyebrow="Book in seconds"
           title={
@@ -473,7 +476,7 @@ export function BookingSection() {
         />
 
         {activeRide ? (
-          <div className="mt-12 max-w-2xl mx-auto">
+          <div className="mt-10 sm:mt-12 max-w-2xl mx-auto">
             <RideSearchingState
               rideId={activeRide.id}
               fareAmount={activeRide.fareAmount}
@@ -484,22 +487,22 @@ export function BookingSection() {
             />
           </div>
         ) : (
-          <div className="grid lg:grid-cols-12 gap-6 mt-12">
+          <div className="grid lg:grid-cols-12 gap-6 mt-8 sm:mt-12">
             {/* Left — location inputs with live suggestions */}
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="lg:col-span-7"
+              className="lg:col-span-7 w-full"
             >
-              <div className="ryda-glass rounded-3xl p-6 lg:p-8 shadow-xl">
+              <div className="ryda-glass rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl">
                 {/* Location inputs with Autocomplete Dropdowns */}
-                <div className="relative bg-ryda-surface rounded-2xl border border-ryda-border p-5 mb-6 space-y-4">
+                <div className="relative bg-ryda-surface rounded-2xl border border-ryda-border p-3.5 sm:p-5 mb-5 sm:mb-6 space-y-3.5 sm:space-y-4">
                   {/* Pickup Row */}
                   <div className="relative">
-                    <div className="flex items-center gap-3 pb-3 border-b border-ryda-border">
-                      <span className="w-3 h-3 rounded-full bg-ryda-accent ring-4 ring-ryda-accent/15 flex-shrink-0" />
+                    <div className="flex items-center gap-2.5 sm:gap-3 pb-3 border-b border-ryda-border">
+                      <span className="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-ryda-accent ring-4 ring-ryda-accent/15 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <label className="text-[10px] font-bold text-ryda-muted uppercase tracking-wider block">
                           Pickup Location
@@ -512,7 +515,7 @@ export function BookingSection() {
                             fetchPickupSuggestions(pickup);
                           }}
                           onChange={(e) => handlePickupInputChange(e.target.value)}
-                          className="w-full bg-transparent outline-none text-sm font-semibold text-ryda-text placeholder:text-ryda-muted mt-0.5"
+                          className="w-full bg-transparent outline-none text-xs sm:text-sm font-semibold text-ryda-text placeholder:text-ryda-muted mt-0.5"
                           placeholder="Search any place in Bhopal (e.g. MP Nagar, Shahpura…)"
                         />
                       </div>
@@ -520,14 +523,15 @@ export function BookingSection() {
                         type="button"
                         onClick={handleUseCurrentLocation}
                         disabled={isLocating}
-                        className="inline-flex items-center gap-1 text-xs font-bold text-ryda-accent hover:text-ryda-accent-dim transition-colors bg-ryda-accent/10 px-2.5 py-1.5 rounded-xl flex-shrink-0"
+                        className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-ryda-accent hover:text-ryda-accent-dim transition-colors bg-ryda-accent/10 px-2 sm:px-2.5 py-1.5 rounded-xl flex-shrink-0"
                       >
                         {isLocating ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
                           <LocateFixed className="w-3.5 h-3.5" />
                         )}
-                        <span>USE CURRENT</span>
+                        <span className="hidden sm:inline">USE CURRENT</span>
+                        <span className="sm:hidden">GPS</span>
                       </button>
                     </div>
 
@@ -542,7 +546,9 @@ export function BookingSection() {
                         >
                           <div className="px-3 py-1.5 bg-ryda-elevated/50 text-[10px] font-bold text-ryda-muted uppercase flex items-center justify-between">
                             <span>Suggestions for &ldquo;{pickup || 'Popular Spots'}&rdquo;</span>
-                            {isPickupSearching && <Loader2 className="w-3 h-3 animate-spin text-ryda-accent" />}
+                            {isPickupSearching && (
+                              <Loader2 className="w-3 h-3 animate-spin text-ryda-accent" />
+                            )}
                           </div>
                           {pickupSuggestions.map((item, idx) => (
                             <button
@@ -553,9 +559,13 @@ export function BookingSection() {
                             >
                               <MapPin className="w-4 h-4 text-ryda-accent mt-0.5 flex-shrink-0" />
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-bold text-ryda-text truncate">{item.address}</p>
+                                <p className="text-xs font-bold text-ryda-text truncate">
+                                  {item.address}
+                                </p>
                                 {item.landmark && (
-                                  <p className="text-[10px] text-ryda-muted truncate">{item.landmark}</p>
+                                  <p className="text-[10px] text-ryda-muted truncate">
+                                    {item.landmark}
+                                  </p>
                                 )}
                               </div>
                             </button>
@@ -585,7 +595,9 @@ export function BookingSection() {
                           placeholder="Type any keyword (e.g. hotel, station, mall, hospital, college…)"
                         />
                       </div>
-                      {isDropSearching && <Loader2 className="w-4 h-4 animate-spin text-ryda-accent flex-shrink-0" />}
+                      {isDropSearching && (
+                        <Loader2 className="w-4 h-4 animate-spin text-ryda-accent flex-shrink-0" />
+                      )}
                     </div>
 
                     {/* Destination Suggestions Dropdown */}
@@ -599,7 +611,9 @@ export function BookingSection() {
                         >
                           <div className="px-3 py-1.5 bg-ryda-elevated/50 text-[10px] font-bold text-ryda-muted uppercase flex items-center justify-between">
                             <span>Keyword Results for &ldquo;{drop || 'Bhopal'}&rdquo;</span>
-                            {isDropSearching && <Loader2 className="w-3 h-3 animate-spin text-ryda-accent" />}
+                            {isDropSearching && (
+                              <Loader2 className="w-3 h-3 animate-spin text-ryda-accent" />
+                            )}
                           </div>
                           {dropSuggestions.map((item, idx) => (
                             <button
@@ -610,9 +624,13 @@ export function BookingSection() {
                             >
                               <Building2 className="w-4 h-4 text-rose-500 mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform" />
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs font-bold text-ryda-text truncate">{item.address}</p>
+                                <p className="text-xs font-bold text-ryda-text truncate">
+                                  {item.address}
+                                </p>
                                 {item.landmark && (
-                                  <p className="text-[10px] text-ryda-muted truncate">{item.landmark}</p>
+                                  <p className="text-[10px] text-ryda-muted truncate">
+                                    {item.landmark}
+                                  </p>
                                 )}
                               </div>
                               <span className="text-[10px] font-bold text-ryda-accent-dim bg-ryda-accent/10 px-2 py-0.5 rounded-full flex-shrink-0">
@@ -649,36 +667,40 @@ export function BookingSection() {
                         whileTap={{ scale: 0.992 }}
                         onClick={() => setSelected(v.id)}
                         className={cn(
-                          'w-full text-left rounded-2xl p-4 transition-all duration-300 border relative group cursor-pointer',
+                          'w-full text-left rounded-2xl p-3 sm:p-4 transition-all duration-300 border relative group cursor-pointer',
                           isSelected
                             ? 'bg-ryda-surface border-ryda-accent shadow-md ring-1 ring-ryda-accent'
-                            : 'bg-ryda-surface/60 border-ryda-border hover:bg-ryda-surface hover:border-ryda-accent/40'
+                            : 'bg-ryda-surface/60 border-ryda-border hover:bg-ryda-surface hover:border-ryda-accent/40',
                         )}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2.5 sm:gap-4">
                           {/* Vehicle SVG */}
-                          <div className="w-16 h-10 flex-shrink-0 relative flex items-center justify-center">
-                            <VehicleIllustration type={v.type} className="w-full h-full" color={v.color} />
+                          <div className="w-12 sm:w-16 h-8 sm:h-10 flex-shrink-0 relative flex items-center justify-center">
+                            <VehicleIllustration
+                              type={v.type}
+                              className="w-full h-full"
+                              color={v.color}
+                            />
                           </div>
 
                           {/* Info */}
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="font-display font-bold text-sm text-ryda-text truncate">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              <p className="font-display font-bold text-xs sm:text-sm text-ryda-text truncate">
                                 {v.name}
                               </p>
                               {v.badge && (
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-ryda-accent/15 text-ryda-accent-dim">
+                                <span className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-ryda-accent/15 text-ryda-accent-dim shrink-0">
                                   {v.badge}
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-3 text-xs text-ryda-muted mt-0.5">
-                              <span>{v.desc}</span>
+                            <div className="flex items-center gap-1.5 sm:gap-3 text-[11px] sm:text-xs text-ryda-muted mt-0.5">
+                              <span className="truncate">{v.desc}</span>
                               <span>•</span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3 text-ryda-accent" />
-                                {v.eta} away
+                              <span className="flex items-center gap-1 shrink-0">
+                                <Clock className="w-3 h-3 text-ryda-accent shrink-0" />
+                                {v.eta}
                               </span>
                             </div>
                           </div>
@@ -687,8 +709,8 @@ export function BookingSection() {
                           <div className="text-right flex-shrink-0">
                             <p
                               className={cn(
-                                'font-display font-bold text-base transition-colors',
-                                isSelected ? 'text-ryda-accent-dim' : 'text-ryda-text'
+                                'font-display font-bold text-sm sm:text-base transition-colors',
+                                isSelected ? 'text-ryda-accent-dim' : 'text-ryda-text',
                               )}
                             >
                               ₹ {tierFare}
@@ -698,13 +720,13 @@ export function BookingSection() {
                           {/* Selected check */}
                           <div
                             className={cn(
-                              'flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
+                              'flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center transition-all',
                               isSelected
                                 ? 'bg-ryda-accent border-ryda-accent'
-                                : 'border-ryda-border bg-transparent'
+                                : 'border-ryda-border bg-transparent',
                             )}
                           >
-                            {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                            {isSelected && <Check className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-white" />}
                           </div>
                         </div>
 
@@ -718,13 +740,13 @@ export function BookingSection() {
                               transition={{ duration: 0.3 }}
                               className="overflow-hidden"
                             >
-                              <div className="mt-3 pt-3 border-t border-ryda-border/60 flex flex-wrap gap-2">
+                              <div className="mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-ryda-border/60 flex flex-wrap gap-1.5 sm:gap-2">
                                 {v.features.map((f) => (
                                   <span
                                     key={f}
-                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-ryda-text bg-ryda-elevated px-2.5 py-1 rounded-full"
+                                    className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-ryda-text bg-ryda-elevated px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full"
                                   >
-                                    <Check className="w-3 h-3 text-ryda-accent" />
+                                    <Check className="w-3 h-3 text-ryda-accent shrink-0" />
                                     {f}
                                   </span>
                                 ))}
@@ -744,21 +766,21 @@ export function BookingSection() {
                   type="button"
                   onClick={handleConfirm}
                   disabled={isSubmitting}
-                  className="mt-5 w-full bg-ryda-accent hover:bg-ryda-accent-dim text-white py-4 rounded-2xl font-bold text-base ryda-accent-glow transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20"
+                  className="mt-4 sm:mt-5 w-full bg-ryda-accent hover:bg-ryda-accent-dim text-white py-3.5 sm:py-4 rounded-2xl font-bold text-sm sm:text-base ryda-accent-glow transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                       Connecting Drivers…
                     </>
                   ) : (
                     <>
                       Confirm {selectedVehicle.name} · {formatCurrency(calculatedFare)}
-                      <ArrowRight className="w-5 h-5" />
+                      <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </>
                   )}
                 </motion.button>
-                <p className="mt-3 text-center text-xs text-ryda-muted font-medium">
+                <p className="mt-2.5 sm:mt-3 text-center text-[11px] sm:text-xs text-ryda-muted font-medium">
                   Real-time GPS dispatch with nearest captain in Bhopal
                 </p>
               </div>
@@ -770,7 +792,7 @@ export function BookingSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="lg:col-span-5"
+              className="lg:col-span-5 w-full"
             >
               <LiveRealMapPreview
                 mapRef={mapRef}
@@ -819,10 +841,11 @@ function LiveRealMapPreview({
 
   const bikeCount = drivers.filter((d) => d.vehicleType === 'BIKE').length || 3;
   const autoCount = drivers.filter((d) => d.vehicleType === 'AUTO').length || 2;
-  const cabCount = drivers.filter((d) => d.vehicleType !== 'BIKE' && d.vehicleType !== 'AUTO').length || 4;
+  const cabCount =
+    drivers.filter((d) => d.vehicleType !== 'BIKE' && d.vehicleType !== 'AUTO').length || 4;
 
   return (
-    <div className="relative h-full min-h-[480px] lg:min-h-[620px] rounded-3xl overflow-hidden ryda-glass shadow-xl border border-ryda-border">
+    <div className="relative h-full min-h-[350px] sm:min-h-[460px] lg:min-h-[620px] rounded-2xl sm:rounded-3xl overflow-hidden ryda-glass shadow-xl border border-ryda-border">
       {/* Real MapLibre View with RydaMap.geojson */}
       <MapView
         mapRef={mapRef as any}
@@ -835,18 +858,10 @@ function LiveRealMapPreview({
         <BhopalOverlay />
 
         {/* Real-time Passenger Pickup Beacon */}
-        <PassengerMarker
-          lng={passengerPoint.lng}
-          lat={passengerPoint.lat}
-          label="Pickup Point"
-        />
+        <PassengerMarker lng={passengerPoint.lng} lat={passengerPoint.lat} label="Pickup Point" />
 
         {/* Dynamic Destination Pin */}
-        <PassengerMarker
-          lng={dropPoint.lng}
-          lat={dropPoint.lat}
-          label="Destination"
-        />
+        <PassengerMarker lng={dropPoint.lng} lat={dropPoint.lat} label="Destination" />
 
         {/* Live Drivers on Real Streets */}
         {drivers.map((d) => (
@@ -863,13 +878,13 @@ function LiveRealMapPreview({
       </MapView>
 
       {/* Top Floating Live Stats Bar */}
-      <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
-        <div className="ryda-glass-strong rounded-xl px-3 py-2 flex items-center gap-2 shadow-md">
-          <span className="relative flex h-2.5 w-2.5">
+      <div className="absolute top-3 sm:top-4 left-3 sm:left-4 right-3 sm:right-4 flex items-center justify-between z-10">
+        <div className="ryda-glass-strong rounded-xl px-2.5 sm:px-3 py-1.5 sm:py-2 flex items-center gap-2 shadow-md">
+          <span className="relative flex h-2 sm:h-2.5 w-2 sm:w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ryda-accent opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-ryda-accent" />
+            <span className="relative inline-flex rounded-full h-2 sm:h-2.5 w-2 sm:w-2.5 bg-ryda-accent" />
           </span>
-          <span className="text-xs font-bold text-ryda-text">
+          <span className="text-[11px] sm:text-xs font-bold text-ryda-text">
             {bikeCount} Bikes · {autoCount} Autos · {cabCount} Cabs
           </span>
         </div>
@@ -880,12 +895,12 @@ function LiveRealMapPreview({
           onClick={onLocateClick}
           disabled={isLocating}
           title="Center on my current location"
-          className="ryda-glass-strong p-2.5 rounded-xl shadow-md text-ryda-accent hover:text-ryda-accent-dim transition-colors flex items-center justify-center cursor-pointer border border-ryda-border"
+          className="ryda-glass-strong p-2 sm:p-2.5 rounded-xl shadow-md text-ryda-accent hover:text-ryda-accent-dim transition-colors flex items-center justify-center cursor-pointer border border-ryda-border"
         >
           {isLocating ? (
-            <Loader2 className="w-4 h-4 animate-spin text-ryda-accent" />
+            <Loader2 className="w-3.5 sm:w-4 h-3.5 sm:h-4 animate-spin text-ryda-accent" />
           ) : (
-            <LocateFixed className="w-4 h-4" />
+            <LocateFixed className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
           )}
         </button>
       </div>
@@ -896,21 +911,27 @@ function LiveRealMapPreview({
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="absolute bottom-4 left-4 right-4 z-10 ryda-glass-strong rounded-2xl p-4 shadow-xl border border-ryda-border/80"
+        className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 z-10 ryda-glass-strong rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xl border border-ryda-border/80"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-ryda-accent to-ryda-accent-dim flex items-center justify-center text-white font-extrabold shadow-md text-sm">
-              <Navigation className="w-5 h-5" />
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 sm:w-11 h-9 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-br from-ryda-accent to-ryda-accent-dim flex items-center justify-center text-white font-extrabold shadow-md text-xs sm:text-sm shrink-0">
+              <Navigation className="w-4 sm:w-5 h-4 sm:h-5" />
             </div>
-            <div>
-              <p className="font-bold text-sm text-ryda-text">Bhopal City Route</p>
-              <p className="text-xs text-ryda-muted mt-0.5">{distanceKm} km · Live GPS Navigation</p>
+            <div className="min-w-0">
+              <p className="font-bold text-xs sm:text-sm text-ryda-text truncate">Bhopal City Route</p>
+              <p className="text-[11px] sm:text-xs text-ryda-muted mt-0.5 truncate">
+                {distanceKm} km · Live GPS Navigation
+              </p>
             </div>
           </div>
-          <div className="text-right">
-            <span className="text-[10px] uppercase font-bold text-ryda-muted block">Pickup ETA</span>
-            <span className="font-display font-extrabold text-base text-ryda-accent-dim">~2-3 min</span>
+          <div className="text-right shrink-0">
+            <span className="text-[9px] sm:text-[10px] uppercase font-bold text-ryda-muted block">
+              Pickup ETA
+            </span>
+            <span className="font-display font-extrabold text-sm sm:text-base text-ryda-accent-dim">
+              ~2-3 min
+            </span>
           </div>
         </div>
       </motion.div>
@@ -928,15 +949,15 @@ function SectionHeader({
   subtitle: string;
 }) {
   return (
-    <div className="text-center max-w-3xl mx-auto">
+    <div className="text-center max-w-3xl mx-auto px-2">
       <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ryda-accent/10 text-ryda-accent-dim text-xs font-semibold mb-3">
         <Sparkles className="w-3.5 h-3.5" />
         {eyebrow}
       </div>
-      <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-ryda-text">
+      <h2 className="font-display text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-ryda-text">
         {title}
       </h2>
-      <p className="mt-4 text-base sm:text-lg text-ryda-muted">{subtitle}</p>
+      <p className="mt-3 sm:mt-4 text-sm sm:text-lg text-ryda-muted">{subtitle}</p>
     </div>
   );
 }

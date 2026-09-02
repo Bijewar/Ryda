@@ -38,14 +38,21 @@ export async function createNotification(input: CreateNotificationInput): Promis
   });
 }
 
-export async function markNotificationRead(id: string, userId?: string, driverId?: string): Promise<void> {
+export async function markNotificationRead(
+  id: string,
+  userId?: string,
+  driverId?: string,
+): Promise<void> {
   await db.notification.updateMany({
     where: { id, OR: [{ userId: userId ?? null }, { driverId: driverId ?? null }] },
     data: { readAt: new Date() },
   });
 }
 
-export async function getUnreadCount(opts: { userId?: string; driverId?: string }): Promise<number> {
+export async function getUnreadCount(opts: {
+  userId?: string;
+  driverId?: string;
+}): Promise<number> {
   return db.notification.count({
     where: {
       OR: [{ userId: opts.userId ?? null }, { driverId: opts.driverId ?? null }],

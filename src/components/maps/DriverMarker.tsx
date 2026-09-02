@@ -1,8 +1,8 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import * as React from 'react';
 import { Marker } from 'react-map-gl/maplibre';
-import { cn } from '@/lib/utils';
 
 export interface DriverMarkerProps {
   lng: number;
@@ -25,17 +25,22 @@ export function DriverMarker({
   driverName,
   rating,
 }: DriverMarkerProps): React.ReactElement {
-  const normType =
-    variant.toLowerCase().includes('bike') ? 'bike' :
-    variant.toLowerCase().includes('auto') ? 'auto' :
-    variant.toLowerCase().includes('suv') ? 'suv' :
-    'cab';
+  const normType = variant.toLowerCase().includes('bike')
+    ? 'bike'
+    : variant.toLowerCase().includes('auto')
+      ? 'auto'
+      : variant.toLowerCase().includes('suv')
+        ? 'suv'
+        : 'cab';
 
   const accentColor =
-    normType === 'bike' ? '#10B981' :
-    normType === 'auto' ? '#F59E0B' :
-    normType === 'suv' ? '#7C3AED' :
-    '#3B82F6';
+    normType === 'bike'
+      ? '#10B981'
+      : normType === 'auto'
+        ? '#F59E0B'
+        : normType === 'suv'
+          ? '#7C3AED'
+          : '#3B82F6';
 
   return (
     <Marker
@@ -68,21 +73,39 @@ export function DriverMarker({
             style={{ borderColor: accentColor }}
           >
             {normType === 'bike' && (
-              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke={accentColor} strokeWidth="2">
+              <svg
+                viewBox="0 0 24 24"
+                className="w-5 h-5"
+                fill="none"
+                stroke={accentColor}
+                strokeWidth="2"
+              >
                 <circle cx="5.5" cy="17.5" r="3.5" />
                 <circle cx="18.5" cy="17.5" r="3.5" />
                 <path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5L9 9l4.5-2L16 11h3" />
               </svg>
             )}
             {normType === 'auto' && (
-              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke={accentColor} strokeWidth="2">
+              <svg
+                viewBox="0 0 24 24"
+                className="w-5 h-5"
+                fill="none"
+                stroke={accentColor}
+                strokeWidth="2"
+              >
                 <path d="M4 17h16M4 17l1-8h14l1 8M6 9l2-5h8l2 5" />
                 <circle cx="7.5" cy="17.5" r="2.5" />
                 <circle cx="16.5" cy="17.5" r="2.5" />
               </svg>
             )}
             {(normType === 'cab' || normType === 'suv') && (
-              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke={accentColor} strokeWidth="2">
+              <svg
+                viewBox="0 0 24 24"
+                className="w-5 h-5"
+                fill="none"
+                stroke={accentColor}
+                strokeWidth="2"
+              >
                 <path d="M5 17h14M5 17l1-6h12l1 6M7 11l1.5-5h7L17 11" />
                 <circle cx="7.5" cy="17.5" r="2" fill={accentColor} />
                 <circle cx="16.5" cy="17.5" r="2" fill={accentColor} />

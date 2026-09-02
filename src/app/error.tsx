@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { useEffect } from 'react';
 
 export default function Error({
   error,
@@ -23,9 +23,7 @@ export default function Error({
         <p className="text-ryda-muted">
           {error.message || 'An unexpected error occurred. Our team has been notified.'}
         </p>
-        {error.digest && (
-          <p className="text-xs text-ryda-muted">Error ID: {error.digest}</p>
-        )}
+        {error.digest && <p className="text-xs text-ryda-muted">Error ID: {error.digest}</p>}
         <div className="flex gap-3 justify-center">
           <Button onClick={reset} className="bg-ryda-accent text-ryda-bg hover:bg-ryda-accent-dim">
             Try again

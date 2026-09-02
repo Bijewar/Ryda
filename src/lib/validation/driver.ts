@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { driverApprovalSchema, vehicleTypeSchema, phoneSchema, emailSchema, passwordSchema } from './user';
+import {
+  driverApprovalSchema,
+  emailSchema,
+  passwordSchema,
+  phoneSchema,
+  vehicleTypeSchema,
+} from './user';
 
 export const driverRegisterSchema = z.object({
   firstName: z.string().min(2).max(80),
@@ -8,12 +14,21 @@ export const driverRegisterSchema = z.object({
   phone: phoneSchema,
   password: passwordSchema,
   licenseNumber: z.string().min(3).max(30),
-  licenseFrontUrl: z.string().default('https://images.unsplash.com/photo-1544717305-2782549b5136?w=600'),
-  licenseBackUrl: z.string().default('https://images.unsplash.com/photo-1544717305-2782549b5136?w=600'),
+  licenseFrontUrl: z
+    .string()
+    .default('https://images.unsplash.com/photo-1544717305-2782549b5136?w=600'),
+  licenseBackUrl: z
+    .string()
+    .default('https://images.unsplash.com/photo-1544717305-2782549b5136?w=600'),
   vehicle: z.object({
     make: z.string().min(1).max(40),
     model: z.string().min(1).max(40),
-    year: z.number().int().min(1990).max(new Date().getFullYear() + 2).default(new Date().getFullYear()),
+    year: z
+      .number()
+      .int()
+      .min(1990)
+      .max(new Date().getFullYear() + 2)
+      .default(new Date().getFullYear()),
     color: z.string().min(1).max(30),
     licensePlate: z
       .string()

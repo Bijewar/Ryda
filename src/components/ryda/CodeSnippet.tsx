@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { FileCode2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { FileCode2 } from 'lucide-react';
 
 interface CodeSnippetProps {
   filename: string;
@@ -30,7 +30,7 @@ export function CodeSnippet({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
+      viewport={{ once: true, margin: '-50px' }}
       transition={{
         duration: 0.5,
         delay: index * 0.08,
@@ -38,7 +38,7 @@ export function CodeSnippet({
       }}
       whileHover={{ y: -6 }}
       className={cn(
-        "ryda-glass-elevated rounded-xl overflow-hidden flex flex-col relative",
+        'ryda-glass-elevated rounded-xl overflow-hidden flex flex-col relative',
         className,
       )}
     >
@@ -47,7 +47,8 @@ export function CodeSnippet({
         aria-hidden="true"
         className="absolute inset-x-0 top-0 h-0.5"
         style={{
-          background: "linear-gradient(90deg, var(--ryda-yellow) 0%, var(--ryda-primary) 50%, var(--ryda-pink) 100%)",
+          background:
+            'linear-gradient(90deg, var(--ryda-yellow) 0%, var(--ryda-primary) 50%, var(--ryda-pink) 100%)',
         }}
       />
       {/* Editor chrome */}
@@ -76,7 +77,7 @@ export function CodeSnippet({
       <div className="px-4 sm:px-5 py-3 border-t border-ryda-border bg-ryda-bg-soft/40">
         <p className="text-xs sm:text-sm text-ryda-muted leading-relaxed flex gap-2">
           <span className="text-ryda-primary shrink-0" aria-hidden="true">
-            {"->"}
+            {'->'}
           </span>
           <span>{comment}</span>
         </p>

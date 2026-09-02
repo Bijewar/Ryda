@@ -1,9 +1,9 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
-import { Loader2, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Loader2, Power } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
 import { toast } from 'sonner';
 
 export interface OnlineToggleProps {
@@ -141,10 +141,13 @@ export default function OnlineToggle({
       setOnline(previous); // rollback
       stopLocationStreaming();
       if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('driver-online-toggle', { detail: { isOnline: previous } }));
+        window.dispatchEvent(
+          new CustomEvent('driver-online-toggle', { detail: { isOnline: previous } }),
+        );
       }
       toast.error('Status update failed', {
-        description: err instanceof Error ? err.message : 'Please check your connection and try again.',
+        description:
+          err instanceof Error ? err.message : 'Please check your connection and try again.',
       });
     } finally {
       setBusy(false);

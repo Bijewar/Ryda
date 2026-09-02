@@ -39,7 +39,11 @@ export function makePointSql(lng: number, lat: number): string {
  * Update a driver's currentLocation + heading. Uses raw SQL because the
  * column is `Unsupported("geometry(Point, 4326)")`.
  */
-export async function setDriverLocation(driverId: string, point: Point, heading?: number): Promise<void> {
+export async function setDriverLocation(
+  driverId: string,
+  point: Point,
+  heading?: number,
+): Promise<void> {
   if (heading !== undefined) {
     await db.$executeRaw`
       UPDATE "drivers"

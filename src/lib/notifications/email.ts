@@ -1,8 +1,8 @@
-import nodemailer from 'nodemailer';
-import { env } from '@/lib/env';
-import { isDemoMode, setDemoOtp } from '@/lib/demo-mode';
-import { logger } from '@/lib/observability/logger';
 import { generateEmailOtp } from '@/lib/auth/otp';
+import { isDemoMode, setDemoOtp } from '@/lib/demo-mode';
+import { env } from '@/lib/env';
+import { logger } from '@/lib/observability/logger';
+import nodemailer from 'nodemailer';
 
 /**
  * Email notifications — Nodemailer + Gmail SMTP.

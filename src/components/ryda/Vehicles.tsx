@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 /* ============================================================ *
  *  Vehicles.tsx — 5 illustrated SVG vehicles (Car, Bike, SUV,  *
@@ -35,8 +35,8 @@ function Wheel({
 }) {
   return (
     <g
-      className={spin ? "animate-[ryda-wheel-spin_3s_linear_infinite]" : ""}
-      style={{ transformOrigin: `${cx}px ${cy}px`, transformBox: "fill-box" }}
+      className={spin ? 'animate-[ryda-wheel-spin_3s_linear_infinite]' : ''}
+      style={{ transformOrigin: `${cx}px ${cy}px`, transformBox: 'fill-box' }}
     >
       {/* tire */}
       <circle cx={cx} cy={cy} r={r} fill="#1F2937" />
@@ -49,45 +49,21 @@ function Wheel({
       <g stroke="#9CA3AF" strokeWidth={1.4} strokeLinecap="round">
         <line x1={cx} y1={cy - r * 0.55} x2={cx} y2={cy + r * 0.55} />
         <line x1={cx - r * 0.55} y1={cy} x2={cx + r * 0.55} y2={cy} />
-        <line
-          x1={cx - r * 0.39}
-          y1={cy - r * 0.39}
-          x2={cx + r * 0.39}
-          y2={cy + r * 0.39}
-        />
-        <line
-          x1={cx - r * 0.39}
-          y1={cy + r * 0.39}
-          x2={cx + r * 0.39}
-          y2={cy - r * 0.39}
-        />
+        <line x1={cx - r * 0.39} y1={cy - r * 0.39} x2={cx + r * 0.39} y2={cy + r * 0.39} />
+        <line x1={cx - r * 0.39} y1={cy + r * 0.39} x2={cx + r * 0.39} y2={cy - r * 0.39} />
       </g>
     </g>
   );
 }
 
 function Shadow() {
-  return (
-    <ellipse
-      cx={100}
-      cy={92}
-      rx={72}
-      ry={5.5}
-      fill="#0F0F17"
-      opacity={0.10}
-    />
-  );
+  return <ellipse cx={100} cy={92} rx={72} ry={5.5} fill="#0F0F17" opacity={0.1} />;
 }
 
 /* ---------- 1. Car (sedan) ---------- */
-export function Car({ className, spin = false, title = "Sedan car" }: VehicleProps) {
+export function Car({ className, spin = false, title = 'Sedan car' }: VehicleProps) {
   return (
-    <svg
-      viewBox="0 0 200 100"
-      className={cn("block", className)}
-      role="img"
-      aria-label={title}
-    >
+    <svg viewBox="0 0 200 100" className={cn('block', className)} role="img" aria-label={title}>
       <title>{title}</title>
       <Shadow />
       {/* lower body */}
@@ -101,16 +77,8 @@ export function Car({ className, spin = false, title = "Sedan car" }: VehiclePro
         fill="#FF5722"
       />
       {/* windows */}
-      <path
-        d="M58 56 Q64 47 76 47 L100 47 L100 64 L52 64 Z"
-        fill="#7DD3FC"
-        opacity={0.85}
-      />
-      <path
-        d="M104 47 L128 47 Q138 47 144 56 L148 64 L104 64 Z"
-        fill="#7DD3FC"
-        opacity={0.85}
-      />
+      <path d="M58 56 Q64 47 76 47 L100 47 L100 64 L52 64 Z" fill="#7DD3FC" opacity={0.85} />
+      <path d="M104 47 L128 47 Q138 47 144 56 L148 64 L104 64 Z" fill="#7DD3FC" opacity={0.85} />
       {/* window pillar */}
       <rect x={100} y={47} width={4} height={17} fill="#C13B11" />
       {/* roof highlight */}
@@ -136,14 +104,9 @@ export function Car({ className, spin = false, title = "Sedan car" }: VehiclePro
 }
 
 /* ---------- 2. Bike (motorcycle) ---------- */
-export function Bike({ className, spin = false, title = "Motorcycle" }: VehicleProps) {
+export function Bike({ className, spin = false, title = 'Motorcycle' }: VehicleProps) {
   return (
-    <svg
-      viewBox="0 0 200 100"
-      className={cn("block", className)}
-      role="img"
-      aria-label={title}
-    >
+    <svg viewBox="0 0 200 100" className={cn('block', className)} role="img" aria-label={title}>
       <title>{title}</title>
       <Shadow />
       {/* rider silhouette — leaning forward, sporty */}
@@ -158,10 +121,7 @@ export function Bike({ className, spin = false, title = "Motorcycle" }: VehicleP
           fill="#FF5722"
         />
         {/* arm reaching to handlebar */}
-        <path
-          d="M116 50 Q124 50 132 48 L138 50 L138 52 Q130 54 122 56 L116 54 Z"
-          fill="#0F0F17"
-        />
+        <path d="M116 50 Q124 50 132 48 L138 50 L138 52 Q130 54 122 56 L116 54 Z" fill="#0F0F17" />
         {/* leg reaching to footpeg */}
         <path
           d="M112 56 Q118 64 124 70 L130 72 L130 74 Q122 74 116 68 Q110 62 108 58 Z"
@@ -178,18 +138,28 @@ export function Bike({ className, spin = false, title = "Motorcycle" }: VehicleP
         strokeLinejoin="round"
       />
       {/* fuel tank */}
-      <path
-        d="M88 56 Q100 50 116 52 L120 56 Z"
-        fill="#2DD4BF"
-      />
+      <path d="M88 56 Q100 50 116 52 L120 56 Z" fill="#2DD4BF" />
       {/* seat */}
-      <path
-        d="M68 56 L82 56 L78 64 L66 62 Z"
-        fill="#0F172A"
-      />
+      <path d="M68 56 L82 56 L78 64 L66 62 Z" fill="#0F172A" />
       {/* handlebar stem */}
-      <line x1={138} y1={48} x2={138} y2={60} stroke="#0F172A" strokeWidth={3} strokeLinecap="round" />
-      <line x1={130} y1={48} x2={146} y2={48} stroke="#0F172A" strokeWidth={3} strokeLinecap="round" />
+      <line
+        x1={138}
+        y1={48}
+        x2={138}
+        y2={60}
+        stroke="#0F172A"
+        strokeWidth={3}
+        strokeLinecap="round"
+      />
+      <line
+        x1={130}
+        y1={48}
+        x2={146}
+        y2={48}
+        stroke="#0F172A"
+        strokeWidth={3}
+        strokeLinecap="round"
+      />
       {/* headlight */}
       <circle cx={140} cy={48} r={3.5} fill="#FFE066" />
       {/* exhaust */}
@@ -202,14 +172,9 @@ export function Bike({ className, spin = false, title = "Motorcycle" }: VehicleP
 }
 
 /* ---------- 3. SUV ---------- */
-export function SUV({ className, spin = false, title = "SUV" }: VehicleProps) {
+export function SUV({ className, spin = false, title = 'SUV' }: VehicleProps) {
   return (
-    <svg
-      viewBox="0 0 200 100"
-      className={cn("block", className)}
-      role="img"
-      aria-label={title}
-    >
+    <svg viewBox="0 0 200 100" className={cn('block', className)} role="img" aria-label={title}>
       <title>{title}</title>
       <Shadow />
       {/* lower body */}
@@ -232,16 +197,8 @@ export function SUV({ className, spin = false, title = "SUV" }: VehicleProps) {
         <line x1={138} y1={34} x2={138} y2={38} />
       </g>
       {/* windshield + side windows */}
-      <path
-        d="M52 38 Q54 36 60 36 L98 36 L98 54 L48 54 Z"
-        fill="#7DD3FC"
-        opacity={0.85}
-      />
-      <path
-        d="M102 36 L138 36 Q144 36 148 40 L156 54 L102 54 Z"
-        fill="#7DD3FC"
-        opacity={0.85}
-      />
+      <path d="M52 38 Q54 36 60 36 L98 36 L98 54 L48 54 Z" fill="#7DD3FC" opacity={0.85} />
+      <path d="M102 36 L138 36 Q144 36 148 40 L156 54 L102 54 Z" fill="#7DD3FC" opacity={0.85} />
       <rect x={100} y={36} width={4} height={18} fill="#B58800" />
       <rect x={98} y={36} width={6} height={2} fill="#0F172A" opacity={0.3} />
       {/* headlight */}
@@ -262,21 +219,13 @@ export function SUV({ className, spin = false, title = "SUV" }: VehicleProps) {
 }
 
 /* ---------- 4. Auto (3-wheeler rickshaw) — iconic Indian ---------- */
-export function Auto({ className, spin = false, title = "Auto-rickshaw" }: VehicleProps) {
+export function Auto({ className, spin = false, title = 'Auto-rickshaw' }: VehicleProps) {
   return (
-    <svg
-      viewBox="0 0 200 100"
-      className={cn("block", className)}
-      role="img"
-      aria-label={title}
-    >
+    <svg viewBox="0 0 200 100" className={cn('block', className)} role="img" aria-label={title}>
       <title>{title}</title>
       <Shadow />
       {/* canopy — black */}
-      <path
-        d="M58 30 Q60 22 80 22 L128 22 Q146 22 148 32 L148 42 L58 42 Z"
-        fill="#0F172A"
-      />
+      <path d="M58 30 Q60 22 80 22 L128 22 Q146 22 148 32 L148 42 L58 42 Z" fill="#0F172A" />
       {/* canopy roof highlight */}
       <path
         d="M64 26 Q66 24 80 24 L128 24 Q142 24 144 28"
@@ -300,15 +249,9 @@ export function Auto({ className, spin = false, title = "Auto-rickshaw" }: Vehic
         fill="#FF4081"
       />
       {/* lower body darker */}
-      <path
-        d="M48 80 L48 72 L184 72 L184 78 Q184 80 182 80 L52 80 Q48 80 48 80 Z"
-        fill="#C2185B"
-      />
+      <path d="M48 80 L48 72 L184 72 L184 78 Q184 80 182 80 L52 80 Q48 80 48 80 Z" fill="#C2185B" />
       {/* driver cabin (front) */}
-      <path
-        d="M48 56 Q48 48 56 48 L66 48 L66 70 L48 70 Z"
-        fill="#E91E63"
-      />
+      <path d="M48 56 Q48 48 56 48 L66 48 L66 70 L48 70 Z" fill="#E91E63" />
       {/* headlight */}
       <circle cx={50} cy={62} r={3} fill="#FFE066" />
       {/* front fender */}
@@ -328,14 +271,9 @@ export function Auto({ className, spin = false, title = "Auto-rickshaw" }: Vehic
 }
 
 /* ---------- 5. Hatchback ---------- */
-export function Hatchback({ className, spin = false, title = "Hatchback" }: VehicleProps) {
+export function Hatchback({ className, spin = false, title = 'Hatchback' }: VehicleProps) {
   return (
-    <svg
-      viewBox="0 0 200 100"
-      className={cn("block", className)}
-      role="img"
-      aria-label={title}
-    >
+    <svg viewBox="0 0 200 100" className={cn('block', className)} role="img" aria-label={title}>
       <title>{title}</title>
       <Shadow />
       {/* lower body */}
@@ -349,16 +287,8 @@ export function Hatchback({ className, spin = false, title = "Hatchback" }: Vehi
         fill="#7C3AED"
       />
       {/* windows — short roof = hatchback */}
-      <path
-        d="M62 58 Q66 50 74 50 L98 50 L98 64 L56 64 Z"
-        fill="#7DD3FC"
-        opacity={0.85}
-      />
-      <path
-        d="M102 50 L126 50 Q134 50 138 58 L142 64 L102 64 Z"
-        fill="#7DD3FC"
-        opacity={0.85}
-      />
+      <path d="M62 58 Q66 50 74 50 L98 50 L98 64 L56 64 Z" fill="#7DD3FC" opacity={0.85} />
+      <path d="M102 50 L126 50 Q134 50 138 58 L142 64 L102 64 Z" fill="#7DD3FC" opacity={0.85} />
       <rect x={100} y={50} width={4} height={14} fill="#5B21B6" />
       {/* roof highlight */}
       <path
@@ -385,50 +315,50 @@ export function Hatchback({ className, spin = false, title = "Hatchback" }: Vehi
 /* ---------- Registry ---------- */
 export const VEHICLES = [
   {
-    id: "car",
-    name: "Car",
-    description: "For daily commutes",
-    price: "₹50 base",
-    accent: "#FF5722",
-    accentSoft: "#FFE5DC",
+    id: 'car',
+    name: 'Car',
+    description: 'For daily commutes',
+    price: '₹50 base',
+    accent: '#FF5722',
+    accentSoft: '#FFE5DC',
     Component: Car,
   },
   {
-    id: "bike",
-    name: "Bike",
-    description: "Beat the traffic",
-    price: "₹30 base",
-    accent: "#2DD4BF",
-    accentSoft: "#CCFBF1",
+    id: 'bike',
+    name: 'Bike',
+    description: 'Beat the traffic',
+    price: '₹30 base',
+    accent: '#2DD4BF',
+    accentSoft: '#CCFBF1',
     Component: Bike,
   },
   {
-    id: "suv",
-    name: "SUV",
-    description: "Group rides",
-    price: "₹80 base",
-    accent: "#FFD300",
-    accentSoft: "#FEF9C3",
+    id: 'suv',
+    name: 'SUV',
+    description: 'Group rides',
+    price: '₹80 base',
+    accent: '#FFD300',
+    accentSoft: '#FEF9C3',
     Component: SUV,
   },
   {
-    id: "auto",
-    name: "Auto",
-    description: "Iconic Bhopal rides",
-    price: "₹25 base",
-    accent: "#FF4081",
-    accentSoft: "#FCE7F3",
+    id: 'auto',
+    name: 'Auto',
+    description: 'Iconic Bhopal rides',
+    price: '₹25 base',
+    accent: '#FF4081',
+    accentSoft: '#FCE7F3',
     Component: Auto,
   },
   {
-    id: "hatchback",
-    name: "Hatchback",
-    description: "Easy on the wallet",
-    price: "₹40 base",
-    accent: "#7C3AED",
-    accentSoft: "#EDE9FE",
+    id: 'hatchback',
+    name: 'Hatchback',
+    description: 'Easy on the wallet',
+    price: '₹40 base',
+    accent: '#7C3AED',
+    accentSoft: '#EDE9FE',
     Component: Hatchback,
   },
 ] as const;
 
-export type VehicleId = (typeof VEHICLES)[number]["id"];
+export type VehicleId = (typeof VEHICLES)[number]['id'];

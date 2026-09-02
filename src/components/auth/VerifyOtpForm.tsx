@@ -1,13 +1,13 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { isDemoMode } from '@/lib/demo-mode';
+import { Loader2 } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import * as React from 'react';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 /**
@@ -100,12 +100,17 @@ export function VerifyOtpForm(): React.ReactElement {
           autoFocus
         />
         {error && (
-          <p className="text-xs text-destructive" role="alert">{error}</p>
+          <p className="text-xs text-destructive" role="alert">
+            {error}
+          </p>
         )}
         {isDemoMode && (
           <p className="text-xs text-muted-foreground">
             Demo mode: the OTP was logged to the server console + visible at{' '}
-            <a href="/dev/otp" className="text-ryda-accent hover:underline">/dev/otp</a>.
+            <a href="/dev/otp" className="text-ryda-accent hover:underline">
+              /dev/otp
+            </a>
+            .
           </p>
         )}
       </div>

@@ -1,11 +1,9 @@
 import { db } from '@/lib/db/client';
-import { getSystemSettings } from './system-settings';
 import { createNotification } from '@/lib/notifications/in-app';
-import { offerRideToDrivers } from '@/server/matching/offer';
+import { logger } from '@/lib/observability/logger';
 import { emitToRide } from '@/lib/realtime/server';
 import { formatCurrency } from '@/lib/utils';
-import { logger } from '@/lib/observability/logger';
-import type { Point } from '@/lib/db/postgis';
+import { getSystemSettings } from './system-settings';
 
 export interface CompensationResult {
   issued: boolean;
@@ -40,7 +38,7 @@ export async function handleDriverCancellationCompensation(opts: {
   // Calculate flat compensation: ₹25.00 (2500 paise), bounded between ₹20 and ₹30
   const compensationPaise = Math.min(
     config.customerCompensationMaxAmount, // 3000 (₹30)
-    Math.max(2000, config.customerCompensationBaseAmount) // 2500 (₹25)
+    Math.max(2000, config.customerCompensationBaseAmount), // 2500 (₹25)
   );
 
   // 1. Issue compensation record
@@ -111,7 +109,9 @@ export async function handleDriverCancellationCompensation(opts: {
  * Check if a passenger has experienced multiple driver cancellations (> 10)
  * and grant an automatic flat ₹25 loyalty recovery bonus.
  */
-export async function checkAndCompensateFrequentCancellations(passengerId: string): Promise<boolean> {
+export async function checkAndCompensateFrequentCancellations(
+  passengerId: string,
+): Promise<boolean> {
   const cancellationCount = await db.customerCompensation.count({
     where: { passengerId },
   });

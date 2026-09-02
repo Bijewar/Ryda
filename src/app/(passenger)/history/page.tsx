@@ -1,12 +1,12 @@
+import { Card, CardContent } from '@/components/ui/card';
+import { auth } from '@/lib/auth/config';
+import { db } from '@/lib/db/client';
+import { formatCurrency, formatDate } from '@/lib/utils';
+import type { RideStatus } from '@/types/ride';
+import { ArrowLeft, ArrowRight, Clock, Receipt } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { ArrowLeft, Clock, MapPin, Receipt, Star, ArrowRight } from 'lucide-react';
-import { auth } from '@/lib/auth/config';
-import { db } from '@/lib/db/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency, formatDate, formatDistance } from '@/lib/utils';
-import type { RideStatus } from '@/types/ride';
 
 export const metadata: Metadata = {
   title: 'Ride History — Ryda',
@@ -17,8 +17,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function RideHistoryPage(): Promise<React.ReactElement> {
   const session = await auth();
-  const user = (session?.user as { id: string; accountType: 'PASSENGER' | 'ADMIN'; driverId?: string } | undefined) ??
-    (process.env.DEMO_MODE === 'true' ? { id: 'demo-user-aarav', accountType: 'PASSENGER' as const } : undefined);
+  const user =
+    (session?.user as
+      | { id: string; accountType: 'PASSENGER' | 'ADMIN'; driverId?: string }
+      | undefined) ??
+    (process.env.DEMO_MODE === 'true'
+      ? { id: 'demo-user-aarav', accountType: 'PASSENGER' as const }
+      : undefined);
 
   if (!user) redirect('/login?callbackUrl=/history');
 
@@ -61,7 +66,8 @@ export default async function RideHistoryPage(): Promise<React.ReactElement> {
             </div>
             <h3 className="font-display font-bold text-xl text-ryda-text">No rides taken yet</h3>
             <p className="text-sm text-ryda-muted max-w-sm mx-auto mt-2 mb-6">
-              When you take a ride with Ryda, all your receipts, driver ratings, and route details will show up here.
+              When you take a ride with Ryda, all your receipts, driver ratings, and route details
+              will show up here.
             </p>
             <Link
               href="/dashboard"
@@ -74,7 +80,10 @@ export default async function RideHistoryPage(): Promise<React.ReactElement> {
         ) : (
           <div className="space-y-4">
             {rides.map((ride) => (
-              <Card key={ride.id} className="rounded-3xl border-ryda-border bg-ryda-surface shadow-sm hover:shadow-md transition-all overflow-hidden">
+              <Card
+                key={ride.id}
+                className="rounded-3xl border-ryda-border bg-ryda-surface shadow-sm hover:shadow-md transition-all overflow-hidden"
+              >
                 <CardContent className="p-5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-2 flex-1">
@@ -88,7 +97,9 @@ export default async function RideHistoryPage(): Promise<React.ReactElement> {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full bg-ryda-accent" />
-                          <span className="text-sm font-semibold text-ryda-text">{ride.pickupAddress}</span>
+                          <span className="text-sm font-semibold text-ryda-text">
+                            {ride.pickupAddress}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
@@ -98,9 +109,13 @@ export default async function RideHistoryPage(): Promise<React.ReactElement> {
 
                       {ride.driver && (
                         <div className="flex items-center gap-2 text-xs text-ryda-muted pt-1">
-                          <span>Driver: {ride.driver.firstName} {ride.driver.lastName}</span>
+                          <span>
+                            Driver: {ride.driver.firstName} {ride.driver.lastName}
+                          </span>
                           <span>•</span>
-                          <span>{ride.driver.vehicle?.make} ({ride.driver.vehicle?.licensePlate})</span>
+                          <span>
+                            {ride.driver.vehicle?.make} ({ride.driver.vehicle?.licensePlate})
+                          </span>
                         </div>
                       )}
                     </div>

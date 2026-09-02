@@ -1,12 +1,12 @@
+import { Logo } from '@/components/brand/Logo';
+import { Card, CardContent } from '@/components/ui/card';
+import { auth } from '@/lib/auth/config';
+import { db } from '@/lib/db/client';
+import { formatCurrency } from '@/lib/utils';
+import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, Download, Printer } from 'lucide-react';
-import { auth } from '@/lib/auth/config';
-import { db } from '@/lib/db/client';
-import { Card, CardContent } from '@/components/ui/card';
-import { Logo } from '@/components/brand/Logo';
-import { formatCurrency, formatDate } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'Trip Receipt — Ryda',
@@ -21,8 +21,13 @@ export default async function ReceiptPage({
 }): Promise<React.ReactElement> {
   const { id } = await params;
   const session = await auth();
-  const user = (session?.user as { id: string; accountType: 'PASSENGER' | 'ADMIN'; driverId?: string } | undefined) ??
-    (process.env.DEMO_MODE === 'true' ? { id: 'demo-user-aarav', accountType: 'PASSENGER' as const } : undefined);
+  const user =
+    (session?.user as
+      | { id: string; accountType: 'PASSENGER' | 'ADMIN'; driverId?: string }
+      | undefined) ??
+    (process.env.DEMO_MODE === 'true'
+      ? { id: 'demo-user-aarav', accountType: 'PASSENGER' as const }
+      : undefined);
 
   if (!user) redirect(`/login?callbackUrl=/receipts/${id}`);
 
@@ -58,13 +63,17 @@ export default async function ReceiptPage({
               <Logo size="md" />
             </div>
             <h1 className="font-display text-2xl font-extrabold">Tax Invoice &amp; Receipt</h1>
-            <p className="text-xs text-emerald-100 mt-0.5">Trip ID: {ride.id.slice(0, 12).toUpperCase()}</p>
+            <p className="text-xs text-emerald-100 mt-0.5">
+              Trip ID: {ride.id.slice(0, 12).toUpperCase()}
+            </p>
           </div>
 
           <CardContent className="p-6 sm:p-8 space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-ryda-border">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-ryda-muted">Total Paid</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-ryda-muted">
+                  Total Paid
+                </p>
                 <p className="text-3xl font-extrabold text-ryda-text font-display mt-0.5">
                   {formatCurrency(ride.fareAmount, ride.currency)}
                 </p>
@@ -76,7 +85,9 @@ export default async function ReceiptPage({
 
             {/* Trip Details */}
             <div className="space-y-3">
-              <p className="text-xs font-bold uppercase tracking-wider text-ryda-muted">Trip Route</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-ryda-muted">
+                Trip Route
+              </p>
               <div className="space-y-3 bg-ryda-elevated/40 p-4 rounded-2xl border border-ryda-border">
                 <div className="flex items-start gap-2.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-ryda-accent mt-1 flex-shrink-0" />
@@ -97,7 +108,9 @@ export default async function ReceiptPage({
 
             {/* Fare Breakdown */}
             <div className="space-y-2 pt-2">
-              <p className="text-xs font-bold uppercase tracking-wider text-ryda-muted">Fare Breakdown</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-ryda-muted">
+                Fare Breakdown
+              </p>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-ryda-muted">
                   <span>Base Fare</span>
@@ -113,7 +126,9 @@ export default async function ReceiptPage({
                 </div>
                 <div className="flex justify-between font-bold text-base text-ryda-text pt-2 border-t border-ryda-border">
                   <span>Total (INR)</span>
-                  <span className="text-ryda-accent-dim">{formatCurrency(ride.fareAmount, ride.currency)}</span>
+                  <span className="text-ryda-accent-dim">
+                    {formatCurrency(ride.fareAmount, ride.currency)}
+                  </span>
                 </div>
               </div>
             </div>

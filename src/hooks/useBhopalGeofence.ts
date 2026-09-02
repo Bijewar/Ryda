@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import type { Point } from '@/types/ride';
+import { useEffect, useState } from 'react';
 
 /**
  * useBhopalGeofence — client-side validation hook using `/geo/RydaMap.geojson`.

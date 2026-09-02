@@ -1,15 +1,18 @@
-import { NextResponse } from 'next/server';
 import { requirePassenger } from '@/lib/auth/session';
-import { rateRide } from '@/server/services/ride-service';
 import { rideRateSchema } from '@/lib/validation/ride';
-import { ok, error, statusForCode } from '@/types/api';
+import { rateRide } from '@/server/services/ride-service';
+import { error, ok, statusForCode } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 /**
  * POST /api/rides/[id]/rate
  *
  * Submit a 1-5 star rating + optional feedback for a completed ride.
  */
-export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function POST(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
   const { id } = await ctx.params;
   try {
     await requirePassenger();

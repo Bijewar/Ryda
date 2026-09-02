@@ -1,13 +1,12 @@
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { auth } from '@/lib/auth/config';
+import { formatCurrency } from '@/lib/utils';
+import { getDriverEarnings } from '@/server/services/driver-service';
+import { ArrowLeft, ShieldCheck, TrendingUp, Zap } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { ArrowLeft, Banknote, Calendar, TrendingUp, Wallet, Zap, ShieldCheck } from 'lucide-react';
-import { auth } from '@/lib/auth/config';
-import { db } from '@/lib/db/client';
-import { getDriverEarnings } from '@/server/services/driver-service';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { formatCurrency, formatDate } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'Driver Earnings — Ryda',
@@ -18,8 +17,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function DriverEarningsPage(): Promise<React.ReactElement> {
   const session = await auth();
-  const user = (session?.user as { id: string; accountType: 'PASSENGER' | 'ADMIN'; driverId?: string } | undefined) ??
-    (process.env.DEMO_MODE === 'true' ? { id: 'demo-user-imran', accountType: 'PASSENGER' as const, driverId: 'demo-driver-imran' } : undefined);
+  const user =
+    (session?.user as
+      | { id: string; accountType: 'PASSENGER' | 'ADMIN'; driverId?: string }
+      | undefined) ??
+    (process.env.DEMO_MODE === 'true'
+      ? { id: 'demo-user-imran', accountType: 'PASSENGER' as const, driverId: 'demo-driver-imran' }
+      : undefined);
 
   if (!user) redirect('/login?callbackUrl=/earnings');
   if (!user.driverId && user.accountType !== 'ADMIN') redirect('/dashboard');
@@ -66,10 +70,10 @@ export default async function DriverEarningsPage(): Promise<React.ReactElement> 
         {/* Top Earnings Banner */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card className="rounded-3xl border-ryda-border bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl p-6">
-            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-100">Withdrawable Balance</p>
-            <p className="font-display text-3xl font-extrabold mt-1">
-              ₹ 4,820
+            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-100">
+              Withdrawable Balance
             </p>
+            <p className="font-display text-3xl font-extrabold mt-1">₹ 4,820</p>
             <p className="text-xs text-emerald-100 mt-2">Zero payout charges · Direct UPI</p>
             <Button className="mt-4 w-full bg-white text-emerald-800 hover:bg-emerald-50 font-bold rounded-xl py-4 shadow-md">
               Withdraw to Bank
@@ -92,10 +96,10 @@ export default async function DriverEarningsPage(): Promise<React.ReactElement> 
               <span className="text-xs font-bold uppercase tracking-wider">Captain Incentive</span>
               <Zap className="w-4 h-4 text-amber-500" />
             </div>
-            <p className="font-display text-3xl font-extrabold text-ryda-text">
-              +2.0% Bonus
+            <p className="font-display text-3xl font-extrabold text-ryda-text">+2.0% Bonus</p>
+            <p className="text-xs text-emerald-700 font-semibold mt-2">
+              Reliable Captain tier qualified
             </p>
-            <p className="text-xs text-emerald-700 font-semibold mt-2">Reliable Captain tier qualified</p>
           </Card>
         </div>
 
@@ -112,7 +116,10 @@ export default async function DriverEarningsPage(): Promise<React.ReactElement> 
           <CardContent className="p-0 pt-6">
             <div className="flex items-end gap-3 h-48 mb-4">
               {weeklyBars.map((h, idx) => (
-                <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                <div
+                  key={idx}
+                  className="flex-1 flex flex-col items-center gap-2 h-full justify-end"
+                >
                   <div
                     style={{ height: `${h}%` }}
                     className="w-full rounded-t-xl bg-gradient-to-t from-emerald-500 to-teal-400 transition-all shadow-xs"

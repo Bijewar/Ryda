@@ -1,8 +1,11 @@
-import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/client';
-import { findDriverByEmailOrId, getDriverOfferOrTrip, dismissDriverOffer } from '@/lib/db/driverStore';
-import { ok, error, statusForCode } from '@/types/api';
-import type { RideOfferPayload } from '@/lib/realtime/events';
+import {
+  dismissDriverOffer,
+  findDriverByEmailOrId,
+  getDriverOfferOrTrip,
+} from '@/lib/db/driverStore';
+import { ok } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 export interface ActiveTripPayload {
   rideId: string;

@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { db } from '@/lib/db/client';
+import type { Point } from '@/lib/db/postgis';
 import { env } from '@/lib/env';
 import { logger } from '@/lib/observability/logger';
-import type { Point } from '@/lib/db/postgis';
 
 /**
  * Bhopal geofence helpers using RydaMap.geojson.
@@ -24,7 +24,7 @@ interface GeoJSONFeatureCollection {
 
 let bhopalFeature: GeoJSONFeatureCollection['features'][number] | null = null;
 let bhopalOuterRing: number[][] | null = null;
-let bhopalBbox: { minLng: number; minLat: number; maxLng: number; maxLat: number } = {
+const bhopalBbox: { minLng: number; minLat: number; maxLng: number; maxLat: number } = {
   minLng: 77.0,
   minLat: 23.0,
   maxLng: 77.8,
@@ -40,8 +40,15 @@ function loadFromDisk(): void {
     const feature = fc.features?.[0];
     if (feature) {
       bhopalFeature = feature;
-      if (feature.geometry && feature.geometry.coordinates && Array.isArray(feature.geometry.coordinates[0])) {
-        bhopalOuterRing = (feature.geometry.coordinates[0] as number[][]).map((pt) => [pt[0] ?? 0, pt[1] ?? 0]);
+      if (
+        feature.geometry &&
+        feature.geometry.coordinates &&
+        Array.isArray(feature.geometry.coordinates[0])
+      ) {
+        bhopalOuterRing = (feature.geometry.coordinates[0] as number[][]).map((pt) => [
+          pt[0] ?? 0,
+          pt[1] ?? 0,
+        ]);
       }
     }
   } catch (err) {
@@ -55,14 +62,27 @@ export function getBhopalPolygonGeoJSON(): string {
   if (!bhopalFeature) {
     return JSON.stringify({
       type: 'Polygon',
-      coordinates: [[[77.2, 23.1], [77.6, 23.1], [77.6, 23.5], [77.2, 23.5], [77.2, 23.1]]],
+      coordinates: [
+        [
+          [77.2, 23.1],
+          [77.6, 23.1],
+          [77.6, 23.5],
+          [77.2, 23.5],
+          [77.2, 23.1],
+        ],
+      ],
     });
   }
   return JSON.stringify(bhopalFeature.geometry);
 }
 
 /** Returns the bounding box of the Bhopal polygon. */
-export function getBhopalBbox(): { minLng: number; minLat: number; maxLng: number; maxLat: number } {
+export function getBhopalBbox(): {
+  minLng: number;
+  minLat: number;
+  maxLng: number;
+  maxLat: number;
+} {
   loadFromDisk();
   return bhopalBbox;
 }

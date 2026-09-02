@@ -1,11 +1,12 @@
-import Link from 'next/link';
 import { DriverRegisterForm } from '@/components/auth/DriverRegisterForm';
 import { Logo } from '@/components/ryda/Logo';
 import { Shield, Sparkles, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
 
 export const metadata = {
   title: 'Register as Driver Captain — Ryda',
-  description: 'Join Ryda as a driver partner in Bhopal. Low commissions, flexible hours, fast payouts.',
+  description:
+    'Join Ryda as a driver partner in Bhopal. Low commissions, flexible hours, fast payouts.',
 };
 
 export default function DriverRegisterPage() {
@@ -20,9 +21,12 @@ export default function DriverRegisterPage() {
           <Link href="/" className="flex items-center gap-2 group">
             <Logo size="lg" showWordmark />
           </Link>
-          <h1 className="font-display text-3xl font-extrabold sm:text-4xl text-ryda-text">Drive with Ryda in Bhopal</h1>
+          <h1 className="font-display text-3xl font-extrabold sm:text-4xl text-ryda-text">
+            Drive with Ryda in Bhopal
+          </h1>
           <p className="text-sm text-ryda-muted max-w-md">
-            Earn more with instant daily payouts, transparent fares, and dedicated Bhopal city operations support.
+            Earn more with instant daily payouts, transparent fares, and dedicated Bhopal city
+            operations support.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs font-semibold">

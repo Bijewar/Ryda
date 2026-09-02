@@ -1,17 +1,16 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { Banknote, Car, Clock, Star, TrendingUp, Sparkles, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { auth } from '@/lib/auth/config';
 import { db } from '@/lib/db/client';
 import { findDriverByEmailOrId } from '@/lib/db/driverStore';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
+import { Banknote, Car, Clock, ShieldCheck, Star, TrendingUp } from 'lucide-react';
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import ActiveOfferCardClient from './_components/ActiveOfferCardClient';
+import { DriverShiftHistoryClient } from './_components/DriverShiftHistoryClient';
 import OnlineToggleClient from './_components/OnlineToggleClient';
 import { PendingApprovalClient } from './_components/PendingApprovalClient';
-import { DriverShiftHistoryClient } from './_components/DriverShiftHistoryClient';
 
 export const metadata: Metadata = {
   title: 'Driver Dashboard — Ryda',
@@ -22,12 +21,14 @@ export const dynamic = 'force-dynamic';
 
 export default async function DriverDashboardPage(): Promise<React.ReactElement> {
   const session = await auth();
-  const user = session?.user as {
-    id: string;
-    email?: string | null;
-    accountType?: 'PASSENGER' | 'ADMIN';
-    driverId?: string;
-  } | undefined;
+  const user = session?.user as
+    | {
+        id: string;
+        email?: string | null;
+        accountType?: 'PASSENGER' | 'ADMIN';
+        driverId?: string;
+      }
+    | undefined;
 
   if (!user) redirect('/login?callbackUrl=/driver-dashboard');
 
@@ -81,22 +82,26 @@ export default async function DriverDashboardPage(): Promise<React.ReactElement>
 
   try {
     const [notif, ongoingTrip] = await Promise.all([
-      db.notification.findFirst({
-        where: {
-          driverId: driver.id,
-          type: 'RIDE_REQUEST',
-          readAt: null,
-        },
-        orderBy: { createdAt: 'desc' },
-      }).catch(() => null),
-      db.ride.findFirst({
-        where: {
-          driverId: driver.id,
-          status: { in: ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS'] },
-        },
-        include: { passenger: true },
-        orderBy: { requestedAt: 'desc' },
-      }).catch(() => null),
+      db.notification
+        .findFirst({
+          where: {
+            driverId: driver.id,
+            type: 'RIDE_REQUEST',
+            readAt: null,
+          },
+          orderBy: { createdAt: 'desc' },
+        })
+        .catch(() => null),
+      db.ride
+        .findFirst({
+          where: {
+            driverId: driver.id,
+            status: { in: ['ACCEPTED', 'ARRIVED', 'IN_PROGRESS'] },
+          },
+          include: { passenger: true },
+          orderBy: { requestedAt: 'desc' },
+        })
+        .catch(() => null),
     ]);
 
     if (notif?.data && typeof notif.data === 'object' && (notif.data as any).rideId) {
@@ -139,7 +144,9 @@ export default async function DriverDashboardPage(): Promise<React.ReactElement>
                   {driver.rating ? driver.rating.toFixed(1) : '5.0'} Rating
                 </span>
                 <span>•</span>
-                <span>{driver.vehicle?.make} {driver.vehicle?.model} ({driver.vehicle?.licensePlate})</span>
+                <span>
+                  {driver.vehicle?.make} {driver.vehicle?.model} ({driver.vehicle?.licensePlate})
+                </span>
               </div>
             </div>
           </div>
@@ -163,7 +170,9 @@ export default async function DriverDashboardPage(): Promise<React.ReactElement>
             <div className="mt-4 grid sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-ryda-muted font-semibold">PASSENGER</p>
-                <p className="text-base font-bold text-ryda-text mt-0.5">{activeOngoingTrip.passenger?.name || 'Passenger'}</p>
+                <p className="text-base font-bold text-ryda-text mt-0.5">
+                  {activeOngoingTrip.passenger?.name || 'Passenger'}
+                </p>
                 <p className="text-xs text-ryda-muted">{activeOngoingTrip.passenger?.phone}</p>
               </div>
               <div>
@@ -175,7 +184,11 @@ export default async function DriverDashboardPage(): Promise<React.ReactElement>
             </div>
           </div>
         ) : (
-          <ActiveOfferCardClient driverId={driver.id} initialOffer={activeOffer} isOnline={driver.isOnline} />
+          <ActiveOfferCardClient
+            driverId={driver.id}
+            initialOffer={activeOffer}
+            isOnline={driver.isOnline}
+          />
         )}
 
         {/* 4 REAL Stat KPIs for the Day & Overall */}
@@ -203,10 +216,7 @@ export default async function DriverDashboardPage(): Promise<React.ReactElement>
         </div>
 
         {/* Real Daily Shift History Ledger */}
-        <DriverShiftHistoryClient
-          driverId={driver.id}
-          initialRides={allRides}
-        />
+        <DriverShiftHistoryClient driverId={driver.id} initialRides={allRides} />
 
         {/* Vehicle & Documents Info */}
         <div className="grid lg:grid-cols-2 gap-6">
@@ -220,11 +230,15 @@ export default async function DriverDashboardPage(): Promise<React.ReactElement>
             <CardContent className="p-0 space-y-3">
               <div className="flex items-center justify-between py-2 border-b border-ryda-border/60 text-sm">
                 <span className="text-ryda-muted font-medium">Vehicle Make &amp; Model</span>
-                <span className="font-bold text-ryda-text">{driver.vehicle?.make} {driver.vehicle?.model}</span>
+                <span className="font-bold text-ryda-text">
+                  {driver.vehicle?.make} {driver.vehicle?.model}
+                </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-ryda-border/60 text-sm">
                 <span className="text-ryda-muted font-medium">License Number Plate</span>
-                <span className="font-mono font-bold text-ryda-accent-dim">{driver.vehicle?.licensePlate}</span>
+                <span className="font-mono font-bold text-ryda-accent-dim">
+                  {driver.vehicle?.licensePlate}
+                </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-ryda-border/60 text-sm">
                 <span className="text-ryda-muted font-medium">Vehicle Tier</span>
@@ -232,7 +246,9 @@ export default async function DriverDashboardPage(): Promise<React.ReactElement>
               </div>
               <div className="flex items-center justify-between py-2 text-sm">
                 <span className="text-ryda-muted font-medium">Vehicle Color &amp; Year</span>
-                <span className="font-bold text-ryda-text">{driver.vehicle?.color} ({driver.vehicle?.year})</span>
+                <span className="font-bold text-ryda-text">
+                  {driver.vehicle?.color} ({driver.vehicle?.year})
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -281,7 +297,9 @@ function StatCard({
           {icon}
           <span className="text-[10px] uppercase font-bold tracking-wider">{label}</span>
         </div>
-        <p className="mt-2 text-lg font-display font-extrabold text-ryda-text tabular-nums">{value}</p>
+        <p className="mt-2 text-lg font-display font-extrabold text-ryda-text tabular-nums">
+          {value}
+        </p>
       </CardContent>
     </Card>
   );

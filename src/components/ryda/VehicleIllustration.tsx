@@ -1,6 +1,15 @@
 import * as React from 'react';
 
-export type VehicleType = 'bike' | 'auto' | 'cab' | 'premium' | 'suv' | 'BIKE' | 'AUTO' | 'CAB_ECONOMY' | 'CAB_PREMIUM';
+export type VehicleType =
+  | 'bike'
+  | 'auto'
+  | 'cab'
+  | 'premium'
+  | 'suv'
+  | 'BIKE'
+  | 'AUTO'
+  | 'CAB_ECONOMY'
+  | 'CAB_PREMIUM';
 
 interface VehicleIllustrationProps extends React.SVGAttributes<SVGSVGElement> {
   type: VehicleType;
@@ -33,11 +42,15 @@ export function VehicleIllustration({
   else if (type === 'suv') normType = 'suv';
 
   const defaultColor =
-    normType === 'bike' ? '#10B981' :
-    normType === 'auto' ? '#F59E0B' :
-    normType === 'cab' ? '#10B981' :
-    normType === 'premium' ? '#1E293B' :
-    '#0F172A';
+    normType === 'bike'
+      ? '#10B981'
+      : normType === 'auto'
+        ? '#F59E0B'
+        : normType === 'cab'
+          ? '#10B981'
+          : normType === 'premium'
+            ? '#1E293B'
+            : '#0F172A';
 
   const activeColor = color ?? defaultColor;
 
@@ -93,7 +106,13 @@ function Bike({ gid, accent }: { gid: string; accent: string }) {
       {/* Rider */}
       <circle cx="118" cy="48" r="10" fill="#1F2937" />
       <path d="M118 58 Q108 70 108 78 L128 78 Q128 70 118 58 Z" fill="#1F2937" />
-      <path d="M118 58 L130 72 L138 68" stroke="#1F2937" strokeWidth="6" fill="none" strokeLinecap="round" />
+      <path
+        d="M118 58 L130 72 L138 68"
+        stroke="#1F2937"
+        strokeWidth="6"
+        fill="none"
+        strokeLinecap="round"
+      />
     </g>
   );
 }
@@ -102,7 +121,10 @@ function Auto({ gid, accent }: { gid: string; accent: string }) {
   return (
     <g>
       {/* Body */}
-      <path d="M55 100 L55 75 Q55 60 75 60 L130 60 Q160 60 170 85 L175 100 Z" fill={`url(#${gid})`} />
+      <path
+        d="M55 100 L55 75 Q55 60 75 60 L130 60 Q160 60 170 85 L175 100 Z"
+        fill={`url(#${gid})`}
+      />
       {/* Roof */}
       <path d="M75 60 Q90 35 130 35 L130 60 Z" fill={`url(#${gid})`} />
       {/* Window */}
@@ -124,7 +146,10 @@ function Cab({ gid, accent }: { gid: string; accent: string }) {
   return (
     <g>
       {/* Body */}
-      <path d="M30 100 L30 80 Q35 70 50 70 L80 70 Q90 50 130 50 L160 50 Q180 50 195 75 L210 80 L210 100 Z" fill={`url(#${gid})`} />
+      <path
+        d="M30 100 L30 80 Q35 70 50 70 L80 70 Q90 50 130 50 L160 50 Q180 50 195 75 L210 80 L210 100 Z"
+        fill={`url(#${gid})`}
+      />
       {/* Windows */}
       <path d="M55 70 Q65 55 95 55 L130 55 L130 70 Z" fill="#E0F2FE" opacity="0.9" />
       <path d="M130 55 L160 55 Q175 55 188 70 L130 70 Z" fill="#E0F2FE" opacity="0.9" />
@@ -149,12 +174,20 @@ function Premium({ gid, accent }: { gid: string; accent: string }) {
   return (
     <g>
       {/* Body — sleeker */}
-      <path d="M25 100 L25 82 Q30 70 45 70 L75 70 Q85 48 130 48 L165 48 Q190 48 205 78 L215 82 L215 100 Z" fill={`url(#${gid})`} />
+      <path
+        d="M25 100 L25 82 Q30 70 45 70 L75 70 Q85 48 130 48 L165 48 Q190 48 205 78 L215 82 L215 100 Z"
+        fill={`url(#${gid})`}
+      />
       {/* Glass roof */}
       <path d="M60 70 Q70 53 100 53 L130 53 L130 70 Z" fill="#0F172A" opacity="0.85" />
       <path d="M130 53 L165 53 Q183 53 198 70 L130 70 Z" fill="#0F172A" opacity="0.85" />
       {/* Highlight */}
-      <path d="M62 67 Q72 56 96 56 L128 56" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" fill="none" />
+      <path
+        d="M62 67 Q72 56 96 56 L128 56"
+        stroke="rgba(255,255,255,0.4)"
+        strokeWidth="1.5"
+        fill="none"
+      />
       {/* Door */}
       <line x1="130" y1="70" x2="130" y2="100" stroke="rgba(0,0,0,0.18)" strokeWidth="1.5" />
       {/* Premium stripe */}
@@ -176,12 +209,20 @@ function Suv({ gid, accent }: { gid: string; accent: string }) {
   return (
     <g>
       {/* Body — taller SUV */}
-      <path d="M25 100 L25 70 Q30 60 45 60 L70 60 Q80 38 120 38 L160 38 Q190 38 200 65 L215 75 L215 100 Z" fill={`url(#${gid})`} />
+      <path
+        d="M25 100 L25 70 Q30 60 45 60 L70 60 Q80 38 120 38 L160 38 Q190 38 200 65 L215 75 L215 100 Z"
+        fill={`url(#${gid})`}
+      />
       {/* Windows */}
       <path d="M50 60 Q60 44 90 44 L125 44 L125 60 Z" fill="#0F172A" opacity="0.85" />
       <path d="M125 44 L160 44 Q185 44 197 64 L125 64 Z" fill="#0F172A" opacity="0.85" />
       {/* Highlight */}
-      <path d="M55 57 Q65 47 88 47 L122 47" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" fill="none" />
+      <path
+        d="M55 57 Q65 47 88 47 L122 47"
+        stroke="rgba(255,255,255,0.35)"
+        strokeWidth="1.5"
+        fill="none"
+      />
       {/* Roof rack */}
       <rect x="70" y="42" width="80" height="3" rx="1.5" fill={accent} />
       {/* Door */}

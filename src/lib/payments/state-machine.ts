@@ -1,7 +1,7 @@
 import { db } from '@/lib/db/client';
 import { logger } from '@/lib/observability/logger';
-import type { PaymentStatus } from '@/types/ride';
 import { ALLOWED_PAYMENT_TRANSITIONS } from '@/types/payment';
+import type { PaymentStatus } from '@/types/ride';
 
 /**
  * Atomic Payment state machine.
@@ -31,7 +31,10 @@ export async function transitionPayment(
   to: PaymentStatus,
   extra: Record<string, unknown> = {},
 ): Promise<void> {
-  const current = await db.payment.findUnique({ where: { id: paymentId }, select: { status: true } });
+  const current = await db.payment.findUnique({
+    where: { id: paymentId },
+    select: { status: true },
+  });
   if (!current) throw new PaymentStateError('NOT_FOUND', `Payment ${paymentId} not found`);
 
   const allowed = ALLOWED_PAYMENT_TRANSITIONS[current.status];

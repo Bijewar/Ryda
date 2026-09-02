@@ -1,52 +1,39 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Menu, Github, ExternalLink, X, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetTitle,
-  SheetClose,
-} from "@/components/ui/sheet";
-import { ThemeToggle } from "./ThemeToggle";
-import { cn } from "@/lib/utils";
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
+import { ExternalLink, Github, Menu, Sparkles, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ThemeToggle } from './ThemeToggle';
 
 const NAV_LINKS = [
-  { href: "#architecture", label: "Architecture" },
-  { href: "#features", label: "Features" },
-  { href: "#vehicles", label: "Vehicles" },
-  { href: "#bhopal", label: "Bhopal" },
-  { href: "#resume", label: "Resume" },
+  { href: '#architecture', label: 'Architecture' },
+  { href: '#features', label: 'Features' },
+  { href: '#vehicles', label: 'Vehicles' },
+  { href: '#bhopal', label: 'Bhopal' },
+  { href: '#resume', label: 'Resume' },
 ] as const;
 
 function Logo() {
   return (
-    <a
-      href="#top"
-      className="flex items-center gap-2 group"
-      aria-label="Ryda v2 — back to top"
-    >
-      <span className="text-lg sm:text-xl font-extrabold tracking-tight text-ryda-text">
-        RYDA
-      </span>
+    <a href="#top" className="flex items-center gap-2 group" aria-label="Ryda v2 — back to top">
+      <span className="text-lg sm:text-xl font-extrabold tracking-tight text-ryda-text">RYDA</span>
       {/* gradient dot — orange→pink */}
       <span
         aria-hidden="true"
         className="size-2 rounded-full"
         style={{
-          background:
-            "linear-gradient(135deg, var(--ryda-primary) 0%, var(--ryda-pink) 100%)",
-          boxShadow: "0 0 10px rgba(255, 87, 34, 0.5)",
+          background: 'linear-gradient(135deg, var(--ryda-primary) 0%, var(--ryda-pink) 100%)',
+          boxShadow: '0 0 10px rgba(255, 87, 34, 0.5)',
         }}
       />
       <span
         className="text-xs font-mono px-1.5 py-0.5 rounded-md"
         style={{
-          background: "linear-gradient(135deg, var(--ryda-primary-soft) 0%, #FCE7F3 100%)",
-          color: "var(--ryda-primary)",
-          border: "1px solid color-mix(in oklab, var(--ryda-primary) 30%, transparent)",
+          background: 'linear-gradient(135deg, var(--ryda-primary-soft) 0%, #FCE7F3 100%)',
+          color: 'var(--ryda-primary)',
+          border: '1px solid color-mix(in oklab, var(--ryda-primary) 30%, transparent)',
         }}
       >
         v2
@@ -96,11 +83,7 @@ function CtaButtons({ onNavigate }: { onNavigate?: () => void }) {
         onClick={onNavigate}
         className="ryda-btn-gradient font-semibold border-0 transition-transform duration-150 hover:scale-[1.03] active:scale-[0.97]"
       >
-        <a
-          href="https://github.com/ryda-v2"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a href="https://github.com/ryda-v2" target="_blank" rel="noopener noreferrer">
           <Github className="size-4" aria-hidden="true" />
           <span>Get Started</span>
           <ExternalLink className="size-3 opacity-70" aria-hidden="true" />
@@ -117,17 +100,17 @@ export function Nav() {
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   return (
     <header
       className={cn(
-        "fixed top-0 inset-x-0 z-50 transition-all duration-300",
+        'fixed top-0 inset-x-0 z-50 transition-all duration-300',
         scrolled
-          ? "ryda-glass border-b border-ryda-border"
-          : "bg-transparent border-b border-transparent",
+          ? 'ryda-glass border-b border-ryda-border'
+          : 'bg-transparent border-b border-transparent',
       )}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

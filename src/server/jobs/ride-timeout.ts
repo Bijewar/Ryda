@@ -1,8 +1,8 @@
-import { Queue, Worker, type Job } from 'bullmq';
-import IORedis from 'ioredis';
+import { db } from '@/lib/db/client';
 import { env } from '@/lib/env';
 import { logger } from '@/lib/observability/logger';
-import { db } from '@/lib/db/client';
+import { type Job, Queue, Worker } from 'bullmq';
+import IORedis from 'ioredis';
 
 /**
  * Ride-timeout job — cancels rides stuck in MATCHING for > 30 seconds.

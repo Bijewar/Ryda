@@ -1,21 +1,20 @@
 'use client';
 
-import * as React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Navigation, Sparkles, Check, Users, Clock } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlacesAutocomplete } from '@/components/ride/PlacesAutocomplete';
 import { RideSearchingState } from '@/components/ride/RideSearchingState';
 import { VehicleIllustration, type VehicleType } from '@/components/ryda/VehicleIllustration';
-import { rideCreateSchema, type RideCreateInput } from '@/lib/validation/ride';
-import { formatCurrency, formatDistance, formatDuration, cn } from '@/lib/utils';
-import type { Point, RideStatus } from '@/types/ride';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { cn, formatCurrency, formatDistance, formatDuration } from '@/lib/utils';
+import { type RideCreateInput, rideCreateSchema } from '@/lib/validation/ride';
 import type { ApiResponse } from '@/types/api';
+import type { Point, RideStatus } from '@/types/ride';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2, Navigation } from 'lucide-react';
+import * as React from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 export interface ActiveRideData {
   id: string;
@@ -48,12 +47,13 @@ export interface BookingFlowProps {
 
 type FormValues = RideCreateInput;
 
-const PAYMENT_METHODS: Array<{ value: FormValues['paymentMethod']; label: string; hint: string }> = [
-  { value: 'UPI', label: 'UPI', hint: 'GPay / PhonePe / Paytm' },
-  { value: 'CARD', label: 'Card', hint: 'Visa / MC / RuPay' },
-  { value: 'WALLET', label: 'Wallet', hint: 'Ryda wallet' },
-  { value: 'CASH', label: 'Cash', hint: 'Direct to driver' },
-];
+const PAYMENT_METHODS: Array<{ value: FormValues['paymentMethod']; label: string; hint: string }> =
+  [
+    { value: 'UPI', label: 'UPI', hint: 'GPay / PhonePe / Paytm' },
+    { value: 'CARD', label: 'Card', hint: 'Visa / MC / RuPay' },
+    { value: 'WALLET', label: 'Wallet', hint: 'Ryda wallet' },
+    { value: 'CASH', label: 'Cash', hint: 'Direct to driver' },
+  ];
 
 interface VehicleOption {
   id: 'bike' | 'auto' | 'cab' | 'premium' | 'suv';
@@ -125,7 +125,9 @@ export function BookingFlow({
   onRideCreated,
   initialActiveRide = null,
 }: BookingFlowProps): React.ReactElement {
-  const [selectedTier, setSelectedTier] = React.useState<'bike' | 'auto' | 'cab' | 'premium' | 'suv'>('bike');
+  const [selectedTier, setSelectedTier] = React.useState<
+    'bike' | 'auto' | 'cab' | 'premium' | 'suv'
+  >('bike');
 
   const {
     handleSubmit,
@@ -176,12 +178,21 @@ export function BookingFlow({
       const baseDistance = 4200;
       const baseDuration = 960;
       const baseFare = 11000;
-      setEstimate({ fare: baseFare, distance: baseDistance, duration: baseDuration, loading: false });
+      setEstimate({
+        fare: baseFare,
+        distance: baseDistance,
+        duration: baseDuration,
+        loading: false,
+      });
       return;
     }
 
     let isMounted = true;
-    setEstimate((prev) => (prev ? { ...prev, loading: true } : { fare: 11000, distance: 4000, duration: 900, loading: true }));
+    setEstimate((prev) =>
+      prev
+        ? { ...prev, loading: true }
+        : { fare: 11000, distance: 4000, duration: 900, loading: true },
+    );
 
     const fetchRouteEstimate = async () => {
       try {
@@ -217,7 +228,14 @@ export function BookingFlow({
       isMounted = false;
       clearTimeout(timer);
     };
-  }, [pickup?.address, pickup?.point?.lat, pickup?.point?.lng, dropoff?.address, dropoff?.point?.lat, dropoff?.point?.lng]);
+  }, [
+    pickup?.address,
+    pickup?.point?.lat,
+    pickup?.point?.lng,
+    dropoff?.address,
+    dropoff?.point?.lat,
+    dropoff?.point?.lng,
+  ]);
 
   const handlePickupChange = (address: string, point: Point) => {
     setValue('pickup.address', address, { shouldValidate: true });
@@ -243,7 +261,8 @@ export function BookingFlow({
       },
       dropoff: {
         address: values.dropoff.address,
-        point: values.dropoff.point.lat !== 0 ? values.dropoff.point : { lat: 23.2347, lng: 77.4036 },
+        point:
+          values.dropoff.point.lat !== 0 ? values.dropoff.point : { lat: 23.2347, lng: 77.4036 },
       },
     };
 
@@ -254,7 +273,10 @@ export function BookingFlow({
         body: JSON.stringify(payload),
       });
 
-      const json = (await res.json().catch(() => null)) as ApiResponse<{ id: string; fareAmount: number }> | null;
+      const json = (await res.json().catch(() => null)) as ApiResponse<{
+        id: string;
+        fareAmount: number;
+      }> | null;
 
       const rideId = json?.data?.id ?? `ride-${Date.now()}`;
       const fareAmount = json?.data?.fareAmount || calculatedFare;
@@ -310,7 +332,13 @@ export function BookingFlow({
   }
 
   return (
-    <Card className={cn('w-full shadow-xl border-ryda-border bg-ryda-surface rounded-3xl overflow-hidden', className)} data-slot="booking-flow">
+    <Card
+      className={cn(
+        'w-full shadow-xl border-ryda-border bg-ryda-surface rounded-3xl overflow-hidden',
+        className,
+      )}
+      data-slot="booking-flow"
+    >
       <CardHeader className="pb-3 border-b border-ryda-border/60 bg-ryda-elevated/30">
         <CardTitle className="flex items-center gap-2 text-lg font-display font-bold text-ryda-text">
           <Navigation className="h-5 w-5 text-ryda-accent" aria-hidden="true" />
@@ -363,7 +391,7 @@ export function BookingFlow({
                       'flex items-center justify-between p-2.5 rounded-2xl border transition-all text-left relative group',
                       isSelected
                         ? 'border-ryda-accent bg-ryda-accent/10 shadow-xs ring-1 ring-ryda-accent'
-                        : 'border-ryda-border bg-ryda-surface hover:bg-ryda-elevated/40'
+                        : 'border-ryda-border bg-ryda-surface hover:bg-ryda-elevated/40',
                     )}
                   >
                     <div className="flex items-center gap-2.5">
@@ -435,7 +463,8 @@ export function BookingFlow({
             >
               <div className="space-y-0.5">
                 <p className="text-[10px] uppercase tracking-wider font-semibold text-ryda-muted">
-                  {currentTierObj.name} Fare {estimate.surge && estimate.surge > 1 ? `(${estimate.surge}x Surge)` : ''}
+                  {currentTierObj.name} Fare{' '}
+                  {estimate.surge && estimate.surge > 1 ? `(${estimate.surge}x Surge)` : ''}
                 </p>
                 <p className="text-2xl font-extrabold text-ryda-accent-dim">
                   {formatCurrency(calculatedFare)}

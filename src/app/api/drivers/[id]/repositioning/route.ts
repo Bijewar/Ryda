@@ -1,7 +1,10 @@
+import {
+  acceptDriverRepositioning,
+  getDriverRepositioningOpportunity,
+} from '@/server/services/demand-ai-service';
+import { error, ok } from '@/types/api';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getDriverRepositioningOpportunity, acceptDriverRepositioning } from '@/server/services/demand-ai-service';
-import { ok, error } from '@/types/api';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,7 +54,10 @@ export async function POST(
     return NextResponse.json(ok(result));
   } catch (err) {
     return NextResponse.json(
-      error('INTERNAL_ERROR', err instanceof Error ? err.message : 'Failed to accept repositioning'),
+      error(
+        'INTERNAL_ERROR',
+        err instanceof Error ? err.message : 'Failed to accept repositioning',
+      ),
       { status: 500 },
     );
   }

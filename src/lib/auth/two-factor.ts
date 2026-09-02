@@ -1,4 +1,4 @@
-import { generateTwoFactorSecret, buildTotpUri, verifyTwoFactorToken } from '@/lib/auth/otp';
+import { buildTotpUri, generateTwoFactorSecret, verifyTwoFactorToken } from '@/lib/auth/otp';
 
 /**
  * 2FA (TOTP) helpers — thin wrappers around otplib for the NextAuth flow.

@@ -14,8 +14,8 @@
  * OSRM demo server:      https://github.com/Project-OSRM/osrm-backend/wiki/Demo-server
  */
 
-import { logger } from '@/lib/observability/logger';
 import type { Point } from '@/lib/db/postgis';
+import { logger } from '@/lib/observability/logger';
 
 const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org';
 const OSRM_BASE = 'https://router.project-osrm.org';
@@ -126,7 +126,12 @@ export async function geocode(query: string): Promise<GeocodeResult[]> {
     address: f.display_name,
     point: { lat: Number(f.lat), lng: Number(f.lon) },
     bbox: f.boundingbox
-      ? [Number(f.boundingbox[2]), Number(f.boundingbox[0]), Number(f.boundingbox[3]), Number(f.boundingbox[1])]
+      ? [
+          Number(f.boundingbox[2]),
+          Number(f.boundingbox[0]),
+          Number(f.boundingbox[3]),
+          Number(f.boundingbox[1]),
+        ]
       : undefined,
   }));
 

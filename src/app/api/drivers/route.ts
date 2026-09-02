@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth/session';
 import { db } from '@/lib/db/client';
-import { ok, error, statusForCode } from '@/types/api';
+import { error, ok, statusForCode } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/drivers — admin-only list of all drivers.

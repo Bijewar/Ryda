@@ -1,16 +1,15 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { userRegisterSchema, type UserRegisterInput } from '@/lib/validation/user';
-import { isDemoMode } from '@/lib/demo-mode';
+import { type UserRegisterInput, userRegisterSchema } from '@/lib/validation/user';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 /**
  * RegisterForm — passenger signup.
@@ -97,7 +96,9 @@ export function RegisterForm(): React.ReactElement {
           {...register('name')}
         />
         {errors.name && (
-          <p className="text-xs text-destructive" role="alert">{errors.name.message}</p>
+          <p className="text-xs text-destructive" role="alert">
+            {errors.name.message}
+          </p>
         )}
       </div>
 
@@ -112,7 +113,9 @@ export function RegisterForm(): React.ReactElement {
           {...register('email')}
         />
         {errors.email && (
-          <p className="text-xs text-destructive" role="alert">{errors.email.message}</p>
+          <p className="text-xs text-destructive" role="alert">
+            {errors.email.message}
+          </p>
         )}
       </div>
 
@@ -127,7 +130,9 @@ export function RegisterForm(): React.ReactElement {
           {...register('phone')}
         />
         {errors.phone && (
-          <p className="text-xs text-destructive" role="alert">{errors.phone.message}</p>
+          <p className="text-xs text-destructive" role="alert">
+            {errors.phone.message}
+          </p>
         )}
       </div>
 
@@ -142,7 +147,9 @@ export function RegisterForm(): React.ReactElement {
           {...register('password')}
         />
         {errors.password && (
-          <p className="text-xs text-destructive" role="alert">{errors.password.message}</p>
+          <p className="text-xs text-destructive" role="alert">
+            {errors.password.message}
+          </p>
         )}
       </div>
 

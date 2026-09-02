@@ -1,13 +1,13 @@
 'use client';
 
-import * as React from 'react';
-import { Check, MapPin, Navigation, Timer, X } from 'lucide-react';
-import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { formatCurrency, formatDistance, formatDuration, cn } from '@/lib/utils';
 import type { RideOfferPayload } from '@/lib/realtime/events';
+import { cn, formatCurrency, formatDistance, formatDuration } from '@/lib/utils';
+import { Check, MapPin, Navigation, Timer, X } from 'lucide-react';
+import * as React from 'react';
+import { toast } from 'sonner';
 
 /**
  * RideRequestCard — incoming ride request for the driver dashboard.
@@ -151,9 +151,7 @@ export function RideRequestCard({
         <div className="flex items-center justify-between rounded-md border border-border bg-muted/40 px-3 py-2">
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Fare</p>
-            <p className="text-lg font-bold text-ryda-accent">
-              {formatCurrency(offer.fareAmount)}
-            </p>
+            <p className="text-lg font-bold text-ryda-accent">{formatCurrency(offer.fareAmount)}</p>
           </div>
           {offer.surgeMultiplier > 1 && (
             <Badge variant="secondary" className="text-ryda-accent">

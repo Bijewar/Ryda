@@ -1,16 +1,18 @@
-import { NextResponse } from 'next/server';
-import { requireDriver } from '@/lib/auth/session';
-import { setDriverOnline, OutsideBhopalError } from '@/server/services/driver-service';
 import { setDriverOnlineStatus } from '@/lib/db/driverStore';
 import { driverStatusUpdateSchema } from '@/lib/validation/driver';
-import { ok, error, statusForCode } from '@/types/api';
+import { OutsideBhopalError, setDriverOnline } from '@/server/services/driver-service';
+import { error, ok, statusForCode } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 /**
  * PUT /api/drivers/[id]/status
  *
  * Toggles the driver online/offline.
  */
-export async function PUT(req: Request, ctx: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function PUT(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
   const { id } = await ctx.params;
   const body = await req.json().catch(() => null);
   const parsed = driverStatusUpdateSchema.safeParse(body);

@@ -1,11 +1,11 @@
 'use client';
 
-import * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { ArrowLeft, Clock, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Clock, RefreshCw, ArrowLeft, ShieldCheck, User } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import * as React from 'react';
 import { toast } from 'sonner';
 
 export interface PendingApprovalClientProps {
@@ -52,7 +52,8 @@ export function PendingApprovalClient({ driver }: PendingApprovalClientProps): R
                 Welcome, Captain {driver.firstName}!
               </h1>
               <p className="text-xs text-ryda-muted mt-1">
-                Your captain application has been submitted and is currently being reviewed by Admin <span className="font-bold text-ryda-text">(Manas Bijewar)</span>.
+                Your captain application has been submitted and is currently being reviewed by Admin{' '}
+                <span className="font-bold text-ryda-text">(Manas Bijewar)</span>.
               </p>
             </div>
           </div>
@@ -63,7 +64,9 @@ export function PendingApprovalClient({ driver }: PendingApprovalClientProps): R
             </p>
             <div className="flex justify-between py-1 border-b border-ryda-border/60">
               <span className="text-ryda-muted">Applicant Name:</span>
-              <span className="font-bold text-ryda-text">{driver.firstName} {driver.lastName}</span>
+              <span className="font-bold text-ryda-text">
+                {driver.firstName} {driver.lastName}
+              </span>
             </div>
             <div className="flex justify-between py-1 border-b border-ryda-border/60">
               <span className="text-ryda-muted">Registered Email:</span>
@@ -72,7 +75,8 @@ export function PendingApprovalClient({ driver }: PendingApprovalClientProps): R
             <div className="flex justify-between py-1 border-b border-ryda-border/60">
               <span className="text-ryda-muted">Vehicle Details:</span>
               <span className="font-bold text-ryda-text">
-                {driver.vehicle?.make} {driver.vehicle?.model} ({driver.vehicle?.licensePlate || 'Plate Provided'})
+                {driver.vehicle?.make} {driver.vehicle?.model} (
+                {driver.vehicle?.licensePlate || 'Plate Provided'})
               </span>
             </div>
             <div className="flex justify-between py-1">
@@ -83,11 +87,15 @@ export function PendingApprovalClient({ driver }: PendingApprovalClientProps): R
 
           <div className="mt-6 space-y-3">
             <p className="text-center text-[11px] text-ryda-muted">
-              Once approved by the Admin in the Admin Panel, refresh this page to access your live Driver Dashboard and accept ride requests!
+              Once approved by the Admin in the Admin Panel, refresh this page to access your live
+              Driver Dashboard and accept ride requests!
             </p>
             <div className="grid grid-cols-2 gap-3">
               <Link href="/">
-                <Button variant="outline" className="w-full rounded-xl font-bold text-xs py-3 border-ryda-border cursor-pointer">
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl font-bold text-xs py-3 border-ryda-border cursor-pointer"
+                >
                   <ArrowLeft className="w-3.5 h-3.5 mr-1" />
                   Back to Home
                 </Button>

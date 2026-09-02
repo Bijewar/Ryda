@@ -1,12 +1,12 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 /**
@@ -77,7 +77,9 @@ export function TwoFactorForm(): React.ReactElement {
           autoFocus
         />
         {error && (
-          <p className="text-xs text-destructive" role="alert">{error}</p>
+          <p className="text-xs text-destructive" role="alert">
+            {error}
+          </p>
         )}
       </div>
 

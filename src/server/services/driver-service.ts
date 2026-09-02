@@ -1,9 +1,9 @@
-import { db } from '@/lib/db/client';
-import { setDriverLocation, getDriverLocation } from '@/lib/db/postgis';
 import { isInsideBhopal } from '@/lib/db/bhopal';
+import { db } from '@/lib/db/client';
+import { getDriverLocation, setDriverLocation } from '@/lib/db/postgis';
 import { logger } from '@/lib/observability/logger';
-import { emitToDriver } from '@/lib/realtime/server';
 import { DriverEvents } from '@/lib/realtime/events';
+import { emitToDriver } from '@/lib/realtime/server';
 import type { Point } from '@/types/ride';
 
 /**

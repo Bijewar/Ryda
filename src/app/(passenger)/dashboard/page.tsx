@@ -1,14 +1,13 @@
+import { BookingFlow } from '@/components/ride/BookingFlow';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { auth } from '@/lib/auth/config';
+import { db } from '@/lib/db/client';
+import { cn, formatCurrency, formatDate, formatDistance } from '@/lib/utils';
+import type { RideStatus } from '@/types/ride';
+import { ArrowRight, Clock, MapPin, Sparkles } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { ArrowRight, Clock, MapPin, Sparkles } from 'lucide-react';
-import { auth } from '@/lib/auth/config';
-import { db } from '@/lib/db/client';
-import { BookingFlow } from '@/components/ride/BookingFlow';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { formatCurrency, formatDate, formatDistance, cn } from '@/lib/utils';
-import type { RideStatus } from '@/types/ride';
 import BhopalDashboardMap from './_components/BhopalDashboardMap';
 
 export const metadata: Metadata = {
@@ -20,11 +19,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function PassengerDashboardPage(): Promise<React.ReactElement> {
   const session = await auth();
-  const user = (session?.user as {
-    id: string;
-    accountType: 'PASSENGER' | 'ADMIN';
-    driverId?: string;
-  } | undefined) ?? {
+  const user = (session?.user as
+    | {
+        id: string;
+        accountType: 'PASSENGER' | 'ADMIN';
+        driverId?: string;
+      }
+    | undefined) ?? {
     id: 'demo-user-aarav',
     accountType: 'PASSENGER' as const,
   };
@@ -40,7 +41,9 @@ export default async function PassengerDashboardPage(): Promise<React.ReactEleme
       db.ride.findFirst({
         where: {
           passengerId: user.id,
-          status: { in: ['REQUESTED', 'MATCHING', 'OFFERED', 'ACCEPTED', 'ARRIVED', 'IN_PROGRESS'] },
+          status: {
+            in: ['REQUESTED', 'MATCHING', 'OFFERED', 'ACCEPTED', 'ARRIVED', 'IN_PROGRESS'],
+          },
         },
         orderBy: { requestedAt: 'desc' },
         include: { driver: { include: { vehicle: true } } },
@@ -107,7 +110,8 @@ export default async function PassengerDashboardPage(): Promise<React.ReactEleme
                             name: `${activeRide.driver.firstName} ${activeRide.driver.lastName}`,
                             phone: activeRide.driver.phone,
                             vehicle: `${activeRide.driver.vehicle?.make ?? 'Car'} ${activeRide.driver.vehicle?.model ?? ''}`,
-                            licensePlate: activeRide.driver.vehicle?.licensePlate ?? 'MP 04 AB 1234',
+                            licensePlate:
+                              activeRide.driver.vehicle?.licensePlate ?? 'MP 04 AB 1234',
                             rating: activeRide.driver.rating,
                           }
                         : null,
@@ -139,13 +143,19 @@ export default async function PassengerDashboardPage(): Promise<React.ReactEleme
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5">
-                              <MapPin className="h-3 w-3 shrink-0 text-ryda-accent" aria-hidden="true" />
+                              <MapPin
+                                className="h-3 w-3 shrink-0 text-ryda-accent"
+                                aria-hidden="true"
+                              />
                               <span className="truncate text-sm font-semibold text-ryda-text">
                                 {ride.pickupAddress}
                               </span>
                             </div>
                             <div className="flex items-center gap-1.5 text-ryda-muted mt-0.5">
-                              <MapPin className="h-3 w-3 shrink-0 text-destructive" aria-hidden="true" />
+                              <MapPin
+                                className="h-3 w-3 shrink-0 text-destructive"
+                                aria-hidden="true"
+                              />
                               <span className="truncate text-xs">{ride.dropoffAddress}</span>
                             </div>
                             <p className="mt-1 text-[11px] text-ryda-muted font-medium">
@@ -204,5 +214,14 @@ function RideStatusBadge({ status }: { status: RideStatus }): React.ReactElement
     NO_DRIVERS: { label: 'No drivers', className: 'bg-rose-100 text-rose-800' },
   };
   const cfg = map[status] ?? { label: status, className: 'bg-stone-100 text-stone-800' };
-  return <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full inline-block mt-1', cfg.className)}>{cfg.label}</span>;
+  return (
+    <span
+      className={cn(
+        'text-[10px] font-bold px-2 py-0.5 rounded-full inline-block mt-1',
+        cfg.className,
+      )}
+    >
+      {cfg.label}
+    </span>
+  );
 }

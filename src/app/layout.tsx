@@ -1,8 +1,15 @@
-import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans, Sora, JetBrains_Mono } from 'next/font/google';
-import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
+import type { Metadata, Viewport } from 'next';
+import { ThemeProvider } from 'next-themes';
+import { JetBrains_Mono, Plus_Jakarta_Sans, Sora } from 'next/font/google';
 import './globals.css';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#10B981',
+};
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -30,7 +37,7 @@ export const metadata: Metadata = {
     template: '%s · Ryda',
   },
   description:
-    'Book bikes, autos, and premium cabs in seconds. Real-time matching, transparent fares, and a calmer ride. India\'s most refined ride-hailing app.',
+    "Book bikes, autos, and premium cabs in seconds. Real-time matching, transparent fares, and a calmer ride. India's most refined ride-hailing app.",
   keywords: [
     'Ryda',
     'Bhopal',
@@ -47,7 +54,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Ryda — Premium Ride-Hailing, Reimagined for India',
-    description: 'Book bikes, autos, and premium cabs in seconds. Real-time matching, transparent fares, and a calmer ride.',
+    description:
+      'Book bikes, autos, and premium cabs in seconds. Real-time matching, transparent fares, and a calmer ride.',
     type: 'website',
     locale: 'en_IN',
     siteName: 'Ryda',
@@ -66,7 +74,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className={`${jakarta.variable} ${sora.variable} ${mono.variable} font-sans bg-background text-foreground antialiased`}
       >
-        <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" enableSystem={false} disableTransitionOnChange>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          forcedTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
           {children}
           <Toaster position="top-center" richColors closeButton />
         </ThemeProvider>

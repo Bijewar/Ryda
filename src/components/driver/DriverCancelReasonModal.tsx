@@ -1,10 +1,10 @@
 'use client';
 
-import * as React from 'react';
-import { AlertTriangle, CheckCircle2, ShieldAlert, X } from 'lucide-react';
-import { CANCELLATION_REASONS, type CancellationReasonCategory } from '@/types/reliability';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { CANCELLATION_REASONS, type CancellationReasonCategory } from '@/types/reliability';
+import { AlertTriangle, CheckCircle2, ShieldAlert, X } from 'lucide-react';
+import * as React from 'react';
 
 export interface DriverCancelReasonModalProps {
   isOpen: boolean;
@@ -21,20 +21,26 @@ export function DriverCancelReasonModal({
   monthlyCancellationsUsed = 0,
   cancellationAllowance = 15,
 }: DriverCancelReasonModalProps): React.ReactElement | null {
-  const [selectedCategory, setSelectedCategory] = React.useState<CancellationReasonCategory>('CUSTOMER_REQUESTED');
+  const [selectedCategory, setSelectedCategory] =
+    React.useState<CancellationReasonCategory>('CUSTOMER_REQUESTED');
   const [customDetails, setCustomDetails] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   if (!isOpen) return null;
 
   const selectedMeta = CANCELLATION_REASONS.find((r) => r.category === selectedCategory);
-  const willIncurPenalty = (selectedMeta?.isPenalizedByDefault ?? false) && monthlyCancellationsUsed >= cancellationAllowance;
+  const willIncurPenalty =
+    (selectedMeta?.isPenalizedByDefault ?? false) &&
+    monthlyCancellationsUsed >= cancellationAllowance;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await onConfirm(selectedCategory, customDetails || (selectedMeta?.label ?? 'Cancelled by driver'));
+      await onConfirm(
+        selectedCategory,
+        customDetails || (selectedMeta?.label ?? 'Cancelled by driver'),
+      );
       onClose();
     } catch {
       // handled by caller
@@ -55,7 +61,11 @@ export function DriverCancelReasonModal({
             <div>
               <h3 className="text-base font-bold text-ryda-text">Cancel Accepted Ride</h3>
               <p className="text-xs text-ryda-muted">
-                Allowance: <span className="font-semibold text-ryda-accent">{monthlyCancellationsUsed}/{cancellationAllowance}</span> used this month
+                Allowance:{' '}
+                <span className="font-semibold text-ryda-accent">
+                  {monthlyCancellationsUsed}/{cancellationAllowance}
+                </span>{' '}
+                used this month
               </p>
             </div>
           </div>
@@ -121,7 +131,8 @@ export function DriverCancelReasonModal({
               <div>
                 <p className="font-semibold">Cancellation fee warning</p>
                 <p className="text-[11px] text-destructive/80">
-                  You have reached your free monthly cancellation limit. A progressive cancellation fee will apply to avoidable cancellations.
+                  You have reached your free monthly cancellation limit. A progressive cancellation
+                  fee will apply to avoidable cancellations.
                 </p>
               </div>
             </div>

@@ -1,12 +1,12 @@
 'use client';
 
-import * as React from 'react';
-import { Check, Loader2, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import type { DriverApproval, VehicleType } from '@/types/ride';
+import { Check, Loader2, X } from 'lucide-react';
+import * as React from 'react';
+import { toast } from 'sonner';
 
 export interface DriversTableDriver {
   id: string;
@@ -54,7 +54,11 @@ function ApprovalBadge({ status }: { status: DriverApproval }): React.ReactEleme
       </Badge>
     );
   if (status === 'REJECTED') return <Badge variant="destructive">Rejected</Badge>;
-  return <Badge variant="outline" className="border-amber-500/40 text-amber-400">Pending Review</Badge>;
+  return (
+    <Badge variant="outline" className="border-amber-500/40 text-amber-400">
+      Pending Review
+    </Badge>
+  );
 }
 
 export function DriversTable({
@@ -78,7 +82,10 @@ export function DriversTable({
     let rejectionReason: string | undefined;
 
     if (status === 'REJECTED') {
-      const input = window.prompt('Please provide a rejection reason (optional):', 'Invalid or unverified document');
+      const input = window.prompt(
+        'Please provide a rejection reason (optional):',
+        'Invalid or unverified document',
+      );
       if (input === null) {
         setBusyDriverId(null);
         return;
@@ -104,15 +111,17 @@ export function DriversTable({
       setDrivers((prev) =>
         prev.map((d) =>
           d.id === driverId
-            ? { ...d, approvalStatus: status, rejectionReason: rejectionReason ?? d.rejectionReason }
+            ? {
+                ...d,
+                approvalStatus: status,
+                rejectionReason: rejectionReason ?? d.rejectionReason,
+              }
             : d,
         ),
       );
 
       toast.success(
-        status === 'APPROVED'
-          ? `Driver ${driverName} Approved!`
-          : `Driver ${driverName} Rejected`,
+        status === 'APPROVED' ? `Driver ${driverName} Approved!` : `Driver ${driverName} Rejected`,
         {
           description:
             status === 'APPROVED'
@@ -156,15 +165,33 @@ export function DriversTable({
         <caption className="sr-only">Registered drivers and their approval status</caption>
         <thead className="bg-muted/40 text-left">
           <tr>
-            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">Driver</th>
-            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">Vehicle</th>
-            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">Status</th>
-            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">Online</th>
-            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">Rating</th>
-            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">Rides</th>
-            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">Earnings</th>
-            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">Joined</th>
-            <th scope="col" className="px-4 py-3 text-right font-medium text-muted-foreground">Actions</th>
+            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">
+              Driver
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">
+              Vehicle
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">
+              Status
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">
+              Online
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">
+              Rating
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">
+              Rides
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">
+              Earnings
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium text-muted-foreground">
+              Joined
+            </th>
+            <th scope="col" className="px-4 py-3 text-right font-medium text-muted-foreground">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -188,7 +215,9 @@ export function DriversTable({
                       <div className="text-xs text-muted-foreground">
                         {d.vehicle.year} · {d.vehicle.color} · {VEHICLE_LABELS[d.vehicle.type]}
                       </div>
-                      <div className="font-mono text-[11px] text-ryda-accent">{d.vehicle.licensePlate}</div>
+                      <div className="font-mono text-[11px] text-ryda-accent">
+                        {d.vehicle.licensePlate}
+                      </div>
                     </>
                   ) : (
                     <span className="text-xs text-muted-foreground">No vehicle</span>
@@ -224,14 +253,18 @@ export function DriversTable({
                 <td className="px-4 py-3 tabular-nums font-medium text-ryda-accent">
                   {formatCurrency(d.totalEarnings)}
                 </td>
-                <td className="px-4 py-3 text-xs text-muted-foreground">{formatDate(d.createdAt)}</td>
+                <td className="px-4 py-3 text-xs text-muted-foreground">
+                  {formatDate(d.createdAt)}
+                </td>
                 <td className="px-4 py-3 text-right">
                   {d.approvalStatus === 'PENDING' ? (
                     <div className="inline-flex gap-1.5">
                       <Button
                         size="sm"
                         disabled={isBusy}
-                        onClick={() => handleUpdateStatus(d.id, 'APPROVED', `${d.firstName} ${d.lastName}`)}
+                        onClick={() =>
+                          handleUpdateStatus(d.id, 'APPROVED', `${d.firstName} ${d.lastName}`)
+                        }
                         className="bg-ryda-accent text-ryda-bg hover:bg-ryda-accent-dim h-8 px-2.5 text-xs font-semibold"
                         aria-label={`Approve ${d.firstName} ${d.lastName}`}
                       >
@@ -246,7 +279,9 @@ export function DriversTable({
                         size="sm"
                         variant="outline"
                         disabled={isBusy}
-                        onClick={() => handleUpdateStatus(d.id, 'REJECTED', `${d.firstName} ${d.lastName}`)}
+                        onClick={() =>
+                          handleUpdateStatus(d.id, 'REJECTED', `${d.firstName} ${d.lastName}`)
+                        }
                         className="h-8 px-2.5 text-xs border-destructive/40 text-destructive hover:bg-destructive/10"
                         aria-label={`Reject ${d.firstName} ${d.lastName}`}
                       >
@@ -261,7 +296,9 @@ export function DriversTable({
                           size="sm"
                           variant="ghost"
                           disabled={isBusy}
-                          onClick={() => handleUpdateStatus(d.id, 'APPROVED', `${d.firstName} ${d.lastName}`)}
+                          onClick={() =>
+                            handleUpdateStatus(d.id, 'APPROVED', `${d.firstName} ${d.lastName}`)
+                          }
                           className="h-7 text-xs text-ryda-accent hover:bg-ryda-accent/10"
                         >
                           Re-Approve
@@ -272,7 +309,9 @@ export function DriversTable({
                           size="sm"
                           variant="ghost"
                           disabled={isBusy}
-                          onClick={() => handleUpdateStatus(d.id, 'REJECTED', `${d.firstName} ${d.lastName}`)}
+                          onClick={() =>
+                            handleUpdateStatus(d.id, 'REJECTED', `${d.firstName} ${d.lastName}`)
+                          }
                           className="h-7 text-xs text-destructive hover:bg-destructive/10"
                         >
                           Revoke

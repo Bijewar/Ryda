@@ -1,7 +1,7 @@
-import { db } from '@/lib/db/client';
 import { getBhopalBbox } from '@/lib/db/bhopal';
-import { logger } from '@/lib/observability/logger';
+import { db } from '@/lib/db/client';
 import { env } from '@/lib/env';
+import { logger } from '@/lib/observability/logger';
 
 /**
  * Surge pricing — compute a 1.0x–2.0x multiplier based on driver density.
@@ -25,7 +25,11 @@ const SURGE_KEY = 'ryda:surge:current';
 const MIN_SURGE = 1.0;
 const MAX_SURGE = 2.0;
 
-export async function computeSurge(): Promise<{ multiplier: number; drivers: number; requests: number }> {
+export async function computeSurge(): Promise<{
+  multiplier: number;
+  drivers: number;
+  requests: number;
+}> {
   const rows = await db.$queryRaw<Array<{ count: bigint }>>`
     SELECT COUNT(*)::bigint AS count
     FROM "drivers"

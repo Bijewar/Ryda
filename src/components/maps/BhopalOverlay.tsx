@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Source, Layer, type LayerProps } from 'react-map-gl/maplibre';
+import { Layer, type LayerProps, Source } from 'react-map-gl/maplibre';
 
 /**
  * BhopalOverlay — renders the Bhopal municipal boundary from `/geo/RydaMap.geojson`.

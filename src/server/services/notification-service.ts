@@ -1,4 +1,4 @@
-import { createNotification, type CreateNotificationInput } from '@/lib/notifications/in-app';
+import { type CreateNotificationInput, createNotification } from '@/lib/notifications/in-app';
 
 /**
  * NotificationService — thin orchestration layer over the in-app + email + SMS
@@ -40,7 +40,8 @@ export async function notifyDriver(opts: {
   });
 }
 
-export async function notifyAdmin(opts: Omit<CreateNotificationInput, 'userId' | 'driverId'>): Promise<void> {
+export async function notifyAdmin(
+  opts: Omit<CreateNotificationInput, 'userId' | 'driverId'>,
+): Promise<void> {
   await createNotification(opts);
 }
-

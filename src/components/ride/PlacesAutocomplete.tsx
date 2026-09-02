@@ -1,11 +1,11 @@
 'use client';
 
-import * as React from 'react';
-import { Compass, Loader2, MapPin, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { BHOPAL_POIS } from '@/lib/geo/pois';
 import type { Point } from '@/types/ride';
+import { Compass, Loader2, MapPin, Search, X } from 'lucide-react';
+import * as React from 'react';
 
 export interface PlacesAutocompleteProps {
   id: string;
@@ -133,7 +133,8 @@ export function PlacesAutocomplete({
           );
           if (res.ok) {
             const data = await res.json();
-            const addr = data.display_name ?? `Current Location (${userPoint.lat}, ${userPoint.lng})`;
+            const addr =
+              data.display_name ?? `Current Location (${userPoint.lat}, ${userPoint.lng})`;
             setQuery(addr);
             onChange(addr, userPoint);
           } else {
@@ -171,7 +172,11 @@ export function PlacesAutocomplete({
             disabled={isLocating}
             className="inline-flex items-center gap-1 text-[11px] text-ryda-accent hover:underline disabled:opacity-50"
           >
-            {isLocating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Compass className="h-3 w-3" />}
+            {isLocating ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Compass className="h-3 w-3" />
+            )}
             <span>Locate Me</span>
           </button>
         )}
@@ -223,7 +228,8 @@ export function PlacesAutocomplete({
             </div>
           ) : suggestions.length === 0 ? (
             <div className="py-3 text-center text-xs text-ryda-muted">
-              No Bhopal locations found. Try searching a major landmark (e.g., MP Nagar, New Market).
+              No Bhopal locations found. Try searching a major landmark (e.g., MP Nagar, New
+              Market).
             </div>
           ) : (
             <ul className="divide-y divide-ryda-border/30">

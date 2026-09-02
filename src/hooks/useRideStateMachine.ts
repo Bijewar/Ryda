@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
 import { useRideStore } from '@/stores/ride-store';
 import type { RideStatus } from '@/types/ride';
-import { canTransition, TERMINAL_STATUSES } from '@/types/ride';
+import { TERMINAL_STATUSES, canTransition } from '@/types/ride';
+import { useCallback, useMemo } from 'react';
 
 /**
  * useRideStateMachine — client-side guard around ride state transitions.
@@ -35,7 +35,10 @@ export function useRideStateMachine(rideId?: string) {
   const status: RideStatus | 'IDLE' =
     rideId && currentRide?.id === rideId ? currentRide.status : rideStatus;
 
-  const isTerminal = useMemo(() => (status !== 'IDLE' ? TERMINAL_STATUSES.has(status) : false), [status]);
+  const isTerminal = useMemo(
+    () => (status !== 'IDLE' ? TERMINAL_STATUSES.has(status) : false),
+    [status],
+  );
 
   const can = useCallback(
     (action: RideAction): boolean => {

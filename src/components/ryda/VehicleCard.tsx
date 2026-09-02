@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 interface VehicleCardProps {
   name: string;
@@ -38,7 +38,7 @@ export function VehicleCard({
     <motion.div
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
+      viewport={{ once: true, margin: '-40px' }}
       transition={{
         duration: 0.45,
         delay: (index % 5) * 0.06,
@@ -49,13 +49,13 @@ export function VehicleCard({
       whileHover={{ y: -8, scale: 1.02 }}
       style={{
         // CSS custom props so the card can reference its accent color.
-        ["--v-accent" as string]: accent,
-        ["--v-accent-soft" as string]: accentSoft,
+        ['--v-accent' as string]: accent,
+        ['--v-accent-soft' as string]: accentSoft,
       }}
       className={cn(
-        "relative overflow-hidden rounded-2xl p-5 sm:p-6 flex flex-col items-center gap-3",
-        "ryda-glass transition-shadow duration-300",
-        "hover:shadow-[0_18px_40px_-12px_var(--v-accent)]",
+        'relative overflow-hidden rounded-2xl p-5 sm:p-6 flex flex-col items-center gap-3',
+        'ryda-glass transition-shadow duration-300',
+        'hover:shadow-[0_18px_40px_-12px_var(--v-accent)]',
         className,
       )}
     >
@@ -85,11 +85,11 @@ export function VehicleCard({
         }
         transition={
           hovered
-            ? { duration: 0.85, ease: "easeInOut" }
+            ? { duration: 0.85, ease: 'easeInOut' }
             : {
                 duration: 3 + (index % 5) * 0.4,
-                repeat: Infinity,
-                ease: "easeInOut",
+                repeat: Number.POSITIVE_INFINITY,
+                ease: 'easeInOut',
                 delay: (index % 5) * 0.3,
               }
         }
@@ -98,9 +98,7 @@ export function VehicleCard({
       </motion.div>
 
       {/* Name */}
-      <h3
-        className="relative text-base sm:text-lg font-bold tracking-tight text-ryda-text mt-1"
-      >
+      <h3 className="relative text-base sm:text-lg font-bold tracking-tight text-ryda-text mt-1">
         {name}
       </h3>
 

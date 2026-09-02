@@ -1,19 +1,15 @@
 import { db } from '@/lib/db/client';
-import { getSystemSettings } from './system-settings';
 import { createNotification } from '@/lib/notifications/in-app';
 import { logger } from '@/lib/observability/logger';
 import { formatCurrency } from '@/lib/utils';
 import {
-  type CancellationReasonCategory,
   CANCELLATION_REASONS,
+  type CancellationReasonCategory,
   type DriverReliabilityStats,
 } from '@/types/reliability';
+import { getSystemSettings } from './system-settings';
 
-export {
-  type CancellationReasonCategory,
-  CANCELLATION_REASONS,
-  type DriverReliabilityStats,
-};
+export { type CancellationReasonCategory, CANCELLATION_REASONS, type DriverReliabilityStats };
 
 /**
  * Recalculate a driver's reliability score (0-100) and update rewards status.
@@ -22,7 +18,9 @@ export {
  * 1. > 15 rejections/cancellations in a month -> Penalty fee applied (Base ₹50 + ₹25 increment).
  * 2. <= 5 rejections/cancellations in a month -> Awarded Reliability Bonus (₹300 / month reward).
  */
-export async function calculateDriverReliability(driverId: string): Promise<DriverReliabilityStats> {
+export async function calculateDriverReliability(
+  driverId: string,
+): Promise<DriverReliabilityStats> {
   const config = await getSystemSettings();
 
   const driver = await db.driver.findUnique({
@@ -75,7 +73,9 @@ export async function calculateDriverReliability(driverId: string): Promise<Driv
   const ratingComponent = (Math.min(5, driver.rating) / 5) * 15;
   const activityComponent = Math.min(15, totalCompleted >= 10 ? 15 : totalCompleted * 1.5);
 
-  let rawScore = Math.round(completionComponent + cancellationComponent + ratingComponent + activityComponent);
+  let rawScore = Math.round(
+    completionComponent + cancellationComponent + ratingComponent + activityComponent,
+  );
   rawScore = Math.max(10, Math.min(100, rawScore));
 
   // Determine Reliable Driver & Bonus Eligibility (<= 5 rejections/month with active completions)
@@ -155,7 +155,8 @@ export async function processDriverCancellation(opts: {
   if (reasonMeta.isPenalizedByDefault && nextCount > config.freeCancellationsLimit) {
     isPenalized = true;
     const overLimitCount = nextCount - config.freeCancellationsLimit;
-    const progressive = config.basePenaltyAmount + (overLimitCount - 1) * config.progressivePenaltyIncrement;
+    const progressive =
+      config.basePenaltyAmount + (overLimitCount - 1) * config.progressivePenaltyIncrement;
     penaltyAmount = Math.min(config.maxPenaltyAmount, progressive);
   }
 

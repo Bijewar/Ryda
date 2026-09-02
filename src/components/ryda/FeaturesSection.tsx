@@ -1,17 +1,15 @@
 'use client';
-
-import * as React from 'react';
 import { motion } from 'framer-motion';
 import {
-  ShieldCheck,
-  Wifi,
-  CreditCard,
   Bell,
-  Route,
   Clock,
-  UserCheck,
+  CreditCard,
   Headphones,
   type LucideIcon,
+  Route,
+  ShieldCheck,
+  UserCheck,
+  Wifi,
 } from 'lucide-react';
 
 interface Feature {
@@ -82,10 +80,22 @@ const FEATURES: Feature[] = [
 ];
 
 const ACCENT_MAP: Record<Feature['accent'], { icon: string; ring: string; text: string }> = {
-  emerald: { icon: 'bg-emerald-100 text-emerald-700', ring: 'group-hover:ring-emerald-200', text: 'text-emerald-600' },
-  amber: { icon: 'bg-amber-100 text-amber-700', ring: 'group-hover:ring-amber-200', text: 'text-amber-600' },
+  emerald: {
+    icon: 'bg-emerald-100 text-emerald-700',
+    ring: 'group-hover:ring-emerald-200',
+    text: 'text-emerald-600',
+  },
+  amber: {
+    icon: 'bg-amber-100 text-amber-700',
+    ring: 'group-hover:ring-amber-200',
+    text: 'text-amber-600',
+  },
   sky: { icon: 'bg-sky-100 text-sky-700', ring: 'group-hover:ring-sky-200', text: 'text-sky-600' },
-  rose: { icon: 'bg-rose-100 text-rose-700', ring: 'group-hover:ring-rose-200', text: 'text-rose-600' },
+  rose: {
+    icon: 'bg-rose-100 text-rose-700',
+    ring: 'group-hover:ring-rose-200',
+    text: 'text-rose-600',
+  },
 };
 
 export function FeaturesSection() {
@@ -120,8 +130,8 @@ export function FeaturesSection() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mt-4 text-base sm:text-lg text-ryda-muted"
           >
-            Every Ryda ride is wrapped in eight layers of protection — quietly,
-            without you ever needing to think about them.
+            Every Ryda ride is wrapped in eight layers of protection — quietly, without you ever
+            needing to think about them.
           </motion.p>
         </div>
 
@@ -139,13 +149,15 @@ export function FeaturesSection() {
                 transition={{ duration: 0.5, delay: (idx % 3) * 0.08 }}
                 className={cnLg(isLg)}
               >
-                <div className={`group h-full ryda-card-hover rounded-3xl border border-ryda-border bg-ryda-surface p-6 lg:p-7 ring-2 ring-transparent ${colors.ring} transition-all`}>
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3 ${colors.icon}`}>
+                <div
+                  className={`group h-full ryda-card-hover rounded-3xl border border-ryda-border bg-ryda-surface p-6 lg:p-7 ring-2 ring-transparent ${colors.ring} transition-all`}
+                >
+                  <div
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3 ${colors.icon}`}
+                  >
                     <Icon className="w-6 h-6" strokeWidth={1.8} />
                   </div>
-                  <h3 className="mt-5 font-display font-bold text-xl text-ryda-text">
-                    {f.title}
-                  </h3>
+                  <h3 className="mt-5 font-display font-bold text-xl text-ryda-text">{f.title}</h3>
                   <p className="mt-2 text-sm sm:text-base text-ryda-muted leading-relaxed">
                     {f.desc}
                   </p>
@@ -161,7 +173,5 @@ export function FeaturesSection() {
 
 /** Span 2 columns on large screens when size === 'lg'. */
 function cnLg(isLg: boolean) {
-  return isLg
-    ? 'sm:col-span-2 lg:col-span-2'
-    : 'sm:col-span-1';
+  return isLg ? 'sm:col-span-2 lg:col-span-2' : 'sm:col-span-1';
 }

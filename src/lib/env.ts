@@ -25,20 +25,14 @@ import { z } from 'zod';
  */
 export const env = createEnv({
   server: {
-    DATABASE_URL: z
-      .string()
-      .url()
-      .default('postgresql://postgres:postgres@localhost:5432/ryda'),
+    DATABASE_URL: z.string().url().default('postgresql://postgres:postgres@localhost:5432/ryda'),
     SHADOW_DATABASE_URL: z.string().url().optional(),
-    REDIS_URL: z
+    REDIS_URL: z.string().url().default('redis://localhost:6379'),
+    AUTH_SECRET: z.string().min(16).default('ryda-auth-secret-production-32-chars-fallback'),
+    AUTH_TRUST_HOST: z
       .string()
-      .url()
-      .default('redis://localhost:6379'),
-    AUTH_SECRET: z
-      .string()
-      .min(16)
-      .default('ryda-auth-secret-production-32-chars-fallback'),
-    AUTH_TRUST_HOST: z.string().transform((v) => v === 'true').default('true'),
+      .transform((v) => v === 'true')
+      .default('true'),
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     // ── Razorpay (the only payment provider — no Stripe) ─────────────────
@@ -60,16 +54,28 @@ export const env = createEnv({
     SOCKET_IO_PORT: z.coerce.number().default(3001),
     SOCKET_IO_ORIGINS: z.string().default('http://localhost:3000'),
     // ── Feature flags ────────────────────────────────────────────────────
-    DEMO_MODE: z.string().transform((v) => v === 'true').default('true'),
-    ENABLE_SURGE_PRICING: z.string().transform((v) => v === 'true').default('true'),
-    ENABLE_RIDE_TIMEOUT: z.string().transform((v) => v === 'true').default('true'),
+    DEMO_MODE: z
+      .string()
+      .transform((v) => v === 'true')
+      .default('true'),
+    ENABLE_SURGE_PRICING: z
+      .string()
+      .transform((v) => v === 'true')
+      .default('true'),
+    ENABLE_RIDE_TIMEOUT: z
+      .string()
+      .transform((v) => v === 'true')
+      .default('true'),
     MATCHING_MAX_ATTEMPTS: z.coerce.number().default(3),
     MATCHING_RADIUS_METERS: z.coerce.number().default(5000),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
-    NEXT_PUBLIC_DEMO_MODE: z.string().transform((v) => v === 'true').default('true'),
+    NEXT_PUBLIC_DEMO_MODE: z
+      .string()
+      .transform((v) => v === 'true')
+      .default('true'),
     // Razorpay key is public (it identifies the merchant, not a secret)
     NEXT_PUBLIC_RAZORPAY_KEY_ID: z.string().optional(),
     NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),

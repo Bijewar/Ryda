@@ -17,5 +17,8 @@ import { logger } from '@/lib/observability/logger';
  * inside `sendSms()`.
  */
 export async function sendSms(to: string, body: string): Promise<void> {
-  logger.debug({ to, bodyLength: body.length, demoMode: isDemoMode }, '📱 SMS skipped (no provider configured)');
+  logger.debug(
+    { to, bodyLength: body.length, demoMode: isDemoMode },
+    '📱 SMS skipped (no provider configured)',
+  );
 }

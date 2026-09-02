@@ -1,15 +1,15 @@
-import { auth } from '@/lib/auth/config';
-import { db } from '@/lib/db/client';
-import { NavBar } from '@/components/ryda/NavBar';
-import { Hero } from '@/components/ryda/Hero';
+import { AppDownloadCTA } from '@/components/ryda/AppDownloadCTA';
 import { BookingSection } from '@/components/ryda/BookingSection';
+import { DriversSection } from '@/components/ryda/DriversSection';
+import { FeaturesSection } from '@/components/ryda/FeaturesSection';
+import { Footer } from '@/components/ryda/Footer';
+import { Hero } from '@/components/ryda/Hero';
+import { NavBar } from '@/components/ryda/NavBar';
 import { ServicesSection } from '@/components/ryda/ServicesSection';
 import { StatsSection } from '@/components/ryda/StatsSection';
-import { FeaturesSection } from '@/components/ryda/FeaturesSection';
-import { DriversSection } from '@/components/ryda/DriversSection';
 import { Testimonials } from '@/components/ryda/Testimonials';
-import { AppDownloadCTA } from '@/components/ryda/AppDownloadCTA';
-import { Footer } from '@/components/ryda/Footer';
+import { auth } from '@/lib/auth/config';
+import { db } from '@/lib/db/client';
 
 export const dynamic = 'force-dynamic';
 

@@ -1,4 +1,3 @@
-import type { PaymentProviderInterface } from './types';
 import type {
   CreateOrderParams,
   CreateOrderResult,
@@ -8,6 +7,7 @@ import type {
   VerifyResult,
   WebhookEvent,
 } from '@/types/payment';
+import type { PaymentProviderInterface } from './types';
 
 /**
  * Legacy Stripe provider stub.

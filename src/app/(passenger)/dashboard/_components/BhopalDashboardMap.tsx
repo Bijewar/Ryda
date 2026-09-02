@@ -1,18 +1,18 @@
 'use client';
 
-import * as React from 'react';
-import type { MapRef } from 'react-map-gl/maplibre';
-import { LocateFixed, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { MapView } from '@/components/maps/MapView';
+import type { ActiveDriverMarker } from '@/app/api/drivers/active/route';
 import { BhopalOverlay, useBhopalViewport } from '@/components/maps/BhopalOverlay';
 import { DriverMarker } from '@/components/maps/DriverMarker';
+import { MapView } from '@/components/maps/MapView';
 import { PassengerMarker } from '@/components/maps/PassengerMarker';
-import type { ActiveDriverMarker } from '@/app/api/drivers/active/route';
+import { Loader2, LocateFixed } from 'lucide-react';
+import * as React from 'react';
+import type { MapRef } from 'react-map-gl/maplibre';
+import { toast } from 'sonner';
 
 /**
  * BhopalDashboardMap — passenger dashboard live real-world map.
- * 
+ *
  * Uses free OpenStreetMap / CARTO Positron tiles (100% free, no credit card).
  * Renders:
  * - Real-time Passenger location beacon pin ("You")
@@ -108,7 +108,8 @@ export default function BhopalDashboardMap(): React.ReactElement {
   // Real-time Vehicle Counts Breakdown
   const bikeCount = drivers.filter((d) => d.vehicleType === 'BIKE').length || 3;
   const autoCount = drivers.filter((d) => d.vehicleType === 'AUTO').length || 2;
-  const cabCount = drivers.filter((d) => d.vehicleType !== 'BIKE' && d.vehicleType !== 'AUTO').length || 4;
+  const cabCount =
+    drivers.filter((d) => d.vehicleType !== 'BIKE' && d.vehicleType !== 'AUTO').length || 4;
 
   return (
     <div className="relative h-full w-full">

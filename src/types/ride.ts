@@ -84,4 +84,8 @@ export function canTransition(from: RideStatus, to: RideStatus): boolean {
   return (ALLOWED_TRANSITIONS[from] ?? []).includes(to);
 }
 
-export const TERMINAL_STATUSES: ReadonlySet<RideStatus> = new Set(['PAID', 'CANCELED', 'NO_DRIVERS']);
+export const TERMINAL_STATUSES: ReadonlySet<RideStatus> = new Set([
+  'PAID',
+  'CANCELED',
+  'NO_DRIVERS',
+]);

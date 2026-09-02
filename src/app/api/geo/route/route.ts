@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
-import { getDirections, computeFare } from '@/lib/geo/osm';
-import { getCurrentSurge } from '@/server/matching/surge';
 import { isInsideBhopal } from '@/lib/db/bhopal';
-import { ok, error } from '@/types/api';
+import { computeFare, getDirections } from '@/lib/geo/osm';
 import { logger } from '@/lib/observability/logger';
+import { getCurrentSurge } from '@/server/matching/surge';
+import { error, ok } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/geo/route?pickupLat=...&pickupLng=...&dropoffLat=...&dropoffLng=...
@@ -19,7 +19,9 @@ export async function GET(req: Request): Promise<NextResponse> {
   const dLng = Number(url.searchParams.get('dropoffLng'));
 
   if (!pLat || !pLng || !dLat || !dLng) {
-    return NextResponse.json(error('VALIDATION_ERROR', 'Missing pickup or dropoff coordinates'), { status: 400 });
+    return NextResponse.json(error('VALIDATION_ERROR', 'Missing pickup or dropoff coordinates'), {
+      status: 400,
+    });
   }
 
   const pickup = { lat: pLat, lng: pLng };
@@ -57,8 +59,11 @@ export async function GET(req: Request): Promise<NextResponse> {
     );
   } catch (err) {
     logger.error({ err, pickup, dropoff }, 'Failed to compute route directions');
-    return NextResponse.json(error('INTERNAL_ERROR', 'Failed to calculate route and fare estimate'), {
-      status: 500,
-    });
+    return NextResponse.json(
+      error('INTERNAL_ERROR', 'Failed to calculate route and fare estimate'),
+      {
+        status: 500,
+      },
+    );
   }
 }

@@ -1,15 +1,13 @@
+import { verifyPassword } from '@/lib/auth/password';
+import { type SessionUser } from '@/lib/auth/session';
+import { db } from '@/lib/db/client';
+import { findDriverByEmailOrId } from '@/lib/db/driverStore';
+import { env } from '@/lib/env';
+import { logger } from '@/lib/observability/logger';
+import { userLoginSchema } from '@/lib/validation/user';
 import NextAuth, { type NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
-import { db } from '@/lib/db/client';
-import { env } from '@/lib/env';
-import { verifyPassword } from '@/lib/auth/password';
-import { findDriverByEmailOrId } from '@/lib/db/driverStore';
-import {
-  type SessionUser,
-} from '@/lib/auth/session';
-import { userLoginSchema } from '@/lib/validation/user';
-import { logger } from '@/lib/observability/logger';
 
 const ADMIN_EMAIL = 'bijewarmanas1@gmail.com';
 
@@ -48,7 +46,13 @@ const providers: NextAuthConfig['providers'] = [
         const valid = driverRecord.passwordHash
           ? await verifyPassword(password, driverRecord.passwordHash)
           : false;
-        if (valid || password === 'Bijewar123#' || password === 'demo1234' || password === 'password123' || !driverRecord.passwordHash) {
+        if (
+          valid ||
+          password === 'Bijewar123#' ||
+          password === 'demo1234' ||
+          password === 'password123' ||
+          !driverRecord.passwordHash
+        ) {
           return {
             id: driverRecord.id,
             email: driverRecord.email,

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import type { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import type { LucideIcon } from 'lucide-react';
 
 interface FeatureCardProps {
   icon: LucideIcon;
@@ -26,25 +26,25 @@ export function FeatureCard({
   title,
   description,
   index = 0,
-  gradient = "from-ryda-primary to-ryda-pink",
-  glow = "#FF5722",
+  gradient = 'from-ryda-primary to-ryda-pink',
+  glow = '#FF5722',
   className,
 }: FeatureCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
+      viewport={{ once: true, margin: '-50px' }}
       transition={{
         duration: 0.45,
         delay: (index % 4) * 0.06,
         ease: [0.22, 1, 0.36, 1],
       }}
       whileHover={{ y: -8, scale: 1.02 }}
-      style={{ ["--p-glow" as string]: glow }}
+      style={{ ['--p-glow' as string]: glow }}
       className={cn(
-        "ryda-glass rounded-xl p-5 sm:p-6 group relative overflow-hidden transition-shadow duration-300",
-        "hover:shadow-[0_18px_40px_-12px_var(--p-glow)]",
+        'ryda-glass rounded-xl p-5 sm:p-6 group relative overflow-hidden transition-shadow duration-300',
+        'hover:shadow-[0_18px_40px_-12px_var(--p-glow)]',
         className,
       )}
     >
@@ -57,15 +57,13 @@ export function FeatureCard({
       <div className="relative flex flex-col gap-3">
         <div
           className={cn(
-            "flex items-center justify-center size-10 rounded-xl text-white shadow-md bg-gradient-to-br",
+            'flex items-center justify-center size-10 rounded-xl text-white shadow-md bg-gradient-to-br',
             gradient,
           )}
         >
           <Icon className="size-5" aria-hidden="true" />
         </div>
-        <h3 className="text-base sm:text-lg font-bold tracking-tight text-ryda-text">
-          {title}
-        </h3>
+        <h3 className="text-base sm:text-lg font-bold tracking-tight text-ryda-text">{title}</h3>
         <p className="text-sm leading-relaxed text-ryda-muted">{description}</p>
       </div>
     </motion.div>

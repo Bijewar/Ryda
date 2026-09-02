@@ -1,5 +1,5 @@
-import { compare, hash } from 'bcryptjs';
 import argon2 from 'argon2';
+import { compare, hash } from 'bcryptjs';
 
 /**
  * Password hashing — argon2id for new hashes, bcrypt fallback for legacy.

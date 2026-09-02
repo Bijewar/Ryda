@@ -1,12 +1,12 @@
+import { generateEmailOtp } from '@/lib/auth/otp';
+import { limitOtp } from '@/lib/auth/rate-limit';
+import { db } from '@/lib/db/client';
+import { sendOtpEmail } from '@/lib/notifications/email';
+import { logger } from '@/lib/observability/logger';
+import { enqueueEmail } from '@/server/jobs/email-queue';
+import { error, ok, statusForCode } from '@/types/api';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { db } from '@/lib/db/client';
-import { generateEmailOtp } from '@/lib/auth/otp';
-import { sendOtpEmail } from '@/lib/notifications/email';
-import { enqueueEmail } from '@/server/jobs/email-queue';
-import { limitOtp } from '@/lib/auth/rate-limit';
-import { ok, error, statusForCode } from '@/types/api';
-import { logger } from '@/lib/observability/logger';
 
 const requestSchema = z.object({
   email: z.string().email(),

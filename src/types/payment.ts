@@ -1,4 +1,4 @@
-import type { PaymentProvider, PaymentStatus, PaymentMethod } from '@/types/ride';
+import type { PaymentMethod, PaymentProvider, PaymentStatus } from '@/types/ride';
 
 export interface PaymentRecord {
   id: string;

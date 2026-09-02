@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { getSystemSettings, updateSystemSettings } from '@/server/services/system-settings';
 import { getCurrentUser } from '@/lib/auth/session';
-import { ok, error } from '@/types/api';
+import { getSystemSettings, updateSystemSettings } from '@/server/services/system-settings';
+import { error, ok } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 

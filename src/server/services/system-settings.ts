@@ -30,21 +30,46 @@ export async function getSystemSettings(): Promise<SystemConfig> {
     const map = new Map(settings.map((s) => [s.key, s.value]));
 
     return {
-      freeCancellationsLimit: Number(map.get('freeCancellationsLimit') ?? DEFAULT_CONFIG.freeCancellationsLimit),
-      rewardBonusThreshold: Number(map.get('rewardBonusThreshold') ?? DEFAULT_CONFIG.rewardBonusThreshold),
+      freeCancellationsLimit: Number(
+        map.get('freeCancellationsLimit') ?? DEFAULT_CONFIG.freeCancellationsLimit,
+      ),
+      rewardBonusThreshold: Number(
+        map.get('rewardBonusThreshold') ?? DEFAULT_CONFIG.rewardBonusThreshold,
+      ),
       rewardBonusAmount: Number(map.get('rewardBonusAmount') ?? DEFAULT_CONFIG.rewardBonusAmount),
       basePenaltyAmount: Number(map.get('basePenaltyAmount') ?? DEFAULT_CONFIG.basePenaltyAmount),
-      progressivePenaltyIncrement: Number(map.get('progressivePenaltyIncrement') ?? DEFAULT_CONFIG.progressivePenaltyIncrement),
+      progressivePenaltyIncrement: Number(
+        map.get('progressivePenaltyIncrement') ?? DEFAULT_CONFIG.progressivePenaltyIncrement,
+      ),
       maxPenaltyAmount: Number(map.get('maxPenaltyAmount') ?? DEFAULT_CONFIG.maxPenaltyAmount),
-      cancellationRateThreshold: Number(map.get('cancellationRateThreshold') ?? DEFAULT_CONFIG.cancellationRateThreshold),
-      reliableDriverCompletionRate: Number(map.get('reliableDriverCompletionRate') ?? DEFAULT_CONFIG.reliableDriverCompletionRate),
-      reliableDriverBonusRate: Number(map.get('reliableDriverBonusRate') ?? DEFAULT_CONFIG.reliableDriverBonusRate),
-      reliableDriverCommissionDiscount: Number(map.get('reliableDriverCommissionDiscount') ?? DEFAULT_CONFIG.reliableDriverCommissionDiscount),
-      customerCompensationBaseAmount: Number(map.get('customerCompensationBaseAmount') ?? DEFAULT_CONFIG.customerCompensationBaseAmount),
-      customerCompensationMaxAmount: Number(map.get('customerCompensationMaxAmount') ?? DEFAULT_CONFIG.customerCompensationMaxAmount),
-      repositioningMinIncentive: Number(map.get('repositioningMinIncentive') ?? DEFAULT_CONFIG.repositioningMinIncentive),
-      repositioningMaxIncentive: Number(map.get('repositioningMaxIncentive') ?? DEFAULT_CONFIG.repositioningMaxIncentive),
-      repositioningDailyBudget: Number(map.get('repositioningDailyBudget') ?? DEFAULT_CONFIG.repositioningDailyBudget),
+      cancellationRateThreshold: Number(
+        map.get('cancellationRateThreshold') ?? DEFAULT_CONFIG.cancellationRateThreshold,
+      ),
+      reliableDriverCompletionRate: Number(
+        map.get('reliableDriverCompletionRate') ?? DEFAULT_CONFIG.reliableDriverCompletionRate,
+      ),
+      reliableDriverBonusRate: Number(
+        map.get('reliableDriverBonusRate') ?? DEFAULT_CONFIG.reliableDriverBonusRate,
+      ),
+      reliableDriverCommissionDiscount: Number(
+        map.get('reliableDriverCommissionDiscount') ??
+          DEFAULT_CONFIG.reliableDriverCommissionDiscount,
+      ),
+      customerCompensationBaseAmount: Number(
+        map.get('customerCompensationBaseAmount') ?? DEFAULT_CONFIG.customerCompensationBaseAmount,
+      ),
+      customerCompensationMaxAmount: Number(
+        map.get('customerCompensationMaxAmount') ?? DEFAULT_CONFIG.customerCompensationMaxAmount,
+      ),
+      repositioningMinIncentive: Number(
+        map.get('repositioningMinIncentive') ?? DEFAULT_CONFIG.repositioningMinIncentive,
+      ),
+      repositioningMaxIncentive: Number(
+        map.get('repositioningMaxIncentive') ?? DEFAULT_CONFIG.repositioningMaxIncentive,
+      ),
+      repositioningDailyBudget: Number(
+        map.get('repositioningDailyBudget') ?? DEFAULT_CONFIG.repositioningDailyBudget,
+      ),
     };
   } catch (_e) {
     return DEFAULT_CONFIG;

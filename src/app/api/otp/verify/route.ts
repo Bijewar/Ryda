@@ -1,6 +1,6 @@
+import { error, ok } from '@/types/api';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { ok, error } from '@/types/api';
 
 const verifySchema = z.object({
   email: z.string().email(),

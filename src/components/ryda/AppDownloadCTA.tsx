@@ -1,8 +1,6 @@
 'use client';
-
-import * as React from 'react';
 import { motion } from 'framer-motion';
-import { Apple, Play, Smartphone, QrCode, ArrowRight } from 'lucide-react';
+import { Apple, ArrowRight, Play, QrCode, Smartphone } from 'lucide-react';
 import { VehicleIllustration } from './VehicleIllustration';
 
 export function AppDownloadCTA() {
@@ -17,8 +15,14 @@ export function AppDownloadCTA() {
           className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-stone-900 via-emerald-950 to-stone-900 px-6 py-14 sm:px-10 sm:py-16 lg:px-16 lg:py-20"
         >
           {/* Decorative glows */}
-          <div className="absolute -top-20 -right-20 w-80 h-80 bg-ryda-accent/20 rounded-full blur-3xl" aria-hidden />
-          <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-amber-500/15 rounded-full blur-3xl" aria-hidden />
+          <div
+            className="absolute -top-20 -right-20 w-80 h-80 bg-ryda-accent/20 rounded-full blur-3xl"
+            aria-hidden
+          />
+          <div
+            className="absolute -bottom-20 -left-20 w-72 h-72 bg-amber-500/15 rounded-full blur-3xl"
+            aria-hidden
+          />
           <div
             className="absolute inset-0 opacity-[0.07]"
             style={{
@@ -45,8 +49,8 @@ export function AppDownloadCTA() {
                 <span className="text-ryda-accent">8 seconds away.</span>
               </h2>
               <p className="mt-4 text-base sm:text-lg text-white/70 max-w-lg">
-                Download Ryda for iOS or Android. First ride is free up to ₹150 —
-                no card needed, no strings attached.
+                Download Ryda for iOS or Android. First ride is free up to ₹150 — no card needed, no
+                strings attached.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -58,7 +62,9 @@ export function AppDownloadCTA() {
                 >
                   <Apple className="w-6 h-6" />
                   <div className="text-left leading-none">
-                    <p className="text-[10px] uppercase tracking-wider opacity-70">Download on the</p>
+                    <p className="text-[10px] uppercase tracking-wider opacity-70">
+                      Download on the
+                    </p>
                     <p className="text-base font-bold">App Store</p>
                   </div>
                 </motion.a>
@@ -91,7 +97,7 @@ export function AppDownloadCTA() {
             <div className="relative flex justify-center lg:justify-end">
               <motion.div
                 animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
                 className="relative w-64 h-[480px] rounded-[2.5rem] bg-stone-900 border-4 border-white/15 shadow-2xl overflow-hidden"
               >
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 w-20 h-5 rounded-full bg-stone-900 z-10" />

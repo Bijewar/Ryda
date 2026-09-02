@@ -1,39 +1,31 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
-import { 
-  Check, 
-  CheckCircle2, 
-  Clock, 
-  Flag, 
-  KeyRound,
-  Loader2, 
-  MapPin, 
-  Navigation, 
-  Phone, 
-  Radio, 
-  ShieldCheck, 
-  Sparkles, 
-  User, 
-  Wifi, 
-  ExternalLink,
-  X 
-} from 'lucide-react';
-import { RideRequestCard } from '@/components/driver/RideRequestCard';
-import type { RideOfferPayload } from '@/lib/realtime/events';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { DriverCancelReasonModal } from '@/components/driver/DriverCancelReasonModal';
 import { DriverDemandCard } from '@/components/driver/DriverDemandCard';
-import { MapView } from '@/components/maps/MapView';
+import { RideRequestCard } from '@/components/driver/RideRequestCard';
 import { BhopalOverlay } from '@/components/maps/BhopalOverlay';
-import { PassengerMarker } from '@/components/maps/PassengerMarker';
 import { DriverMarker } from '@/components/maps/DriverMarker';
+import { MapView } from '@/components/maps/MapView';
+import { PassengerMarker } from '@/components/maps/PassengerMarker';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import type { RideOfferPayload } from '@/lib/realtime/events';
+import { formatCurrency } from '@/lib/utils';
 import type { CancellationReasonCategory } from '@/types/reliability';
-import { formatCurrency, formatDistance, formatDuration } from '@/lib/utils';
+import {
+  Check,
+  ExternalLink,
+  Flag,
+  KeyRound,
+  Loader2,
+  MapPin,
+  Navigation,
+  Radio,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
 import { toast } from 'sonner';
 
 export interface ActiveTripPayload {
@@ -61,7 +53,9 @@ export interface ActiveOfferCardProps {
 // Synthesize alert chime
 function playRideChime() {
   try {
-    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return;
     const ctx = new AudioContextClass();
     const osc = ctx.createOscillator();
@@ -314,8 +308,8 @@ export default function ActiveOfferCard({
           <div className="relative h-[240px] sm:h-[280px] w-full border-b border-ryda-border">
             <MapView
               initialViewState={{
-                longitude: 77.4280,
-                latitude: 23.2380,
+                longitude: 77.428,
+                latitude: 23.238,
                 zoom: 13.0,
               }}
             >
@@ -329,8 +323,8 @@ export default function ActiveOfferCard({
 
               {/* Captain Current Vehicle Location */}
               <DriverMarker
-                lng={77.4290}
-                lat={23.2400}
+                lng={77.429}
+                lat={23.24}
                 heading={45}
                 variant="BIKE"
                 driverName="Your Location"
@@ -367,14 +361,18 @@ export default function ActiveOfferCard({
               <div className="flex items-start gap-2.5">
                 <MapPin className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-ryda-muted block">Pickup</span>
+                  <span className="text-[10px] uppercase font-bold text-ryda-muted block">
+                    Pickup
+                  </span>
                   <span className="text-ryda-text font-medium">{activeTrip.pickupAddress}</span>
                 </div>
               </div>
               <div className="flex items-start gap-2.5">
                 <MapPin className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-ryda-muted block">Destination</span>
+                  <span className="text-[10px] uppercase font-bold text-ryda-muted block">
+                    Destination
+                  </span>
                   <span className="text-ryda-text font-medium">{activeTrip.dropoffAddress}</span>
                 </div>
               </div>
@@ -383,7 +381,9 @@ export default function ActiveOfferCard({
             {/* Google Maps External Navigation Shortcut */}
             <a
               href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                activeTrip.status === 'IN_PROGRESS' ? activeTrip.dropoffAddress : activeTrip.pickupAddress,
+                activeTrip.status === 'IN_PROGRESS'
+                  ? activeTrip.dropoffAddress
+                  : activeTrip.pickupAddress,
               )}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -407,7 +407,11 @@ export default function ActiveOfferCard({
                 disabled={isUpdatingTrip}
                 className="w-full bg-ryda-accent text-white hover:bg-ryda-accent-dim font-bold py-4 rounded-2xl text-sm gap-2 shadow-md cursor-pointer"
               >
-                {isUpdatingTrip ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
+                {isUpdatingTrip ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Navigation className="h-4 w-4" />
+                )}
                 I Have Arrived at Pickup
               </Button>
             )}
@@ -442,7 +446,11 @@ export default function ActiveOfferCard({
                   disabled={isUpdatingTrip || otpInput.trim().length !== 4}
                   className="w-full bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-4 rounded-2xl text-sm gap-2 shadow-md cursor-pointer"
                 >
-                  {isUpdatingTrip ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  {isUpdatingTrip ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Check className="h-4 w-4" />
+                  )}
                   Verify OTP &amp; Start Ride
                 </Button>
               </div>
@@ -455,7 +463,11 @@ export default function ActiveOfferCard({
                 disabled={isUpdatingTrip}
                 className="w-full bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-4 rounded-2xl text-sm gap-2 shadow-lg cursor-pointer"
               >
-                {isUpdatingTrip ? <Loader2 className="h-4 w-4 animate-spin" /> : <Flag className="h-4 w-4" />}
+                {isUpdatingTrip ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Flag className="h-4 w-4" />
+                )}
                 Complete Trip &amp; Collect {formatCurrency(activeTrip.fareAmount)}
               </Button>
             )}
@@ -502,7 +514,9 @@ export default function ActiveOfferCard({
           <div>
             <p className="font-display font-bold text-sm text-ryda-text">Live Dispatch Radar</p>
             <p className="text-xs text-ryda-muted">
-              {currentOnline ? '🟢 Connected · Waiting for nearby ride requests' : '⚪ Offline — Toggle above to go Online'}
+              {currentOnline
+                ? '🟢 Connected · Waiting for nearby ride requests'
+                : '⚪ Offline — Toggle above to go Online'}
             </p>
           </div>
         </div>

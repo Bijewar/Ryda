@@ -1,7 +1,7 @@
 'use client';
 
-import { create } from 'zustand';
 import type { PaymentProvider } from '@/types/ride';
+import { create } from 'zustand';
 
 interface PaymentState {
   selectedProvider: PaymentProvider;

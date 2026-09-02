@@ -1,36 +1,27 @@
 'use client';
 
-import * as React from 'react';
+import { BhopalOverlay } from '@/components/maps/BhopalOverlay';
+import { DemandHotspotsLayer } from '@/components/maps/DemandHotspotsLayer';
+import { MapView } from '@/components/maps/MapView';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { formatCurrency, formatDate } from '@/lib/utils';
+import type { BhopalZoneData, SystemConfig } from '@/types/reliability';
 import {
-  Activity,
-  AlertTriangle,
   Award,
-  BarChart3,
-  CheckCircle2,
-  Clock,
   DollarSign,
   Flame,
-  Layers,
-  MapPin,
   Save,
   Settings,
   ShieldAlert,
   ShieldCheck,
-  Sparkles,
-  TrendingUp,
   Users,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import * as React from 'react';
 import { toast } from 'sonner';
-import { MapView } from '@/components/maps/MapView';
-import { BhopalOverlay } from '@/components/maps/BhopalOverlay';
-import { DemandHotspotsLayer } from '@/components/maps/DemandHotspotsLayer';
-import type { BhopalZoneData, SystemConfig } from '@/types/reliability';
 
 export interface AdminDashboardTabsProps {
   initialConfig: SystemConfig;
@@ -47,10 +38,14 @@ export function AdminDashboardTabs({
   driversTableNode,
   recentRidesNode,
 }: AdminDashboardTabsProps): React.ReactElement {
-  const [activeTab, setActiveTab] = React.useState<'overview' | 'reliability' | 'compensation' | 'demand' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = React.useState<
+    'overview' | 'reliability' | 'compensation' | 'demand' | 'settings'
+  >('overview');
   const [config, setConfig] = React.useState<SystemConfig>(initialConfig);
   const [zones] = React.useState<BhopalZoneData[]>(initialZones);
-  const [mapMode, setMapMode] = React.useState<'current' | 'prediction10m' | 'prediction30m' | 'repositioning'>('current');
+  const [mapMode, setMapMode] = React.useState<
+    'current' | 'prediction10m' | 'prediction30m' | 'repositioning'
+  >('current');
   const [isSavingConfig, setIsSavingConfig] = React.useState(false);
 
   const handleSaveConfig = async (e: React.FormEvent) => {
@@ -68,7 +63,8 @@ export function AdminDashboardTabs({
       if (json.data) setConfig(json.data);
 
       toast.success('System Rules Saved Successfully! ⚙️', {
-        description: 'New cancellation allowances, penalty rates, and compensation rules are now active.',
+        description:
+          'New cancellation allowances, penalty rates, and compensation rules are now active.',
       });
     } catch (err) {
       toast.error('Save Failed', {
@@ -225,7 +221,9 @@ export function AdminDashboardTabs({
                   {topDrivers.map((d: any) => (
                     <li key={d.id} className="py-2.5 flex items-center justify-between">
                       <div>
-                        <p className="text-xs font-bold text-ryda-text">{d.firstName} {d.lastName}</p>
+                        <p className="text-xs font-bold text-ryda-text">
+                          {d.firstName} {d.lastName}
+                        </p>
                         <p className="text-[11px] text-ryda-muted">
                           {d.totalRides} rides · {d.rating.toFixed(1)} ★
                         </p>
@@ -259,7 +257,9 @@ export function AdminDashboardTabs({
                     {flaggedDrivers.map((d: any) => (
                       <li key={d.id} className="py-2.5 flex items-center justify-between">
                         <div>
-                          <p className="text-xs font-bold text-ryda-text">{d.firstName} {d.lastName}</p>
+                          <p className="text-xs font-bold text-ryda-text">
+                            {d.firstName} {d.lastName}
+                          </p>
                           <p className="text-[11px] text-destructive">
                             {d.penalizedCancellations} penalized cancellations
                           </p>
@@ -284,7 +284,9 @@ export function AdminDashboardTabs({
             </CardHeader>
             <CardContent>
               {cancellations.length === 0 ? (
-                <p className="py-6 text-center text-xs text-ryda-muted">No cancellation events logged yet.</p>
+                <p className="py-6 text-center text-xs text-ryda-muted">
+                  No cancellation events logged yet.
+                </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
@@ -300,16 +302,23 @@ export function AdminDashboardTabs({
                     <tbody className="divide-y divide-ryda-border/40">
                       {cancellations.map((c: any) => (
                         <tr key={c.id} className="py-2">
-                          <td className="py-2.5 font-medium">{c.driver?.firstName} {c.driver?.lastName}</td>
+                          <td className="py-2.5 font-medium">
+                            {c.driver?.firstName} {c.driver?.lastName}
+                          </td>
                           <td className="py-2.5">
-                            <Badge variant={c.isPenalized ? 'destructive' : 'secondary'} className="text-[10px]">
+                            <Badge
+                              variant={c.isPenalized ? 'destructive' : 'secondary'}
+                              className="text-[10px]"
+                            >
                               {c.reasonCategory}
                             </Badge>
                           </td>
                           <td className="py-2.5 text-ryda-muted">{c.reasonDetails ?? '—'}</td>
                           <td className="py-2.5 font-mono">
                             {c.isPenalized ? (
-                              <span className="text-destructive font-bold">{formatCurrency(c.penaltyAmount)}</span>
+                              <span className="text-destructive font-bold">
+                                {formatCurrency(c.penaltyAmount)}
+                              </span>
                             ) : (
                               <span className="text-emerald-400">Waived</span>
                             )}
@@ -346,7 +355,9 @@ export function AdminDashboardTabs({
                 <p className="text-2xl font-bold text-ryda-text font-mono">
                   {compensations.length}
                 </p>
-                <span className="text-[10px] text-ryda-muted">Driver cancellation compensations</span>
+                <span className="text-[10px] text-ryda-muted">
+                  Driver cancellation compensations
+                </span>
               </CardContent>
             </Card>
 
@@ -367,7 +378,9 @@ export function AdminDashboardTabs({
             </CardHeader>
             <CardContent>
               {compensations.length === 0 ? (
-                <p className="py-8 text-center text-xs text-ryda-muted">No customer compensations issued yet.</p>
+                <p className="py-8 text-center text-xs text-ryda-muted">
+                  No customer compensations issued yet.
+                </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
@@ -385,11 +398,16 @@ export function AdminDashboardTabs({
                       {compensations.map((c: any) => (
                         <tr key={c.id}>
                           <td className="py-2.5 font-medium">{c.passenger?.name}</td>
-                          <td className="py-2.5 font-mono font-bold text-emerald-400">{formatCurrency(c.amount)}</td>
+                          <td className="py-2.5 font-mono font-bold text-emerald-400">
+                            {formatCurrency(c.amount)}
+                          </td>
                           <td className="py-2.5 text-ryda-muted">{c.reason}</td>
                           <td className="py-2.5 font-mono">{c.inconvenienceScore}x</td>
                           <td className="py-2.5">
-                            <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                            >
                               {c.status}
                             </Badge>
                           </td>
@@ -415,7 +433,9 @@ export function AdminDashboardTabs({
                 <Flame className="h-4 w-4 text-amber-400" />
                 Live Bhopal Demand Zones &amp; Multi-Horizon AI Forecast
               </h3>
-              <p className="text-xs text-ryda-muted">Toggle prediction horizons to view future supply-demand imbalances</p>
+              <p className="text-xs text-ryda-muted">
+                Toggle prediction horizons to view future supply-demand imbalances
+              </p>
             </div>
 
             <div className="flex items-center gap-1.5">
@@ -475,21 +495,29 @@ export function AdminDashboardTabs({
           {/* Demand Zones Data Grid */}
           <Card className="border-ryda-border bg-ryda-elevated">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-bold">Bhopal Service Area Zone Intelligence</CardTitle>
+              <CardTitle className="text-sm font-bold">
+                Bhopal Service Area Zone Intelligence
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {zones.map((z) => (
-                  <div key={z.id} className="p-3.5 rounded-xl border border-ryda-border/70 bg-ryda-surface/80 space-y-2">
+                  <div
+                    key={z.id}
+                    className="p-3.5 rounded-xl border border-ryda-border/70 bg-ryda-surface/80 space-y-2"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-ryda-text">{z.name}</span>
                       <Badge
                         variant="outline"
                         className={
-                          z.currentDemandLevel === 'VERY_HIGH' ? 'bg-red-500/15 text-red-400 border-red-500/40 text-[10px]' :
-                          z.currentDemandLevel === 'HIGH' ? 'bg-orange-500/15 text-orange-400 border-orange-500/40 text-[10px]' :
-                          z.currentDemandLevel === 'MEDIUM' ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/40 text-[10px]' :
-                          'bg-emerald-500/15 text-emerald-400 border-emerald-500/40 text-[10px]'
+                          z.currentDemandLevel === 'VERY_HIGH'
+                            ? 'bg-red-500/15 text-red-400 border-red-500/40 text-[10px]'
+                            : z.currentDemandLevel === 'HIGH'
+                              ? 'bg-orange-500/15 text-orange-400 border-orange-500/40 text-[10px]'
+                              : z.currentDemandLevel === 'MEDIUM'
+                                ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/40 text-[10px]'
+                                : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40 text-[10px]'
                         }
                       >
                         {z.currentDemandLevel}
@@ -497,10 +525,26 @@ export function AdminDashboardTabs({
                     </div>
 
                     <div className="grid grid-cols-2 gap-1.5 text-[11px] text-ryda-muted">
-                      <div>30m Forecast: <span className="font-semibold text-ryda-text">{z.predictedDemand30m}</span></div>
-                      <div>Shortage: <span className="font-semibold text-destructive">{z.driverShortage} cars</span></div>
-                      <div>Active Drivers: <span className="font-semibold text-ryda-text">{z.activeDrivers}</span></div>
-                      <div>Bonus: <span className="font-mono font-bold text-amber-400">{formatCurrency(z.repositioningIncentive)}</span></div>
+                      <div>
+                        30m Forecast:{' '}
+                        <span className="font-semibold text-ryda-text">{z.predictedDemand30m}</span>
+                      </div>
+                      <div>
+                        Shortage:{' '}
+                        <span className="font-semibold text-destructive">
+                          {z.driverShortage} cars
+                        </span>
+                      </div>
+                      <div>
+                        Active Drivers:{' '}
+                        <span className="font-semibold text-ryda-text">{z.activeDrivers}</span>
+                      </div>
+                      <div>
+                        Bonus:{' '}
+                        <span className="font-mono font-bold text-amber-400">
+                          {formatCurrency(z.repositioningIncentive)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -517,10 +561,19 @@ export function AdminDashboardTabs({
             <CardHeader className="pb-3 border-b border-ryda-border/60">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-bold text-ryda-text">Configurable System Rules &amp; Thresholds</CardTitle>
-                  <p className="text-xs text-ryda-muted">All parameters take effect immediately across matching, penalties, and driver rewards.</p>
+                  <CardTitle className="text-base font-bold text-ryda-text">
+                    Configurable System Rules &amp; Thresholds
+                  </CardTitle>
+                  <p className="text-xs text-ryda-muted">
+                    All parameters take effect immediately across matching, penalties, and driver
+                    rewards.
+                  </p>
                 </div>
-                <Button type="submit" disabled={isSavingConfig} className="bg-ryda-accent text-ryda-bg hover:bg-ryda-accent-dim font-bold text-xs gap-1.5">
+                <Button
+                  type="submit"
+                  disabled={isSavingConfig}
+                  className="bg-ryda-accent text-ryda-bg hover:bg-ryda-accent-dim font-bold text-xs gap-1.5"
+                >
                   <Save className="h-4 w-4" />
                   {isSavingConfig ? 'Saving…' : 'Save Rules'}
                 </Button>
@@ -539,10 +592,14 @@ export function AdminDashboardTabs({
                     <Input
                       type="number"
                       value={config.freeCancellationsLimit}
-                      onChange={(e) => setConfig({ ...config, freeCancellationsLimit: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setConfig({ ...config, freeCancellationsLimit: Number(e.target.value) })
+                      }
                       className="bg-ryda-surface"
                     />
-                    <p className="text-[10px] text-ryda-muted">Eligible cancellations allowed without penalty per month</p>
+                    <p className="text-[10px] text-ryda-muted">
+                      Eligible cancellations allowed without penalty per month
+                    </p>
                   </div>
 
                   <div className="space-y-1.5">
@@ -550,10 +607,14 @@ export function AdminDashboardTabs({
                     <Input
                       type="number"
                       value={config.basePenaltyAmount / 100}
-                      onChange={(e) => setConfig({ ...config, basePenaltyAmount: Number(e.target.value) * 100 })}
+                      onChange={(e) =>
+                        setConfig({ ...config, basePenaltyAmount: Number(e.target.value) * 100 })
+                      }
                       className="bg-ryda-surface"
                     />
-                    <p className="text-[10px] text-ryda-muted">Fee for 1st cancellation over monthly allowance</p>
+                    <p className="text-[10px] text-ryda-muted">
+                      Fee for 1st cancellation over monthly allowance
+                    </p>
                   </div>
 
                   <div className="space-y-1.5">
@@ -561,10 +622,17 @@ export function AdminDashboardTabs({
                     <Input
                       type="number"
                       value={config.progressivePenaltyIncrement / 100}
-                      onChange={(e) => setConfig({ ...config, progressivePenaltyIncrement: Number(e.target.value) * 100 })}
+                      onChange={(e) =>
+                        setConfig({
+                          ...config,
+                          progressivePenaltyIncrement: Number(e.target.value) * 100,
+                        })
+                      }
                       className="bg-ryda-surface"
                     />
-                    <p className="text-[10px] text-ryda-muted">Additional fee per subsequent avoidable cancellation</p>
+                    <p className="text-[10px] text-ryda-muted">
+                      Additional fee per subsequent avoidable cancellation
+                    </p>
                   </div>
 
                   <div className="space-y-1.5">
@@ -572,10 +640,14 @@ export function AdminDashboardTabs({
                     <Input
                       type="number"
                       value={config.maxPenaltyAmount / 100}
-                      onChange={(e) => setConfig({ ...config, maxPenaltyAmount: Number(e.target.value) * 100 })}
+                      onChange={(e) =>
+                        setConfig({ ...config, maxPenaltyAmount: Number(e.target.value) * 100 })
+                      }
                       className="bg-ryda-surface"
                     />
-                    <p className="text-[10px] text-ryda-muted">Upper limit per single cancellation event</p>
+                    <p className="text-[10px] text-ryda-muted">
+                      Upper limit per single cancellation event
+                    </p>
                   </div>
 
                   <div className="space-y-1.5">
@@ -583,10 +655,14 @@ export function AdminDashboardTabs({
                     <Input
                       type="number"
                       value={config.cancellationRateThreshold}
-                      onChange={(e) => setConfig({ ...config, cancellationRateThreshold: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setConfig({ ...config, cancellationRateThreshold: Number(e.target.value) })
+                      }
                       className="bg-ryda-surface"
                     />
-                    <p className="text-[10px] text-ryda-muted">Rates above this trigger driver penalty warnings</p>
+                    <p className="text-[10px] text-ryda-muted">
+                      Rates above this trigger driver penalty warnings
+                    </p>
                   </div>
                 </div>
               </div>
@@ -602,10 +678,17 @@ export function AdminDashboardTabs({
                     <Input
                       type="number"
                       value={config.reliableDriverCompletionRate}
-                      onChange={(e) => setConfig({ ...config, reliableDriverCompletionRate: Number(e.target.value) })}
+                      onChange={(e) =>
+                        setConfig({
+                          ...config,
+                          reliableDriverCompletionRate: Number(e.target.value),
+                        })
+                      }
                       className="bg-ryda-surface"
                     />
-                    <p className="text-[10px] text-ryda-muted">Minimum completion rate to earn Reliable Driver status</p>
+                    <p className="text-[10px] text-ryda-muted">
+                      Minimum completion rate to earn Reliable Driver status
+                    </p>
                   </div>
 
                   <div className="space-y-1.5">
@@ -613,10 +696,17 @@ export function AdminDashboardTabs({
                     <Input
                       type="number"
                       value={config.reliableDriverBonusRate * 100}
-                      onChange={(e) => setConfig({ ...config, reliableDriverBonusRate: Number(e.target.value) / 100 })}
+                      onChange={(e) =>
+                        setConfig({
+                          ...config,
+                          reliableDriverBonusRate: Number(e.target.value) / 100,
+                        })
+                      }
                       className="bg-ryda-surface"
                     />
-                    <p className="text-[10px] text-ryda-muted">Extra payout percentage for reliable drivers (e.g. 2%)</p>
+                    <p className="text-[10px] text-ryda-muted">
+                      Extra payout percentage for reliable drivers (e.g. 2%)
+                    </p>
                   </div>
                 </div>
               </div>
@@ -632,10 +722,17 @@ export function AdminDashboardTabs({
                     <Input
                       type="number"
                       value={config.customerCompensationBaseAmount / 100}
-                      onChange={(e) => setConfig({ ...config, customerCompensationBaseAmount: Number(e.target.value) * 100 })}
+                      onChange={(e) =>
+                        setConfig({
+                          ...config,
+                          customerCompensationBaseAmount: Number(e.target.value) * 100,
+                        })
+                      }
                       className="bg-ryda-surface"
                     />
-                    <p className="text-[10px] text-ryda-muted">Default compensation credited when driver cancels</p>
+                    <p className="text-[10px] text-ryda-muted">
+                      Default compensation credited when driver cancels
+                    </p>
                   </div>
 
                   <div className="space-y-1.5">
@@ -643,10 +740,17 @@ export function AdminDashboardTabs({
                     <Input
                       type="number"
                       value={config.customerCompensationMaxAmount / 100}
-                      onChange={(e) => setConfig({ ...config, customerCompensationMaxAmount: Number(e.target.value) * 100 })}
+                      onChange={(e) =>
+                        setConfig({
+                          ...config,
+                          customerCompensationMaxAmount: Number(e.target.value) * 100,
+                        })
+                      }
                       className="bg-ryda-surface"
                     />
-                    <p className="text-[10px] text-ryda-muted">Cap for high wait-time cancellations</p>
+                    <p className="text-[10px] text-ryda-muted">
+                      Cap for high wait-time cancellations
+                    </p>
                   </div>
                 </div>
               </div>
@@ -662,7 +766,12 @@ export function AdminDashboardTabs({
                     <Input
                       type="number"
                       value={config.repositioningMinIncentive / 100}
-                      onChange={(e) => setConfig({ ...config, repositioningMinIncentive: Number(e.target.value) * 100 })}
+                      onChange={(e) =>
+                        setConfig({
+                          ...config,
+                          repositioningMinIncentive: Number(e.target.value) * 100,
+                        })
+                      }
                       className="bg-ryda-surface"
                     />
                   </div>
@@ -672,7 +781,12 @@ export function AdminDashboardTabs({
                     <Input
                       type="number"
                       value={config.repositioningMaxIncentive / 100}
-                      onChange={(e) => setConfig({ ...config, repositioningMaxIncentive: Number(e.target.value) * 100 })}
+                      onChange={(e) =>
+                        setConfig({
+                          ...config,
+                          repositioningMaxIncentive: Number(e.target.value) * 100,
+                        })
+                      }
                       className="bg-ryda-surface"
                     />
                   </div>
@@ -682,7 +796,12 @@ export function AdminDashboardTabs({
                     <Input
                       type="number"
                       value={config.repositioningDailyBudget / 100}
-                      onChange={(e) => setConfig({ ...config, repositioningDailyBudget: Number(e.target.value) * 100 })}
+                      onChange={(e) =>
+                        setConfig({
+                          ...config,
+                          repositioningDailyBudget: Number(e.target.value) * 100,
+                        })
+                      }
                       className="bg-ryda-surface"
                     />
                   </div>

@@ -32,7 +32,18 @@ export type RideRateInput = z.infer<typeof rideRateSchema>;
 
 export const rideListSchema = z.object({
   status: z
-    .enum(['REQUESTED', 'MATCHING', 'OFFERED', 'ACCEPTED', 'ARRIVED', 'IN_PROGRESS', 'COMPLETED', 'PAID', 'CANCELED', 'NO_DRIVERS'])
+    .enum([
+      'REQUESTED',
+      'MATCHING',
+      'OFFERED',
+      'ACCEPTED',
+      'ARRIVED',
+      'IN_PROGRESS',
+      'COMPLETED',
+      'PAID',
+      'CANCELED',
+      'NO_DRIVERS',
+    ])
     .optional(),
   cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20),

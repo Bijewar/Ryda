@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 interface GradientTextProps {
   children: React.ReactNode;
@@ -38,15 +38,11 @@ export function GradientText({
       whileInView={immediate ? undefined : { opacity: 1 }}
       viewport={immediate ? undefined : { once: true }}
       className={cn(
-        animate ? "ryda-text-gradient-anim" : "ryda-text-gradient",
-        "inline-block",
+        animate ? 'ryda-text-gradient-anim' : 'ryda-text-gradient',
+        'inline-block',
         className,
       )}
-      style={
-        animate
-          ? { animationDuration: `${duration}s` }
-          : undefined
-      }
+      style={animate ? { animationDuration: `${duration}s` } : undefined}
     >
       {children}
     </motion.span>

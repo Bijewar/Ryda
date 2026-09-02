@@ -1,9 +1,7 @@
 'use client';
-
-import * as React from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { TrendingUp, Wallet, Clock, Calendar, ArrowRight, Star } from 'lucide-react';
+import { ArrowRight, Calendar, Clock, Star, TrendingUp, Wallet } from 'lucide-react';
+import Link from 'next/link';
 
 const DRIVER_PERKS = [
   { icon: Wallet, label: 'Daily payouts', desc: 'Get paid the same day, before 8pm.' },
@@ -36,8 +34,8 @@ export function DriversSection() {
               Earn on your terms.
             </h2>
             <p className="mt-4 text-base sm:text-lg text-ryda-muted max-w-xl">
-              We keep just enough to run the platform. You keep more of every
-              ride — paid out the same day, with tools that respect your time.
+              We keep just enough to run the platform. You keep more of every ride — paid out the
+              same day, with tools that respect your time.
             </p>
 
             <div className="mt-8 grid grid-cols-2 gap-4">
@@ -64,7 +62,11 @@ export function DriversSection() {
               })}
             </div>
 
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="mt-8 inline-block">
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="mt-8 inline-block"
+            >
               <Link
                 href="/driver/register"
                 className="inline-flex items-center gap-2 bg-ryda-text text-white px-7 py-4 rounded-2xl font-semibold text-base hover:bg-ryda-text/90 transition-colors shadow-lg"
@@ -87,14 +89,15 @@ export function DriversSection() {
             className="lg:col-span-6"
           >
             <div className="relative mx-auto max-w-md">
-              <div className="absolute -inset-4 bg-gradient-to-br from-amber-200/40 via-ryda-accent/15 to-sky-200/30 blur-3xl rounded-full" aria-hidden />
+              <div
+                className="absolute -inset-4 bg-gradient-to-br from-amber-200/40 via-ryda-accent/15 to-sky-200/30 blur-3xl rounded-full"
+                aria-hidden
+              />
               <div className="relative ryda-glass rounded-[2rem] p-6 shadow-2xl shadow-ryda-text/10">
                 <div className="flex items-center justify-between mb-5">
                   <div>
                     <p className="text-xs text-ryda-muted font-medium">This week&apos;s earnings</p>
-                    <p className="font-display text-3xl font-extrabold text-ryda-text">
-                      ₹ 18,420
-                    </p>
+                    <p className="font-display text-3xl font-extrabold text-ryda-text">₹ 18,420</p>
                   </div>
                   <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded-full">
                     <TrendingUp className="w-3.5 h-3.5" />
@@ -110,13 +113,23 @@ export function DriversSection() {
                       initial={{ height: 0 }}
                       whileInView={{ height: `${h}%` }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.7, delay: 0.5 + idx * 0.07, ease: [0.16, 1, 0.3, 1] }}
+                      transition={{
+                        duration: 0.7,
+                        delay: 0.5 + idx * 0.07,
+                        ease: [0.16, 1, 0.3, 1],
+                      }}
                       className="flex-1 rounded-t-md bg-gradient-to-t from-ryda-accent/40 to-ryda-accent"
                     />
                   ))}
                 </div>
                 <div className="flex justify-between text-[10px] font-medium text-ryda-muted mb-5">
-                  <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                  <span>Mon</span>
+                  <span>Tue</span>
+                  <span>Wed</span>
+                  <span>Thu</span>
+                  <span>Fri</span>
+                  <span>Sat</span>
+                  <span>Sun</span>
                 </div>
 
                 {/* Trip card */}
@@ -144,7 +157,10 @@ export function DriversSection() {
                         </p>
                       </div>
                     </div>
-                    <Link href="/driver/register" className="text-xs font-semibold text-ryda-accent-dim hover:text-ryda-text transition-colors">
+                    <Link
+                      href="/driver/register"
+                      className="text-xs font-semibold text-ryda-accent-dim hover:text-ryda-text transition-colors"
+                    >
                       Join as Driver
                     </Link>
                   </div>

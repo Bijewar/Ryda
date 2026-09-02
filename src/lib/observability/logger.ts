@@ -1,5 +1,5 @@
-import pino from 'pino';
 import { env } from '@/lib/env';
+import pino from 'pino';
 
 /**
  * Pino logger — structured JSON in production, pretty-printed in dev.

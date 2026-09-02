@@ -1,12 +1,12 @@
 import { Server as HttpServer } from 'node:http';
-import { Server as SocketIOServer } from 'socket.io';
-import { createAdapter } from '@socket.io/redis-adapter';
-import { Redis } from 'ioredis';
 import { env } from '@/lib/env';
 import { logger } from '@/lib/observability/logger';
+import { createAdapter } from '@socket.io/redis-adapter';
+import { Redis } from 'ioredis';
+import { Server as SocketIOServer } from 'socket.io';
 import { verifyWsToken } from './auth';
+import { DriverEvents, SystemEvents } from './events';
 import { ADMIN_ROOM, BHOPAL_ONLINE_ROOM, driverRoom, passengerRoom, rideRoom } from './rooms';
-import { DriverEvents, RideEvents, SystemEvents } from './events';
 
 /**
  * Socket.IO server setup.
@@ -74,8 +74,14 @@ export function initSocketServer(httpServer: HttpServer): SocketIOServer {
 
   server.on('connection', (socket) => {
     const user = (socket.data as { user: { sub: string; accountType: string } }).user;
-    logger.info({ socketId: socket.id, userId: user.sub, accountType: user.accountType }, 'WS connected');
-    socket.emit(SystemEvents.Connected, { socketId: socket.id, timestamp: new Date().toISOString() });
+    logger.info(
+      { socketId: socket.id, userId: user.sub, accountType: user.accountType },
+      'WS connected',
+    );
+    socket.emit(SystemEvents.Connected, {
+      socketId: socket.id,
+      timestamp: new Date().toISOString(),
+    });
 
     socket.on('ride:subscribe', (rideId: string) => {
       void socket.join(rideRoom(rideId));

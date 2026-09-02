@@ -1,12 +1,12 @@
-import { db } from '@/lib/db/client';
-import { logger } from '@/lib/observability/logger';
-import { getDirections, computeFare } from '@/lib/geo/osm';
 import { isInsideBhopal } from '@/lib/db/bhopal';
+import { db } from '@/lib/db/client';
 import { insertRideWithPoints } from '@/lib/db/postgis';
-import { emitToRide } from '@/lib/realtime/server';
+import { computeFare, getDirections } from '@/lib/geo/osm';
 import { createNotification } from '@/lib/notifications/in-app';
+import { logger } from '@/lib/observability/logger';
 import { RideEvents } from '@/lib/realtime/events';
-import { canTransition, type RideStatus, type Point } from '@/types/ride';
+import { emitToRide } from '@/lib/realtime/server';
+import { type Point, type RideStatus, canTransition } from '@/types/ride';
 
 /**
  * RideService — single entry point for ride lifecycle operations.
@@ -46,7 +46,9 @@ export interface CreateRideInput {
   paymentMethod: 'CARD' | 'UPI' | 'WALLET' | 'CASH';
 }
 
-export async function createRide(input: CreateRideInput): Promise<{ id: string; fareAmount: number }> {
+export async function createRide(
+  input: CreateRideInput,
+): Promise<{ id: string; fareAmount: number }> {
   // Geofence check — both pickup and dropoff must be inside Bhopal.
   const [pickupOk, dropoffOk] = await Promise.all([
     isInsideBhopal(input.pickup.point),
@@ -95,7 +97,11 @@ export async function createRide(input: CreateRideInput): Promise<{ id: string; 
     logger.warn({ dbErr }, 'DB write skipped in demo/offline mode');
   }
 
-  emitToRide(rideId, RideEvents.Created, { rideId, status: 'REQUESTED', timestamp: new Date().toISOString() });
+  emitToRide(rideId, RideEvents.Created, {
+    rideId,
+    status: 'REQUESTED',
+    timestamp: new Date().toISOString(),
+  });
   logger.info({ rideId, passengerId: input.passengerId, fare }, 'Ride created');
   return { id: rideId, fareAmount: fare };
 }

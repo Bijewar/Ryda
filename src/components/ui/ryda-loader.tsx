@@ -38,7 +38,12 @@ export function RydaLoader({
         />
         {/* Spinning ring */}
         <div className={`${s.ring} relative`}>
-          <svg className="animate-spin" style={{ animationDuration: '1.8s' }} viewBox="0 0 50 50" fill="none">
+          <svg
+            className="animate-spin"
+            style={{ animationDuration: '1.8s' }}
+            viewBox="0 0 50 50"
+            fill="none"
+          >
             <circle cx="25" cy="25" r="20" stroke="hsl(var(--border))" strokeWidth="3" />
             <circle
               cx="25"
@@ -83,11 +88,7 @@ export function RydaLoader({
 
   if (!fullScreen) return content;
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-ryda-bg">
-      {content}
-    </div>
-  );
+  return <div className="min-h-screen flex items-center justify-center bg-ryda-bg">{content}</div>;
 }
 
 /**

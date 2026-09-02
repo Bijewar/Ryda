@@ -1,9 +1,9 @@
 'use client';
 
-import * as React from 'react';
-import { LogOut, Loader2 } from 'lucide-react';
-import { signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
+import { Loader2, LogOut } from 'lucide-react';
+import { signOut } from 'next-auth/react';
+import * as React from 'react';
 
 export function AdminSignOutButton(): React.ReactElement {
   const [loading, setLoading] = React.useState(false);
@@ -27,11 +27,7 @@ export function AdminSignOutButton(): React.ReactElement {
       disabled={loading}
       className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors gap-1.5"
     >
-      {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <LogOut className="h-4 w-4" />
-      )}
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
       Sign out
     </Button>
   );

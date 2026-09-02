@@ -1,8 +1,8 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import * as React from 'react';
 import { Marker } from 'react-map-gl/maplibre';
-import { cn } from '@/lib/utils';
 
 /**
  * PassengerMarker — Uber/Ola-style passenger human & mobile location marker.

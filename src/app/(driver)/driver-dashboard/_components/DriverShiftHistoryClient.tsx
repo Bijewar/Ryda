@@ -1,26 +1,14 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
-import {
-  Banknote,
-  Car,
-  Clock,
-  CheckCircle2,
-  MapPin,
-  TrendingUp,
-  Zap,
-  Calendar,
-  ArrowRight,
-  ShieldCheck,
-  PlusCircle,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import type { DriverCompletedRide } from '@/lib/db/driverStore';
+import { formatCurrency } from '@/lib/utils';
+import { Car, CheckCircle2, PlusCircle, ShieldCheck } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
+import { toast } from 'sonner';
 
 export interface DriverShiftHistoryClientProps {
   driverId: string;
@@ -86,14 +74,21 @@ export function DriverShiftHistoryClient({
               Daily Shift Ledger
             </span>
             <span className="text-xs text-ryda-muted">
-              📅 {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
+              📅{' '}
+              {new Date().toLocaleDateString('en-IN', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })}
             </span>
           </div>
           <h2 className="font-display text-xl font-extrabold text-ryda-text mt-1">
             Today&apos;s Trip History &amp; Settlements
           </h2>
           <p className="text-xs text-ryda-muted">
-            All rides completed today with real-time meter fare calculation and instant database persistence.
+            All rides completed today with real-time meter fare calculation and instant database
+            persistence.
           </p>
         </div>
 
@@ -117,7 +112,9 @@ export function DriverShiftHistoryClient({
             </div>
             <p className="font-bold text-sm text-ryda-text">No rides completed today yet</p>
             <p className="text-xs text-ryda-muted max-w-sm mx-auto">
-              Toggle the switch above to go <span className="font-bold text-emerald-700">ONLINE</span> to accept live passenger requests, or click &ldquo;Complete Test Trip&rdquo; to test the earnings ledger!
+              Toggle the switch above to go{' '}
+              <span className="font-bold text-emerald-700">ONLINE</span> to accept live passenger
+              requests, or click &ldquo;Complete Test Trip&rdquo; to test the earnings ledger!
             </p>
           </div>
         ) : (
@@ -142,20 +139,27 @@ export function DriverShiftHistoryClient({
                         <span className="font-bold text-sm text-ryda-text">
                           Trip #{trip.id.slice(0, 8)}
                         </span>
-                        <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 text-[10px] font-bold">
+                        <Badge
+                          variant="secondary"
+                          className="bg-emerald-50 text-emerald-700 text-[10px] font-bold"
+                        >
                           Settled via {trip.paymentMethod || 'UPI'}
                         </Badge>
-                        <span className="text-[11px] font-mono text-ryda-muted">
-                          {timeStr}
-                        </span>
+                        <span className="text-[11px] font-mono text-ryda-muted">{timeStr}</span>
                       </div>
                       <p className="text-xs font-medium text-ryda-text">
-                        📍 {trip.pickupAddress} <span className="text-ryda-accent font-bold">→</span> {trip.dropoffAddress}
+                        📍 {trip.pickupAddress}{' '}
+                        <span className="text-ryda-accent font-bold">→</span> {trip.dropoffAddress}
                       </p>
                       <div className="flex items-center gap-3 text-[11px] text-ryda-muted">
-                        <span>Passenger: <strong className="text-ryda-text">{trip.passengerName}</strong></span>
+                        <span>
+                          Passenger:{' '}
+                          <strong className="text-ryda-text">{trip.passengerName}</strong>
+                        </span>
                         <span>•</span>
-                        <span>Distance: <strong>{trip.distanceKm} km</strong></span>
+                        <span>
+                          Distance: <strong>{trip.distanceKm} km</strong>
+                        </span>
                         <span>•</span>
                         <span className="text-emerald-700 font-bold">0% Commission</span>
                       </div>
@@ -184,7 +188,9 @@ export function DriverShiftHistoryClient({
           <span>Daily Payouts are 100% automated to your registered UPI ID at 8:00 PM.</span>
         </div>
         <div className="text-emerald-900 font-bold">
-          Today&apos;s Total: <span className="font-extrabold text-sm">{formatCurrency(todayEarnings)}</span> ({todayTrips.length} {todayTrips.length === 1 ? 'Trip' : 'Trips'})
+          Today&apos;s Total:{' '}
+          <span className="font-extrabold text-sm">{formatCurrency(todayEarnings)}</span> (
+          {todayTrips.length} {todayTrips.length === 1 ? 'Trip' : 'Trips'})
         </div>
       </div>
     </Card>

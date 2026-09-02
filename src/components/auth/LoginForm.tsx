@@ -1,15 +1,15 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { userLoginSchema, type UserLoginInput } from '@/lib/validation/user';
+import { type UserLoginInput, userLoginSchema } from '@/lib/validation/user';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import * as React from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 export function LoginForm(): React.ReactElement {
   const router = useRouter();
@@ -61,7 +61,13 @@ export function LoginForm(): React.ReactElement {
       let targetUrl = '/';
       if (email === 'bijewarmanas1@gmail.com' || user?.accountType === 'ADMIN') {
         targetUrl = '/admin';
-      } else if (user?.driverId || email === 'bijewaru@gmail.com' || email.includes('driver') || email.includes('imran') || email.includes('shivam')) {
+      } else if (
+        user?.driverId ||
+        email === 'bijewaru@gmail.com' ||
+        email.includes('driver') ||
+        email.includes('imran') ||
+        email.includes('shivam')
+      ) {
         targetUrl = '/driver-dashboard';
       }
 

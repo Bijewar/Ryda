@@ -1,21 +1,29 @@
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import { getCurrentUser } from '@/lib/auth/session';
-import { getRideSummary, transitionRideStatus, InvalidRideTransitionError, getRideOtp } from '@/server/services/ride-service';
-import { acceptRide } from '@/server/matching/offer';
 import {
+  acceptRideOffer,
   activeOngoingTrips,
   completedTripsMap,
-  pendingRideOffers,
   findDriverByEmailOrId,
-  acceptRideOffer,
+  pendingRideOffers,
   updateActiveTripStatus,
 } from '@/lib/db/driverStore';
-import { processDriverCancellation, type CancellationReasonCategory } from '@/server/services/reliability-service';
-import { handleDriverCancellationCompensation } from '@/server/services/compensation-service';
-import { ok, error, statusForCode } from '@/types/api';
 import { logger } from '@/lib/observability/logger';
+import { acceptRide } from '@/server/matching/offer';
+import { handleDriverCancellationCompensation } from '@/server/services/compensation-service';
+import {
+  type CancellationReasonCategory,
+  processDriverCancellation,
+} from '@/server/services/reliability-service';
+import {
+  InvalidRideTransitionError,
+  getRideOtp,
+  getRideSummary,
+  transitionRideStatus,
+} from '@/server/services/ride-service';
+import { error, ok, statusForCode } from '@/types/api';
 import type { RideStatus } from '@/types/ride';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 const patchSchema = z.object({
   action: z.enum(['accept', 'arrived', 'start', 'complete', 'cancel', 'pay']),
@@ -39,7 +47,10 @@ const patchSchema = z.object({
 /**
  * GET /api/rides/[id] — fetch a single ride status (passenger, driver, or admin).
  */
-export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function GET(
+  _req: Request,
+  ctx: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
   const { id } = await ctx.params;
 
   // 1. Check in-memory completed trips (Completed or Paid)
@@ -151,7 +162,10 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 /**
  * PATCH /api/rides/[id] — trigger a state transition.
  */
-export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function PATCH(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
   const { id } = await ctx.params;
   const user = await getCurrentUser();
 
@@ -188,7 +202,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     if (action === 'start') {
       const expectedOtp = getRideOtp(id);
       if (otp && otp.trim() !== expectedOtp && otp.trim() !== '4829' && otp.trim() !== '1234') {
-        const res = error('VALIDATION_ERROR', `Invalid Start OTP "${otp || ''}". Please enter the 4-digit code shown on the passenger screen.`);
+        const res = error(
+          'VALIDATION_ERROR',
+          `Invalid Start OTP "${otp || ''}". Please enter the 4-digit code shown on the passenger screen.`,
+        );
         return NextResponse.json(res, { status: statusForCode(res.error.code) });
       }
       await updateActiveTripStatus(id, 'IN_PROGRESS');

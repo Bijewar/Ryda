@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import type { Point } from '@/types/ride';
+import { useEffect, useState } from 'react';
 
 /**
  * useGeolocation — wraps `navigator.geolocation.watchPosition` with React state.

@@ -1,12 +1,12 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import * as React from 'react';
 import Map, { type MapProps, type MapRef } from 'react-map-gl/maplibre';
-import { cn } from '@/lib/utils';
 
 /**
  * MapView — 100% Free, Zero API Key Map.
- * 
+ *
  * Uses OpenFreeMap / OpenStreetMap tiles.
  * NO API key, NO credit card, NO token, NO watermark.
  */

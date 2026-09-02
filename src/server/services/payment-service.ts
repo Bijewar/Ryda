@@ -1,10 +1,10 @@
 import { db } from '@/lib/db/client';
-import { getPaymentProvider } from '@/lib/payments';
-import { transitionPayment, PaymentStateError } from '@/lib/payments/state-machine';
-import { logger } from '@/lib/observability/logger';
-import { emitToRide } from '@/lib/realtime/server';
-import { RideEvents } from '@/lib/realtime/events';
 import { sendRideReceiptEmail } from '@/lib/notifications/email';
+import { logger } from '@/lib/observability/logger';
+import { getPaymentProvider } from '@/lib/payments';
+import { PaymentStateError, transitionPayment } from '@/lib/payments/state-machine';
+import { RideEvents } from '@/lib/realtime/events';
+import { emitToRide } from '@/lib/realtime/server';
 import type { PaymentProvider, PaymentStatus } from '@/types/ride';
 
 /**

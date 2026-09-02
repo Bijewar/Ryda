@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { AnimatedCounter } from "./AnimatedCounter";
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { AnimatedCounter } from './AnimatedCounter';
 
 interface StatCardProps {
   /** Count-up target. */
@@ -38,7 +38,7 @@ export function StatCard({
   prefix,
   finishedLabel,
   label,
-  accent = "#FF5722",
+  accent = '#FF5722',
   decimals = 0,
   animate = false,
   className,
@@ -48,16 +48,16 @@ export function StatCard({
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
+      viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -6, scale: 1.02 }}
       style={{
-        ["--s-accent" as string]: accent,
-        ["--s-accent-soft" as string]: `${accent}1A`,
+        ['--s-accent' as string]: accent,
+        ['--s-accent-soft' as string]: `${accent}1A`,
       }}
       className={cn(
-        "ryda-glass rounded-xl p-4 sm:p-5 flex flex-col gap-1 relative overflow-hidden",
-        "hover:shadow-[0_14px_36px_-14px_var(--s-accent)]",
+        'ryda-glass rounded-xl p-4 sm:p-5 flex flex-col gap-1 relative overflow-hidden',
+        'hover:shadow-[0_14px_36px_-14px_var(--s-accent)]',
         className,
       )}
     >
@@ -97,9 +97,7 @@ export function StatCard({
           </>
         )}
       </div>
-      <div className="relative text-xs sm:text-sm text-ryda-muted leading-snug">
-        {label}
-      </div>
+      <div className="relative text-xs sm:text-sm text-ryda-muted leading-snug">{label}</div>
     </motion.div>
   );
 }

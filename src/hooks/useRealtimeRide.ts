@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useRideStore } from '@/stores/ride-store';
-import { useLocationStore } from '@/stores/location-store';
-import type { RideStatus, Point } from '@/types/ride';
 import type { DriverLocationPayload, RideStatusPayload } from '@/lib/realtime/events';
+import { useLocationStore } from '@/stores/location-store';
+import { useRideStore } from '@/stores/ride-store';
+import type { Point, RideStatus } from '@/types/ride';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * useRealtimeRide — single WS client for the passenger + driver dashboards.

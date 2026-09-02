@@ -1,8 +1,5 @@
-import { db } from '@/lib/db/client';
-import { getSystemSettings } from './system-settings';
+import { activeOngoingTrips, findDriverByEmailOrId } from '@/lib/db/driverStore';
 import { logger } from '@/lib/observability/logger';
-import { BHOPAL_POIS } from '@/lib/geo/pois';
-import { findDriverByEmailOrId, completedTripsMap, activeOngoingTrips } from '@/lib/db/driverStore';
 import type { BhopalZoneData } from '@/types/reliability';
 
 export type { BhopalZoneData };
@@ -34,22 +31,120 @@ const INITIAL_LEARNED_PROFILES: Array<{
   initialDropoffs: number;
 }> = [
   // High-Demand Core Zones (Many bookings originate here)
-  { cluster: 'mp_nagar', name: 'MP Nagar Zone 1 & 2', centerLat: 23.2332, centerLng: 77.4344, initialPickups: 148, initialDropoffs: 140 },
-  { cluster: 'rkmp', name: 'Rani Kamlapati Station (RKMP)', centerLat: 23.2208, centerLng: 77.4395, initialPickups: 112, initialDropoffs: 95 },
-  { cluster: 'new_market', name: 'New Market (TT Nagar)', centerLat: 23.2386, centerLng: 77.4012, initialPickups: 98, initialDropoffs: 90 },
-  { cluster: 'bhopal_jn', name: 'Bhopal Junction Railway Station', centerLat: 23.2689, centerLng: 77.4116, initialPickups: 165, initialDropoffs: 130 },
-  { cluster: 'arera_colony', name: 'Arera Colony (10 No. Market)', centerLat: 23.2155, centerLng: 77.4367, initialPickups: 74, initialDropoffs: 70 },
-  { cluster: 'shahpura', name: 'Shahpura Lake & Chunabhatti', centerLat: 23.2084, centerLng: 77.4241, initialPickups: 65, initialDropoffs: 60 },
-  { cluster: 'indrapuri', name: 'Indrapuri (BHEL Commercial Hub)', centerLat: 23.2512, centerLng: 77.4689, initialPickups: 52, initialDropoffs: 48 },
+  {
+    cluster: 'mp_nagar',
+    name: 'MP Nagar Zone 1 & 2',
+    centerLat: 23.2332,
+    centerLng: 77.4344,
+    initialPickups: 148,
+    initialDropoffs: 140,
+  },
+  {
+    cluster: 'rkmp',
+    name: 'Rani Kamlapati Station (RKMP)',
+    centerLat: 23.2208,
+    centerLng: 77.4395,
+    initialPickups: 112,
+    initialDropoffs: 95,
+  },
+  {
+    cluster: 'new_market',
+    name: 'New Market (TT Nagar)',
+    centerLat: 23.2386,
+    centerLng: 77.4012,
+    initialPickups: 98,
+    initialDropoffs: 90,
+  },
+  {
+    cluster: 'bhopal_jn',
+    name: 'Bhopal Junction Railway Station',
+    centerLat: 23.2689,
+    centerLng: 77.4116,
+    initialPickups: 165,
+    initialDropoffs: 130,
+  },
+  {
+    cluster: 'arera_colony',
+    name: 'Arera Colony (10 No. Market)',
+    centerLat: 23.2155,
+    centerLng: 77.4367,
+    initialPickups: 74,
+    initialDropoffs: 70,
+  },
+  {
+    cluster: 'shahpura',
+    name: 'Shahpura Lake & Chunabhatti',
+    centerLat: 23.2084,
+    centerLng: 77.4241,
+    initialPickups: 65,
+    initialDropoffs: 60,
+  },
+  {
+    cluster: 'indrapuri',
+    name: 'Indrapuri (BHEL Commercial Hub)',
+    centerLat: 23.2512,
+    centerLng: 77.4689,
+    initialPickups: 52,
+    initialDropoffs: 48,
+  },
 
   // Outer / Low-Booking Outzones (Passengers drop off here, but almost no return rides originate)
-  { cluster: 'airport', name: 'Raja Bhoj Airport (Gandhi Nagar)', centerLat: 23.2875, centerLng: 77.3377, initialPickups: 6, initialDropoffs: 84 },
-  { cluster: 'bairagarh', name: 'Bairagarh (Outer Corridor)', centerLat: 23.2845, centerLng: 77.3489, initialPickups: 9, initialDropoffs: 62 },
-  { cluster: 'bhauri', name: 'IISER / Bhauri Bypass Outskirts', centerLat: 23.2760, centerLng: 77.2760, initialPickups: 3, initialDropoffs: 45 },
-  { cluster: 'mandideep', name: 'Mandideep / 11th Mile Border', centerLat: 23.1450, centerLng: 77.5120, initialPickups: 4, initialDropoffs: 58 },
-  { cluster: 'ratibad', name: 'Ratibad / Neelbad Outskirts', centerLat: 23.1780, centerLng: 77.3420, initialPickups: 5, initialDropoffs: 49 },
-  { cluster: 'sukhi_sewaniya', name: 'Sukhi Sewaniya Bypass', centerLat: 23.3240, centerLng: 77.4890, initialPickups: 2, initialDropoffs: 38 },
-  { cluster: 'kolar_outer', name: 'Kolar Extension (Danish Kunj Outer)', centerLat: 23.1650, centerLng: 77.4100, initialPickups: 11, initialDropoffs: 52 },
+  {
+    cluster: 'airport',
+    name: 'Raja Bhoj Airport (Gandhi Nagar)',
+    centerLat: 23.2875,
+    centerLng: 77.3377,
+    initialPickups: 6,
+    initialDropoffs: 84,
+  },
+  {
+    cluster: 'bairagarh',
+    name: 'Bairagarh (Outer Corridor)',
+    centerLat: 23.2845,
+    centerLng: 77.3489,
+    initialPickups: 9,
+    initialDropoffs: 62,
+  },
+  {
+    cluster: 'bhauri',
+    name: 'IISER / Bhauri Bypass Outskirts',
+    centerLat: 23.276,
+    centerLng: 77.276,
+    initialPickups: 3,
+    initialDropoffs: 45,
+  },
+  {
+    cluster: 'mandideep',
+    name: 'Mandideep / 11th Mile Border',
+    centerLat: 23.145,
+    centerLng: 77.512,
+    initialPickups: 4,
+    initialDropoffs: 58,
+  },
+  {
+    cluster: 'ratibad',
+    name: 'Ratibad / Neelbad Outskirts',
+    centerLat: 23.178,
+    centerLng: 77.342,
+    initialPickups: 5,
+    initialDropoffs: 49,
+  },
+  {
+    cluster: 'sukhi_sewaniya',
+    name: 'Sukhi Sewaniya Bypass',
+    centerLat: 23.324,
+    centerLng: 77.489,
+    initialPickups: 2,
+    initialDropoffs: 38,
+  },
+  {
+    cluster: 'kolar_outer',
+    name: 'Kolar Extension (Danish Kunj Outer)',
+    centerLat: 23.165,
+    centerLng: 77.41,
+    initialPickups: 11,
+    initialDropoffs: 52,
+  },
 ];
 
 export const learnedZoneProfiles: Map<string, ZoneDemandProfile> =
@@ -95,13 +190,15 @@ export function recordRideDemandTelemetry(pickupAddress: string, dropoffAddress:
       }
     }
     // Check keywords
-    if (lower.includes('airport') || lower.includes('bho') || lower.includes('gandhi nagar')) return 'airport';
+    if (lower.includes('airport') || lower.includes('bho') || lower.includes('gandhi nagar'))
+      return 'airport';
     if (lower.includes('bairagarh') || lower.includes('sant hirdaram')) return 'bairagarh';
     if (lower.includes('bhauri') || lower.includes('iiser')) return 'bhauri';
     if (lower.includes('mandideep') || lower.includes('11th mile')) return 'mandideep';
     if (lower.includes('kolar')) return 'kolar_outer';
     if (lower.includes('mp nagar')) return 'mp_nagar';
-    if (lower.includes('station') || lower.includes('railway') || lower.includes('junction')) return 'bhopal_jn';
+    if (lower.includes('station') || lower.includes('railway') || lower.includes('junction'))
+      return 'bhopal_jn';
     if (lower.includes('rkmp') || lower.includes('habibganj')) return 'rkmp';
     if (lower.includes('new market')) return 'new_market';
     return 'mp_nagar';
@@ -116,7 +213,7 @@ export function recordRideDemandTelemetry(pickupAddress: string, dropoffAddress:
     pickupProf.totalPickups += 1;
     const total = pickupProf.totalPickups + pickupProf.totalDropoffs;
     pickupProf.pickupProbability = Number((pickupProf.totalPickups / total).toFixed(2));
-    if (pickupProf.pickupProbability >= 0.40 && pickupProf.totalPickups >= 25) {
+    if (pickupProf.pickupProbability >= 0.4 && pickupProf.totalPickups >= 25) {
       pickupProf.demandCategory = 'INZONE_HOTSPOT';
     }
     pickupProf.lastTrainedAt = new Date();
@@ -134,7 +231,10 @@ export function recordRideDemandTelemetry(pickupAddress: string, dropoffAddress:
     dropoffProf.lastTrainedAt = new Date();
   }
 
-  logger.info({ pickupCluster, dropoffCluster }, 'AI Zone Demand Model updated with real booking telemetry');
+  logger.info(
+    { pickupCluster, dropoffCluster },
+    'AI Zone Demand Model updated with real booking telemetry',
+  );
 }
 
 /**
@@ -154,7 +254,10 @@ export function classifyZoneByLearnedRideDensity(address: string): {
   let matched: ZoneDemandProfile | undefined;
 
   for (const profile of learnedZoneProfiles.values()) {
-    if (lower.includes(profile.cluster) || lower.includes(profile.name.toLowerCase().split(' ')[0]!)) {
+    if (
+      lower.includes(profile.cluster) ||
+      lower.includes(profile.name.toLowerCase().split(' ')[0]!)
+    ) {
       matched = profile;
       break;
     }
@@ -162,13 +265,20 @@ export function classifyZoneByLearnedRideDensity(address: string): {
 
   // Keyword check for outer locations if not directly matched
   if (!matched) {
-    if (lower.includes('airport') || lower.includes('bho') || lower.includes('gandhi nagar')) matched = learnedZoneProfiles.get('airport');
-    else if (lower.includes('bairagarh') || lower.includes('sant hirdaram')) matched = learnedZoneProfiles.get('bairagarh');
-    else if (lower.includes('bhauri') || lower.includes('iiser')) matched = learnedZoneProfiles.get('bhauri');
-    else if (lower.includes('mandideep') || lower.includes('11th mile') || lower.includes('misrod')) matched = learnedZoneProfiles.get('mandideep');
-    else if (lower.includes('ratibad') || lower.includes('neelbad')) matched = learnedZoneProfiles.get('ratibad');
-    else if (lower.includes('sukhi sewaniya') || lower.includes('bypass')) matched = learnedZoneProfiles.get('sukhi_sewaniya');
-    else if (lower.includes('kolar outer') || lower.includes('danish kunj')) matched = learnedZoneProfiles.get('kolar_outer');
+    if (lower.includes('airport') || lower.includes('bho') || lower.includes('gandhi nagar'))
+      matched = learnedZoneProfiles.get('airport');
+    else if (lower.includes('bairagarh') || lower.includes('sant hirdaram'))
+      matched = learnedZoneProfiles.get('bairagarh');
+    else if (lower.includes('bhauri') || lower.includes('iiser'))
+      matched = learnedZoneProfiles.get('bhauri');
+    else if (lower.includes('mandideep') || lower.includes('11th mile') || lower.includes('misrod'))
+      matched = learnedZoneProfiles.get('mandideep');
+    else if (lower.includes('ratibad') || lower.includes('neelbad'))
+      matched = learnedZoneProfiles.get('ratibad');
+    else if (lower.includes('sukhi sewaniya') || lower.includes('bypass'))
+      matched = learnedZoneProfiles.get('sukhi_sewaniya');
+    else if (lower.includes('kolar outer') || lower.includes('danish kunj'))
+      matched = learnedZoneProfiles.get('kolar_outer');
   }
 
   // Fallback to central core if standard central landmark
@@ -186,7 +296,8 @@ export function classifyZoneByLearnedRideDensity(address: string): {
     };
   }
 
-  const isOutzone = matched.demandCategory === 'OUTZONE_LOW_DEMAND' || matched.pickupProbability < 0.30;
+  const isOutzone =
+    matched.demandCategory === 'OUTZONE_LOW_DEMAND' || matched.pickupProbability < 0.3;
 
   // Dynamic formula: Bonus increases when pickup probability is lowest (e.g. ₹45 to ₹65)
   const calculatedReturnBonusPaise = isOutzone
@@ -334,7 +445,9 @@ export async function getLiveDemandZones(): Promise<BhopalZoneData[]> {
       activeDrivers: isHotspot ? 4 : 1,
       idleDrivers: isHotspot ? 2 : 0,
       driverShortage: isOutzone ? 0 : 3,
-      repositioningIncentive: isOutzone ? Math.round(3500 + (1 - profile.pickupProbability) * 3000) : 0,
+      repositioningIncentive: isOutzone
+        ? Math.round(3500 + (1 - profile.pickupProbability) * 3000)
+        : 0,
       maxDriversNeeded: isHotspot ? 6 : 2,
       currentDriversHeading: 0,
     });

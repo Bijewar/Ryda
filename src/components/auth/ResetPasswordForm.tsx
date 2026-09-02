@@ -1,15 +1,15 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { passwordResetConfirmSchema } from '@/lib/validation/user';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import * as React from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 /**
@@ -82,7 +82,9 @@ function RequestForm(): React.ReactElement {
           {...register('email')}
         />
         {errors.email && (
-          <p className="text-xs text-destructive" role="alert">{errors.email.message}</p>
+          <p className="text-xs text-destructive" role="alert">
+            {errors.email.message}
+          </p>
         )}
       </div>
       <Button
@@ -158,7 +160,9 @@ function ConfirmForm({
           {...register('password')}
         />
         {errors.password && (
-          <p className="text-xs text-destructive" role="alert">{errors.password.message}</p>
+          <p className="text-xs text-destructive" role="alert">
+            {errors.password.message}
+          </p>
         )}
       </div>
       <Button

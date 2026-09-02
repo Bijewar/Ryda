@@ -1,7 +1,7 @@
-import { env } from '@/lib/env';
-import { isDemoMode } from '@/lib/demo-mode';
-import { logger } from '@/lib/observability/logger';
 import type { Point } from '@/lib/db/postgis';
+import { isDemoMode } from '@/lib/demo-mode';
+import { env } from '@/lib/env';
+import { logger } from '@/lib/observability/logger';
 
 /**
  * Mapbox API client — directions, geocoding, reverse geocoding.
@@ -53,7 +53,11 @@ async function getDirectionsMapbox(pickup: Point, dropoff: Point): Promise<Direc
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Mapbox directions failed: ${res.status}`);
   const json = (await res.json()) as {
-    routes: Array<{ geometry: { type: 'LineString'; coordinates: number[][] }; distance: number; duration: number }>;
+    routes: Array<{
+      geometry: { type: 'LineString'; coordinates: number[][] };
+      distance: number;
+      duration: number;
+    }>;
   };
   const route = json.routes[0];
   if (!route) throw new Error('No route found');
@@ -70,7 +74,11 @@ async function getDirectionsOsrm(pickup: Point, dropoff: Point): Promise<Directi
   const res = await fetch(url);
   if (!res.ok) throw new Error(`OSRM directions failed: ${res.status}`);
   const json = (await res.json()) as {
-    routes: Array<{ geometry: { type: 'LineString'; coordinates: number[][] }; distance: number; duration: number }>;
+    routes: Array<{
+      geometry: { type: 'LineString'; coordinates: number[][] };
+      distance: number;
+      duration: number;
+    }>;
   };
   const route = json.routes[0];
   if (!route) throw new Error('No OSRM route found');

@@ -1,16 +1,18 @@
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import { requirePassenger } from '@/lib/auth/session';
-import { cancelRide } from '@/server/services/ride-service';
-import { ok, error, statusForCode } from '@/types/api';
 import { rideCancelSchema } from '@/lib/validation/ride';
+import { cancelRide } from '@/server/services/ride-service';
+import { error, ok, statusForCode } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 /**
  * POST /api/rides/[id]/cancel
  *
  * Cancels a ride. Allowed from any non-terminal state.
  */
-export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function POST(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
   const { id } = await ctx.params;
   let user;
   try {

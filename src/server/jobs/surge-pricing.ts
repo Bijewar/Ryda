@@ -1,8 +1,8 @@
-import { Queue, Worker, type Job } from 'bullmq';
-import IORedis from 'ioredis';
 import { env } from '@/lib/env';
 import { logger } from '@/lib/observability/logger';
 import { computeSurge } from '@/server/matching/surge';
+import { type Job, Queue, Worker } from 'bullmq';
+import IORedis from 'ioredis';
 
 /**
  * Surge-pricing job — recomputes the global surge multiplier every 5 minutes.

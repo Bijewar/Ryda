@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/client';
 import { memoryDrivers } from '@/lib/db/driverStore';
-import { ok, error } from '@/types/api';
 import { logger } from '@/lib/observability/logger';
+import { error, ok } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 export interface ActiveDriverMarker {
   id: string;
@@ -94,6 +94,8 @@ export async function GET(): Promise<NextResponse> {
     return NextResponse.json(ok(activeMarkers));
   } catch (err) {
     logger.error({ err }, 'Error fetching active drivers');
-    return NextResponse.json(error('INTERNAL_ERROR', 'Failed to fetch active drivers'), { status: 500 });
+    return NextResponse.json(error('INTERNAL_ERROR', 'Failed to fetch active drivers'), {
+      status: 500,
+    });
   }
 }

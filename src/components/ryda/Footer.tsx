@@ -1,9 +1,6 @@
 'use client';
-
-import * as React from 'react';
-import Link from 'next/link';
+import { Facebook, Instagram, Linkedin, Mail, Twitter } from 'lucide-react';
 import { Logo } from './Logo';
-import { Twitter, Linkedin, Instagram, Facebook, Mail } from 'lucide-react';
 
 const FOOTER_LINKS = [
   {
@@ -51,7 +48,10 @@ export function Footer() {
   return (
     <footer id="about" className="relative mt-12 bg-ryda-text text-white scroll-mt-24">
       {/* Top accent line */}
-      <div className="h-1 bg-gradient-to-r from-ryda-accent via-amber-300 to-ryda-accent" aria-hidden />
+      <div
+        className="h-1 bg-gradient-to-r from-ryda-accent via-amber-300 to-ryda-accent"
+        aria-hidden
+      />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 lg:py-16">
         <div className="grid lg:grid-cols-12 gap-10">
@@ -61,8 +61,8 @@ export function Footer() {
               <Logo size="md" showWordmark onDark />
             </div>
             <p className="mt-4 text-sm text-white/70 leading-relaxed max-w-sm">
-              Ryda is India&apos;s premium ride-hailing app. Bikes, autos, cabs,
-              and outstation — one tap, transparent fares, calmer rides.
+              Ryda is India&apos;s premium ride-hailing app. Bikes, autos, cabs, and outstation —
+              one tap, transparent fares, calmer rides.
             </p>
 
             <div className="mt-6 flex items-center gap-2">
@@ -119,10 +119,18 @@ export function Footer() {
             © {new Date().getFullYear()} Ryda Technologies Pvt. Ltd. · Made for Bhopal &amp; India.
           </p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-white/50">
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-            <a href="#" className="hover:text-white transition-colors">Cookies</a>
-            <a href="#" className="hover:text-white transition-colors">Accessibility</a>
+            <a href="#" className="hover:text-white transition-colors">
+              Privacy
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              Terms
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              Cookies
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              Accessibility
+            </a>
           </div>
         </div>
       </div>

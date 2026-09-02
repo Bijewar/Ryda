@@ -1,14 +1,39 @@
-import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/session';
-import { recordCompletedRide, findDriverByEmailOrId } from '@/lib/db/driverStore';
-import { ok, error } from '@/types/api';
+import { findDriverByEmailOrId, recordCompletedRide } from '@/lib/db/driverStore';
+import { error, ok } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 const BHOPAL_SAMPLE_ROUTES = [
-  { pickup: 'MP Nagar Zone 1, Bhopal', dropoff: 'Raja Bhoj Airport (BHO), Bhopal', distanceKm: 14.2, fareAmount: 28000 },
-  { pickup: '10 No. Market, Arera Colony, Bhopal', dropoff: 'Rani Kamlapati Station, Bhopal', distanceKm: 4.8, fareAmount: 12000 },
-  { pickup: 'New Market, TT Nagar, Bhopal', dropoff: 'DB City Mall, MP Nagar, Bhopal', distanceKm: 3.6, fareAmount: 9500 },
-  { pickup: 'Bittan Market, E-5, Bhopal', dropoff: 'MANIT Square, Link Road 3, Bhopal', distanceKm: 5.1, fareAmount: 14000 },
-  { pickup: 'Bhopal Junction Railway Station', dropoff: 'Upper Lake (VIP Road), Bhopal', distanceKm: 6.7, fareAmount: 16500 },
+  {
+    pickup: 'MP Nagar Zone 1, Bhopal',
+    dropoff: 'Raja Bhoj Airport (BHO), Bhopal',
+    distanceKm: 14.2,
+    fareAmount: 28000,
+  },
+  {
+    pickup: '10 No. Market, Arera Colony, Bhopal',
+    dropoff: 'Rani Kamlapati Station, Bhopal',
+    distanceKm: 4.8,
+    fareAmount: 12000,
+  },
+  {
+    pickup: 'New Market, TT Nagar, Bhopal',
+    dropoff: 'DB City Mall, MP Nagar, Bhopal',
+    distanceKm: 3.6,
+    fareAmount: 9500,
+  },
+  {
+    pickup: 'Bittan Market, E-5, Bhopal',
+    dropoff: 'MANIT Square, Link Road 3, Bhopal',
+    distanceKm: 5.1,
+    fareAmount: 14000,
+  },
+  {
+    pickup: 'Bhopal Junction Railway Station',
+    dropoff: 'Upper Lake (VIP Road), Bhopal',
+    distanceKm: 6.7,
+    fareAmount: 16500,
+  },
 ];
 
 /**
@@ -30,8 +55,14 @@ export async function POST(req: Request): Promise<NextResponse> {
   }
 
   const body = await req.json().catch(() => ({}));
-  const defaultRoute = { pickup: 'MP Nagar Zone 1, Bhopal', dropoff: 'Raja Bhoj Airport (BHO), Bhopal', distanceKm: 14.2, fareAmount: 28000 };
-  const randomRoute = BHOPAL_SAMPLE_ROUTES[Math.floor(Math.random() * BHOPAL_SAMPLE_ROUTES.length)] || defaultRoute;
+  const defaultRoute = {
+    pickup: 'MP Nagar Zone 1, Bhopal',
+    dropoff: 'Raja Bhoj Airport (BHO), Bhopal',
+    distanceKm: 14.2,
+    fareAmount: 28000,
+  };
+  const randomRoute =
+    BHOPAL_SAMPLE_ROUTES[Math.floor(Math.random() * BHOPAL_SAMPLE_ROUTES.length)] || defaultRoute;
 
   const pickupAddress = body.pickupAddress || randomRoute.pickup;
   const dropoffAddress = body.dropoffAddress || randomRoute.dropoff;

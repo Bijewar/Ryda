@@ -1,7 +1,6 @@
 import crypto from 'node:crypto';
 import { env } from '@/lib/env';
 import { logger } from '@/lib/observability/logger';
-import type { PaymentProviderInterface } from './types';
 import type {
   CreateOrderParams,
   CreateOrderResult,
@@ -11,6 +10,7 @@ import type {
   VerifyResult,
   WebhookEvent,
 } from '@/types/payment';
+import type { PaymentProviderInterface } from './types';
 
 /**
  * Razorpay (India) payment provider.
@@ -92,22 +92,29 @@ export class RazorpayProvider implements PaymentProviderInterface {
     }
     const json = (await res.json()) as { status: string; id: string };
     const status =
-      json.status === 'captured' ? 'CAPTURED' : json.status === 'authorized' ? 'AUTHORIZED' : 'FAILED';
+      json.status === 'captured'
+        ? 'CAPTURED'
+        : json.status === 'authorized'
+          ? 'AUTHORIZED'
+          : 'FAILED';
     return { status: status as VerifyResult['status'], providerPaymentId: json.id };
   }
 
   async refund(params: RefundParams): Promise<RefundResult> {
-    const res = await fetch(`https://api.razorpay.com/v1/payments/${params.providerPaymentId}/refund`, {
-      method: 'POST',
-      headers: {
-        Authorization: this.authHeader(),
-        'Content-Type': 'application/json',
+    const res = await fetch(
+      `https://api.razorpay.com/v1/payments/${params.providerPaymentId}/refund`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: this.authHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: params.amount,
+          notes: { reason: params.reason ?? 'Customer requested refund' },
+        }),
       },
-      body: JSON.stringify({
-        amount: params.amount,
-        notes: { reason: params.reason ?? 'Customer requested refund' },
-      }),
-    });
+    );
     if (!res.ok) {
       const err = await res.text();
       throw new Error(`Razorpay refund failed: ${res.status} ${err}`);

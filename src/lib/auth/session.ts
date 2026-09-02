@@ -1,6 +1,6 @@
 import { db } from '@/lib/db/client';
-import type { AccountType } from '@/types/ride';
 import { logger } from '@/lib/observability/logger';
+import type { AccountType } from '@/types/ride';
 
 /**
  * Server-side session helpers.

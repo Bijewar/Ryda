@@ -33,7 +33,11 @@ function metersPerDegLng(lat: number): number {
   return LAT_PER_DEG_M * Math.cos((lat * Math.PI) / 180);
 }
 
-function pointToSegmentDistance(p: Point, a: Point, b: Point): {
+function pointToSegmentDistance(
+  p: Point,
+  a: Point,
+  b: Point,
+): {
   distance: number;
   closest: Point;
   t: number;
@@ -59,11 +63,26 @@ function pointToSegmentDistance(p: Point, a: Point, b: Point): {
   return { distance, closest, t };
 }
 
-export function checkOffRoute(route: Point[], current: Point, thresholdMeters = 80): OffRouteResult {
+export function checkOffRoute(
+  route: Point[],
+  current: Point,
+  thresholdMeters = 80,
+): OffRouteResult {
   if (route.length < 2) {
-    return { onRoute: true, snappedPoint: null, distanceFromRoute: 0, segmentIndex: 0, progress: 0 };
+    return {
+      onRoute: true,
+      snappedPoint: null,
+      distanceFromRoute: 0,
+      segmentIndex: 0,
+      progress: 0,
+    };
   }
-  let best = { distance: Number.POSITIVE_INFINITY, closest: null as Point | null, t: 0, segmentIndex: 0 };
+  let best = {
+    distance: Number.POSITIVE_INFINITY,
+    closest: null as Point | null,
+    t: 0,
+    segmentIndex: 0,
+  };
   let cumulativeLength = 0;
   const segmentLengths: number[] = [];
   for (let i = 1; i < route.length; i++) {

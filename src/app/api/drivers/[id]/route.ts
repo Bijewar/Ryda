@@ -1,15 +1,18 @@
-import { NextResponse } from 'next/server';
-import { requireAdmin, getCurrentUser } from '@/lib/auth/session';
-import { getDriverProfile } from '@/server/services/driver-service';
+import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db/client';
 import { findDriverByEmailOrId, setDriverApprovalStatus } from '@/lib/db/driverStore';
 import { driverApprovalUpdateSchema } from '@/lib/validation/driver';
-import { ok, error, statusForCode } from '@/types/api';
+import { getDriverProfile } from '@/server/services/driver-service';
+import { error, ok, statusForCode } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/drivers/[id] — fetch a single driver's profile.
  */
-export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function GET(
+  _req: Request,
+  ctx: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
   const { id } = await ctx.params;
   const user = await getCurrentUser();
   if (!user) {
@@ -28,7 +31,10 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 /**
  * PATCH /api/drivers/[id] — admin-only: approve/reject a driver.
  */
-export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }): Promise<NextResponse> {
+export async function PATCH(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+): Promise<NextResponse> {
   const { id } = await ctx.params;
   const body = await req.json().catch(() => null);
   const parsed = driverApprovalUpdateSchema.safeParse(body);

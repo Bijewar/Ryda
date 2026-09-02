@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { MapPin, Navigation, Activity, Radio, Zap } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AnimatedCounter } from "./AnimatedCounter";
-import { cn } from "@/lib/utils";
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { Activity, MapPin, Navigation, Radio, Zap } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { AnimatedCounter } from './AnimatedCounter';
 
 /* ----- Types ----- */
 
 interface BhopalFeature {
-  type: "Feature";
+  type: 'Feature';
   properties: {
     name?: string;
     centroid?: [number, number];
@@ -18,13 +18,13 @@ interface BhopalFeature {
     area_km2?: number;
   };
   geometry: {
-    type: "Polygon";
+    type: 'Polygon';
     coordinates: number[][][];
   };
 }
 
 interface BhopalGeoJSON {
-  type: "FeatureCollection";
+  type: 'FeatureCollection';
   features: BhopalFeature[];
 }
 
@@ -40,26 +40,96 @@ interface Driver {
 /* ----- Constants ----- */
 
 const DRIVERS: Driver[] = [
-  { name: "Arjun Singh",       vehicle: "Maruti Swift · MP04 AB 1234",  eta: "3 min", ward: "MP Nagar",     lon: 77.4627, lat: 23.2310 },
-  { name: "Ravi Verma",        vehicle: "Hyundai i20 · MP04 CD 5678",   eta: "5 min", ward: "New Market",   lon: 77.4040, lat: 23.2530 },
-  { name: "Suresh Kumar",      vehicle: "Toyota Etios · MP04 EF 9012",  eta: "2 min", ward: "Habibganj",    lon: 77.4660, lat: 23.2450 },
-  { name: "Imran Khan",        vehicle: "Maruti Dzire · MP04 GH 3456",  eta: "7 min", ward: "Old City",     lon: 77.4080, lat: 23.2370 },
-  { name: "Deepak Sharma",     vehicle: "Tata Tigor · MP04 IJ 7890",    eta: "4 min", ward: "BHEL",          lon: 77.4730, lat: 23.2730 },
-  { name: "Mohammed Yusuf",    vehicle: "Honda Amaze · MP04 KL 1122",   eta: "6 min", ward: "Kolar",         lon: 77.4280, lat: 23.2150 },
-  { name: "Prakash Malviya",   vehicle: "Maruti Swift · MP04 MN 3344",  eta: "3 min", ward: "Arera Colony",  lon: 77.4380, lat: 23.2010 },
-  { name: "Anil Rathore",      vehicle: "Hyundai Verna · MP04 OP 5566", eta: "8 min", ward: "Shahpura",     lon: 77.4480, lat: 23.1960 },
-  { name: "Vikas Tiwari",      vehicle: "Toyota Etios · MP04 QR 7788",  eta: "5 min", ward: "Bairagarh",    lon: 77.4500, lat: 23.3000 },
-  { name: "Nadeem Ahmed",      vehicle: "Maruti Dzire · MP04 ST 9900",  eta: "4 min", ward: "TT Nagar",      lon: 77.4200, lat: 23.2200 },
+  {
+    name: 'Arjun Singh',
+    vehicle: 'Maruti Swift · MP04 AB 1234',
+    eta: '3 min',
+    ward: 'MP Nagar',
+    lon: 77.4627,
+    lat: 23.231,
+  },
+  {
+    name: 'Ravi Verma',
+    vehicle: 'Hyundai i20 · MP04 CD 5678',
+    eta: '5 min',
+    ward: 'New Market',
+    lon: 77.404,
+    lat: 23.253,
+  },
+  {
+    name: 'Suresh Kumar',
+    vehicle: 'Toyota Etios · MP04 EF 9012',
+    eta: '2 min',
+    ward: 'Habibganj',
+    lon: 77.466,
+    lat: 23.245,
+  },
+  {
+    name: 'Imran Khan',
+    vehicle: 'Maruti Dzire · MP04 GH 3456',
+    eta: '7 min',
+    ward: 'Old City',
+    lon: 77.408,
+    lat: 23.237,
+  },
+  {
+    name: 'Deepak Sharma',
+    vehicle: 'Tata Tigor · MP04 IJ 7890',
+    eta: '4 min',
+    ward: 'BHEL',
+    lon: 77.473,
+    lat: 23.273,
+  },
+  {
+    name: 'Mohammed Yusuf',
+    vehicle: 'Honda Amaze · MP04 KL 1122',
+    eta: '6 min',
+    ward: 'Kolar',
+    lon: 77.428,
+    lat: 23.215,
+  },
+  {
+    name: 'Prakash Malviya',
+    vehicle: 'Maruti Swift · MP04 MN 3344',
+    eta: '3 min',
+    ward: 'Arera Colony',
+    lon: 77.438,
+    lat: 23.201,
+  },
+  {
+    name: 'Anil Rathore',
+    vehicle: 'Hyundai Verna · MP04 OP 5566',
+    eta: '8 min',
+    ward: 'Shahpura',
+    lon: 77.448,
+    lat: 23.196,
+  },
+  {
+    name: 'Vikas Tiwari',
+    vehicle: 'Toyota Etios · MP04 QR 7788',
+    eta: '5 min',
+    ward: 'Bairagarh',
+    lon: 77.45,
+    lat: 23.3,
+  },
+  {
+    name: 'Nadeem Ahmed',
+    vehicle: 'Maruti Dzire · MP04 ST 9900',
+    eta: '4 min',
+    ward: 'TT Nagar',
+    lon: 77.42,
+    lat: 23.22,
+  },
 ];
 
 const CENTROID: [number, number] = [77.37865460965641, 23.4873398029371];
 
 // Route for the animated "vehicle driving" — MP Nagar → Habibganj
 const ROUTE: [number, number][] = [
-  [77.4627, 23.2310], // MP Nagar
-  [77.4540, 23.2360],
-  [77.4600, 23.2410],
-  [77.4660, 23.2450], // Habibganj
+  [77.4627, 23.231], // MP Nagar
+  [77.454, 23.236],
+  [77.46, 23.241],
+  [77.466, 23.245], // Habibganj
 ];
 
 const VB_WIDTH = 600;
@@ -108,8 +178,8 @@ interface LiveStats {
 function useLiveStats(): LiveStats {
   const [stats, setStats] = useState<LiveStats>({
     drivers: 8,
-    eta: "4.2",
-    surge: "1.0",
+    eta: '4.2',
+    surge: '1.0',
     active: 12,
   });
   useEffect(() => {
@@ -117,7 +187,7 @@ function useLiveStats(): LiveStats {
       setStats({
         drivers: 7 + Math.floor(Math.random() * 3),
         eta: (3.8 + Math.random() * 0.8).toFixed(1),
-        surge: "1.0",
+        surge: '1.0',
         active: 10 + Math.floor(Math.random() * 5),
       });
     }, 3200);
@@ -147,8 +217,8 @@ function StatRow({
       </div>
       <div
         className={cn(
-          "text-sm font-semibold tabular-nums",
-          accent ? "text-ryda-primary" : "text-ryda-text",
+          'text-sm font-semibold tabular-nums',
+          accent ? 'text-ryda-primary' : 'text-ryda-text',
         )}
       >
         {value}
@@ -168,7 +238,7 @@ export function BhopalMap() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/geo/RydaMap.geojson")
+    fetch('/geo/RydaMap.geojson')
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json() as Promise<BhopalGeoJSON>;
@@ -180,7 +250,7 @@ export function BhopalMap() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Failed to load GeoJSON");
+        setError(err instanceof Error ? err.message : 'Failed to load GeoJSON');
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -195,26 +265,24 @@ export function BhopalMap() {
     const f = geo.features[0];
     const bbox =
       f.properties.bbox ??
-      (f.geometry.coordinates?.[0]?.length
-        ? computeBbox(f.geometry.coordinates[0])
-        : null);
+      (f.geometry.coordinates?.[0]?.length ? computeBbox(f.geometry.coordinates[0]) : null);
     if (!bbox) return null;
     return buildProjection(bbox);
   }, [geo]);
 
   const pathD = useMemo<string>(() => {
-    if (!projection || !geo?.features?.[0]) return "";
+    if (!projection || !geo?.features?.[0]) return '';
     const ring = geo.features[0].geometry.coordinates[0];
-    if (!ring?.length) return "";
+    if (!ring?.length) return '';
     return (
       ring
         .map(([lon, lat], i) => {
-          if (lon === undefined || lat === undefined) return "";
+          if (lon === undefined || lat === undefined) return '';
           const { x, y } = projection.toXY(lon, lat);
-          return `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`;
+          return `${i === 0 ? 'M' : 'L'}${x.toFixed(2)},${y.toFixed(2)}`;
         })
         .filter(Boolean)
-        .join(" ") + " Z"
+        .join(' ') + ' Z'
     );
   }, [projection, geo]);
 
@@ -230,25 +298,20 @@ export function BhopalMap() {
   }, [projection]);
 
   const routePathD = useMemo(() => {
-    if (!routeXY || routeXY.length === 0) return "";
+    if (!routeXY || routeXY.length === 0) return '';
     return (
-      routeXY
-        .map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)},${p.y.toFixed(2)}`)
-        .join(" ") + " Z"
+      routeXY.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ') +
+      ' Z'
     );
   }, [routeXY]);
 
   return (
-    <section
-      id="bhopal"
-      aria-labelledby="bhopal-heading"
-      className="relative scroll-mt-20"
-    >
+    <section id="bhopal" aria-labelledby="bhopal-heading" className="relative scroll-mt-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
+          viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="flex flex-col gap-3 mb-8 sm:mb-12">
@@ -263,26 +326,26 @@ export function BhopalMap() {
               Bhopal, geofenced.
             </h2>
             <p className="max-w-2xl text-base sm:text-lg text-ryda-muted leading-relaxed">
-              The official OpenStreetMap district boundary (2,778 km², 465
-              vertices) is the source of truth for every pickup, dropoff, and
-              driver-online toggle. Hover any driver to inspect their live
-              assignment — and watch the car ride along the route.
+              The official OpenStreetMap district boundary (2,778 km², 465 vertices) is the source
+              of truth for every pickup, dropoff, and driver-online toggle. Hover any driver to
+              inspect their live assignment — and watch the car ride along the route.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4 lg:gap-6">
             {/* Map */}
             <div className="ryda-glass-elevated rounded-2xl p-3 sm:p-4 relative overflow-hidden">
-              <div className="relative w-full" style={{ aspectRatio: `${VB_WIDTH} / ${VB_HEIGHT}` }}>
+              <div
+                className="relative w-full"
+                style={{ aspectRatio: `${VB_WIDTH} / ${VB_HEIGHT}` }}
+              >
                 <p className="sr-only">
-                  Map of the Bhopal service area. The polygon outline shows the
-                  official district boundary covering 2,778 square kilometres.
-                  Ten simulated driver markers are positioned inside the
-                  polygon at MP Nagar, New Market, Habibganj, Old City, BHEL,
-                  Kolar, Arera Colony, Shahpura, Bairagarh, and TT Nagar. A
-                  pulsing marker at the centroid (77.38° East, 23.49° North) is
-                  labelled Bhopal. An animated car drives between MP Nagar and
-                  Habibganj along a route polyline.
+                  Map of the Bhopal service area. The polygon outline shows the official district
+                  boundary covering 2,778 square kilometres. Ten simulated driver markers are
+                  positioned inside the polygon at MP Nagar, New Market, Habibganj, Old City, BHEL,
+                  Kolar, Arera Colony, Shahpura, Bairagarh, and TT Nagar. A pulsing marker at the
+                  centroid (77.38° East, 23.49° North) is labelled Bhopal. An animated car drives
+                  between MP Nagar and Habibganj along a route polyline.
                 </p>
 
                 {loading && (
@@ -299,9 +362,7 @@ export function BhopalMap() {
                     <p className="text-sm text-ryda-muted">
                       Couldn&apos;t load the Bhopal boundary.
                     </p>
-                    <p className="text-xs font-mono text-ryda-muted/70">
-                      {error}
-                    </p>
+                    <p className="text-xs font-mono text-ryda-muted/70">{error}</p>
                   </div>
                 )}
 
@@ -322,12 +383,12 @@ export function BhopalMap() {
                         </radialGradient>
                         {/* Gradient stroke for the polygon (orange → pink) */}
                         <linearGradient id="ryda-poly-stroke" x1="0" y1="0" x2="1" y2="1">
-                          <stop offset="0%"  stopColor="#FF5722" />
+                          <stop offset="0%" stopColor="#FF5722" />
                           <stop offset="100%" stopColor="#FF4081" />
                         </linearGradient>
                         {/* Gradient for the route polyline */}
                         <linearGradient id="ryda-route" x1="0" y1="0" x2="1" y2="0">
-                          <stop offset="0%"   stopColor="#FFD300" stopOpacity="0.95" />
+                          <stop offset="0%" stopColor="#FFD300" stopOpacity="0.95" />
                           <stop offset="100%" stopColor="#FF5722" stopOpacity="0.95" />
                         </linearGradient>
                         <filter id="ryda-glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -361,7 +422,7 @@ export function BhopalMap() {
                             initial={{ pathLength: 0 }}
                             whileInView={{ pathLength: 1 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 1.6, ease: "easeOut" }}
+                            transition={{ duration: 1.6, ease: 'easeOut' }}
                           />
                         </>
                       )}
@@ -378,7 +439,7 @@ export function BhopalMap() {
                           initial={{ pathLength: 0, opacity: 0 }}
                           whileInView={{ pathLength: 1, opacity: 1 }}
                           viewport={{ once: true }}
-                          transition={{ duration: 1.2, delay: 0.4, ease: "easeOut" }}
+                          transition={{ duration: 1.2, delay: 0.4, ease: 'easeOut' }}
                         />
                       )}
 
@@ -393,15 +454,23 @@ export function BhopalMap() {
                             opacity="0.45"
                             style={{
                               transformOrigin: `${routeXY[0].x}px ${routeXY[0].y}px`,
-                              animation: "ryda-pulse-ring 2.4s cubic-bezier(0.4,0,0.6,1) infinite",
+                              animation: 'ryda-pulse-ring 2.4s cubic-bezier(0.4,0,0.6,1) infinite',
                             }}
                           />
-                          <circle cx={routeXY[0].x} cy={routeXY[0].y} r="4.5" fill="#FFD300" stroke="#FFFFFF" strokeWidth="1.5" />
+                          <circle
+                            cx={routeXY[0].x}
+                            cy={routeXY[0].y}
+                            r="4.5"
+                            fill="#FFD300"
+                            stroke="#FFFFFF"
+                            strokeWidth="1.5"
+                          />
                         </g>
                       )}
                       {/* Dropoff point — orange, smaller pulse */}
                       {(() => {
-                        const lastPt = routeXY && routeXY.length > 0 ? routeXY[routeXY.length - 1] : undefined;
+                        const lastPt =
+                          routeXY && routeXY.length > 0 ? routeXY[routeXY.length - 1] : undefined;
                         if (!lastPt) return null;
                         return (
                           <g>
@@ -413,10 +482,18 @@ export function BhopalMap() {
                               opacity="0.4"
                               style={{
                                 transformOrigin: `${lastPt.x}px ${lastPt.y}px`,
-                                animation: "ryda-pulse-ring 3.2s cubic-bezier(0.4,0,0.6,1) infinite",
+                                animation:
+                                  'ryda-pulse-ring 3.2s cubic-bezier(0.4,0,0.6,1) infinite',
                               }}
                             />
-                            <circle cx={lastPt.x} cy={lastPt.y} r="3" fill="#FF5722" stroke="#FFFFFF" strokeWidth="1.2" />
+                            <circle
+                              cx={lastPt.x}
+                              cy={lastPt.y}
+                              r="3"
+                              fill="#FF5722"
+                              stroke="#FFFFFF"
+                              strokeWidth="1.2"
+                            />
                           </g>
                         );
                       })()}
@@ -425,24 +502,40 @@ export function BhopalMap() {
                       {routePathD && (
                         <g>
                           <motion.g
-                            initial={{ offsetDistance: "0%" }}
-                            animate={{ offsetDistance: ["0%", "100%"] }}
+                            initial={{ offsetDistance: '0%' }}
+                            animate={{ offsetDistance: ['0%', '100%'] }}
                             transition={{
                               duration: 6,
-                              repeat: Infinity,
-                              ease: "easeInOut",
-                              repeatType: "loop",
+                              repeat: Number.POSITIVE_INFINITY,
+                              ease: 'easeInOut',
+                              repeatType: 'loop',
                             }}
-                            style={{
-                              offsetPath: `path('${routePathD}')`,
-                              offsetRotate: "auto",
-                            } as any}
+                            style={
+                              {
+                                offsetPath: `path('${routePathD}')`,
+                                offsetRotate: 'auto',
+                              } as any
+                            }
                           >
                             {/* mini car icon */}
                             <g transform="translate(-10, -8) scale(0.5)">
-                              <ellipse cx="20" cy="22" rx="14" ry="2" fill="#0F0F17" opacity="0.18" />
-                              <path d="M2 18 Q2 12 8 12 L14 12 Q16 6 22 6 L32 6 Q38 6 40 12 L46 14 Q50 14 50 18 L50 22 L2 22 Z" fill="#FF5722" />
-                              <path d="M14 12 Q16 7 22 7 L32 7 Q38 7 40 12 L40 16 L14 16 Z" fill="#7DD3FC" opacity="0.85" />
+                              <ellipse
+                                cx="20"
+                                cy="22"
+                                rx="14"
+                                ry="2"
+                                fill="#0F0F17"
+                                opacity="0.18"
+                              />
+                              <path
+                                d="M2 18 Q2 12 8 12 L14 12 Q16 6 22 6 L32 6 Q38 6 40 12 L46 14 Q50 14 50 18 L50 22 L2 22 Z"
+                                fill="#FF5722"
+                              />
+                              <path
+                                d="M14 12 Q16 7 22 7 L32 7 Q38 7 40 12 L40 16 L14 16 Z"
+                                fill="#7DD3FC"
+                                opacity="0.85"
+                              />
                               <circle cx="14" cy="22" r="5" fill="#0F172A" />
                               <circle cx="14" cy="22" r="2.5" fill="#F3F4F6" />
                               <circle cx="38" cy="22" r="5" fill="#0F172A" />
@@ -463,7 +556,7 @@ export function BhopalMap() {
                             opacity="0.35"
                             style={{
                               transformOrigin: `${centroidXY.x}px ${centroidXY.y}px`,
-                              animation: "ryda-pulse-ring 2.4s cubic-bezier(0.4,0,0.6,1) infinite",
+                              animation: 'ryda-pulse-ring 2.4s cubic-bezier(0.4,0,0.6,1) infinite',
                             }}
                           />
                           <circle cx={centroidXY.x} cy={centroidXY.y} r="4" fill="#FF5722" />
@@ -494,7 +587,7 @@ export function BhopalMap() {
                             onMouseLeave={() => setHovered(null)}
                             onFocus={() => setHovered(i)}
                             onBlur={() => setHovered(null)}
-                            style={{ cursor: "pointer" }}
+                            style={{ cursor: 'pointer' }}
                           >
                             <circle
                               cx={x}
@@ -505,7 +598,7 @@ export function BhopalMap() {
                               className={`ryda-stagger-${(i % 10) + 1}`}
                               style={{
                                 transformOrigin: `${x}px ${y}px`,
-                                animation: "ryda-driver-pulse 2.6s ease-in-out infinite",
+                                animation: 'ryda-driver-pulse 2.6s ease-in-out infinite',
                               }}
                             />
                             <circle
@@ -534,19 +627,15 @@ export function BhopalMap() {
                             style={{
                               left: `${xPct * 100}%`,
                               top: `${yPct * 100}%`,
-                              transform: `translate(${flip ? "-100%" : "0"}, calc(-100% - 14px))`,
+                              transform: `translate(${flip ? '-100%' : '0'}, calc(-100% - 14px))`,
                             }}
                           >
                             <div className="flex items-center gap-1.5 text-xs text-ryda-primary font-mono uppercase tracking-wider mb-0.5">
                               <Radio className="size-3" aria-hidden="true" />
                               {d.ward}
                             </div>
-                            <div className="text-sm font-semibold text-ryda-text">
-                              {d.name}
-                            </div>
-                            <div className="text-xs text-ryda-muted font-mono">
-                              {d.vehicle}
-                            </div>
+                            <div className="text-sm font-semibold text-ryda-text">{d.name}</div>
+                            <div className="text-xs text-ryda-muted font-mono">{d.vehicle}</div>
                             <div className="mt-1 flex items-center gap-1.5 text-xs text-ryda-text">
                               <Navigation className="size-3 text-ryda-primary" aria-hidden="true" />
                               ETA {d.eta}
@@ -564,8 +653,8 @@ export function BhopalMap() {
                   <span
                     className="inline-block w-4 h-3 border rounded-sm"
                     style={{
-                      borderColor: "var(--ryda-border)",
-                      backgroundColor: "var(--ryda-surface)",
+                      borderColor: 'var(--ryda-border)',
+                      backgroundColor: 'var(--ryda-surface)',
                     }}
                     aria-hidden="true"
                   />
@@ -579,11 +668,17 @@ export function BhopalMap() {
                   <span>Active driver</span>
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-ryda-yellow" aria-hidden="true" />
+                  <span
+                    className="inline-block w-2.5 h-2.5 rounded-full bg-ryda-yellow"
+                    aria-hidden="true"
+                  />
                   Pickup
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-ryda-primary" aria-hidden="true" />
+                  <span
+                    className="inline-block w-2.5 h-2.5 rounded-full bg-ryda-primary"
+                    aria-hidden="true"
+                  />
                   Dropoff
                 </span>
               </div>
@@ -611,33 +706,21 @@ export function BhopalMap() {
                 <StatRow
                   icon={Radio}
                   label="Drivers online"
-                  value={
-                    <AnimatedCounter to={stats.drivers} duration={0.8} />
-                  }
+                  value={<AnimatedCounter to={stats.drivers} duration={0.8} />}
                   accent
                 />
-                <StatRow
-                  icon={Navigation}
-                  label="Avg ETA"
-                  value={`${stats.eta} min`}
-                />
-                <StatRow
-                  icon={Zap}
-                  label="Surge multiplier"
-                  value={`${stats.surge}×`}
-                />
+                <StatRow icon={Navigation} label="Avg ETA" value={`${stats.eta} min`} />
+                <StatRow icon={Zap} label="Surge multiplier" value={`${stats.surge}×`} />
                 <StatRow
                   icon={Activity}
                   label="Active rides"
-                  value={
-                    <AnimatedCounter to={stats.active} duration={0.8} />
-                  }
+                  value={<AnimatedCounter to={stats.active} duration={0.8} />}
                 />
               </div>
 
               <div className="mt-5 pt-4 border-t border-ryda-border">
                 <div className="text-xs text-ryda-muted leading-relaxed">
-                  Every marker is gated by{" "}
+                  Every marker is gated by{' '}
                   <code className="font-mono text-ryda-primary/90">
                     ST_Contains(bhopal_geom, point)
                   </code>
@@ -655,10 +738,10 @@ export function BhopalMap() {
 /* ----- Helpers ----- */
 
 function computeBbox(ring: number[][]): [number, number, number, number] {
-  let minLon = Infinity;
-  let minLat = Infinity;
-  let maxLon = -Infinity;
-  let maxLat = -Infinity;
+  let minLon = Number.POSITIVE_INFINITY;
+  let minLat = Number.POSITIVE_INFINITY;
+  let maxLon = Number.NEGATIVE_INFINITY;
+  let maxLat = Number.NEGATIVE_INFINITY;
   for (const pt of ring) {
     const lon = pt[0] ?? 0;
     const lat = pt[1] ?? 0;

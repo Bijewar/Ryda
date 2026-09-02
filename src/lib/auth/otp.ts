@@ -1,5 +1,5 @@
-import { authenticator } from 'otplib';
 import { createHmac, randomInt } from 'node:crypto';
+import { authenticator } from 'otplib';
 
 /**
  * 2FA TOTP — RFC 6238, 30s step, 6 digits.

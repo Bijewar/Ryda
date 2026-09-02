@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
 import { getLiveDemandZones } from '@/server/services/demand-ai-service';
-import { ok, error } from '@/types/api';
+import { error, ok } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +13,10 @@ export async function GET(): Promise<NextResponse> {
     return NextResponse.json(ok(zones));
   } catch (err) {
     return NextResponse.json(
-      error('INTERNAL_ERROR', err instanceof Error ? err.message : 'Failed to fetch demand hotspots'),
+      error(
+        'INTERNAL_ERROR',
+        err instanceof Error ? err.message : 'Failed to fetch demand hotspots',
+      ),
       { status: 500 },
     );
   }

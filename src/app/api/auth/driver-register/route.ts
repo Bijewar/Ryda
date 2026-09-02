@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
-import { db } from '@/lib/db/client';
-import { driverRegisterSchema } from '@/lib/validation/driver';
 import { hashPassword } from '@/lib/auth/password';
-import { saveDriverRecord, type DriverRecord } from '@/lib/db/driverStore';
-import { ok, error } from '@/types/api';
+import { db } from '@/lib/db/client';
+import { type DriverRecord, saveDriverRecord } from '@/lib/db/driverStore';
 import { logger } from '@/lib/observability/logger';
+import { driverRegisterSchema } from '@/lib/validation/driver';
+import { error, ok } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 /**
  * POST /api/auth/driver-register

@@ -1,8 +1,8 @@
 'use client';
 
+import { animate, motion, useInView, useMotionValue, useTransform } from 'framer-motion';
+import { Clock, MapPin, Star, Users } from 'lucide-react';
 import * as React from 'react';
-import { motion, useInView, useMotionValue, animate, useTransform } from 'framer-motion';
-import { Users, MapPin, Star, Clock } from 'lucide-react';
 
 interface Stat {
   icon: React.ElementType;
@@ -26,7 +26,10 @@ export function StatsSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="relative rounded-[2.5rem] overflow-hidden">
           {/* Premium dark tile */}
-          <div className="absolute inset-0 bg-gradient-to-br from-stone-900 via-emerald-950 to-stone-900" aria-hidden />
+          <div
+            className="absolute inset-0 bg-gradient-to-br from-stone-900 via-emerald-950 to-stone-900"
+            aria-hidden
+          />
           <div
             className="absolute inset-0 opacity-20"
             style={{
@@ -109,9 +112,7 @@ function Counter({
   const ref = React.useRef<HTMLParagraphElement>(null);
   const inView = useInView(ref, { once: true, margin: '-50px' });
   const motionVal = useMotionValue(0);
-  const rounded = useTransform(motionVal, (latest) =>
-    latest.toFixed(decimals)
-  );
+  const rounded = useTransform(motionVal, (latest) => latest.toFixed(decimals));
 
   React.useEffect(() => {
     if (inView) {
@@ -124,7 +125,10 @@ function Counter({
   }, [inView, value, motionVal]);
 
   return (
-    <p ref={ref} className="font-display text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+    <p
+      ref={ref}
+      className="font-display text-4xl sm:text-5xl font-extrabold text-white tracking-tight"
+    >
       {prefix}
       <motion.span>{rounded}</motion.span>
       <span className="text-ryda-accent">{suffix}</span>

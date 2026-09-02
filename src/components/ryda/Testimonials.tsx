@@ -1,9 +1,9 @@
 'use client';
 
-import * as React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Quote, Star } from 'lucide-react';
+import * as React from 'react';
 
 interface Testimonial {
   name: string;
@@ -48,7 +48,7 @@ const TESTIMONIALS: Testimonial[] = [
     role: 'Founder',
     city: 'Bhopal',
     rating: 5,
-    text: "I switched my entire team to Ryda for client meetings across MP. Hourly rentals actually mean by-the-hour, not by-the-km. Our travel costs dropped 22% in one quarter.",
+    text: 'I switched my entire team to Ryda for client meetings across MP. Hourly rentals actually mean by-the-hour, not by-the-km. Our travel costs dropped 22% in one quarter.',
     initial: 'KR',
     color: 'from-rose-400 to-pink-500',
   },
@@ -109,7 +109,7 @@ export function Testimonials() {
                           'w-4 h-4',
                           i < current.rating
                             ? 'fill-amber-400 text-amber-400'
-                            : 'fill-ryda-border text-ryda-border'
+                            : 'fill-ryda-border text-ryda-border',
                         )}
                       />
                     ))}
@@ -121,7 +121,7 @@ export function Testimonials() {
                     <div
                       className={cn(
                         'w-12 h-12 rounded-full flex items-center justify-center text-white font-bold bg-gradient-to-br',
-                        current.color
+                        current.color,
                       )}
                     >
                       {current.initial}
@@ -156,7 +156,7 @@ export function Testimonials() {
                   onClick={() => setIndex(i)}
                   className={cn(
                     'h-2 rounded-full transition-all',
-                    i === index ? 'w-8 bg-ryda-accent' : 'w-2 bg-ryda-border hover:bg-ryda-muted'
+                    i === index ? 'w-8 bg-ryda-accent' : 'w-2 bg-ryda-border hover:bg-ryda-muted',
                   )}
                   aria-label={`Go to slide ${i + 1}`}
                 />

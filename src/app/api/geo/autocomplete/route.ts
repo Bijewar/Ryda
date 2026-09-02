@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
 import { geocode } from '@/lib/geo/osm';
 import { BHOPAL_POIS } from '@/lib/geo/pois';
-import { ok, error } from '@/types/api';
 import { logger } from '@/lib/observability/logger';
+import { error, ok } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 export interface AutocompleteSuggestion {
   address: string;
@@ -101,9 +101,8 @@ export async function GET(req: Request): Promise<NextResponse> {
     return NextResponse.json(ok(suggestions.slice(0, 8)));
   } catch (err) {
     logger.error({ err, q }, 'Autocomplete request failed');
-    return NextResponse.json(
-      error('INTERNAL_ERROR', 'Failed to fetch location suggestions'),
-      { status: 500 },
-    );
+    return NextResponse.json(error('INTERNAL_ERROR', 'Failed to fetch location suggestions'), {
+      status: 500,
+    });
   }
 }

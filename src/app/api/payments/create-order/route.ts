@@ -1,9 +1,6 @@
+import { activeOngoingTrips, completedTripsMap } from '@/lib/db/driverStore';
+import { ok } from '@/types/api';
 import { NextResponse } from 'next/server';
-import crypto from 'node:crypto';
-import { getCurrentUser } from '@/lib/auth/session';
-import { ok, error } from '@/types/api';
-import { env } from '@/lib/env';
-import { completedTripsMap, activeOngoingTrips } from '@/lib/db/driverStore';
 
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_TWTRfxHOrOLky7';
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'TlhO6Ysaq6pYJUVVDh28nJt7';
@@ -56,7 +53,11 @@ export async function POST(req: Request): Promise<NextResponse> {
       );
     }
 
-    const orderData = (await razorpayRes.json()) as { id: string; amount: number; currency: string };
+    const orderData = (await razorpayRes.json()) as {
+      id: string;
+      amount: number;
+      currency: string;
+    };
 
     return NextResponse.json(
       ok({

@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/session';
-import { createRide, OutsideServiceAreaError } from '@/server/services/ride-service';
-import { offerRideToDrivers } from '@/server/matching/offer';
-import { broadcastRideOffer } from '@/lib/db/driverStore';
-import { rideCreateSchema } from '@/lib/validation/ride';
-import { ok, error, statusForCode } from '@/types/api';
-import { logger } from '@/lib/observability/logger';
 import { db } from '@/lib/db/client';
+import { broadcastRideOffer } from '@/lib/db/driverStore';
+import { logger } from '@/lib/observability/logger';
+import { rideCreateSchema } from '@/lib/validation/ride';
+import { offerRideToDrivers } from '@/server/matching/offer';
+import { OutsideServiceAreaError, createRide } from '@/server/services/ride-service';
+import { error, ok, statusForCode } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 /**
  * POST /api/rides — create a new ride request.

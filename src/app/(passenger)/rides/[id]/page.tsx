@@ -1,12 +1,11 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { auth } from '@/lib/auth/config';
+import { db } from '@/lib/db/client';
+import { formatCurrency, formatDate } from '@/lib/utils';
+import { ArrowLeft, Receipt, ShieldCheck, Star } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { ArrowLeft, Clock, MapPin, Phone, ShieldCheck, Star, Navigation, Receipt } from 'lucide-react';
-import { auth } from '@/lib/auth/config';
-import { db } from '@/lib/db/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency, formatDate, formatDistance } from '@/lib/utils';
-import type { RideStatus } from '@/types/ride';
 
 export const metadata: Metadata = {
   title: 'Ride Details — Ryda',
@@ -21,8 +20,13 @@ export default async function RideDetailPage({
 }): Promise<React.ReactElement> {
   const { id } = await params;
   const session = await auth();
-  const user = (session?.user as { id: string; accountType: 'PASSENGER' | 'ADMIN'; driverId?: string } | undefined) ??
-    (process.env.DEMO_MODE === 'true' ? { id: 'demo-user-aarav', accountType: 'PASSENGER' as const } : undefined);
+  const user =
+    (session?.user as
+      | { id: string; accountType: 'PASSENGER' | 'ADMIN'; driverId?: string }
+      | undefined) ??
+    (process.env.DEMO_MODE === 'true'
+      ? { id: 'demo-user-aarav', accountType: 'PASSENGER' as const }
+      : undefined);
 
   if (!user) redirect(`/login?callbackUrl=/rides/${id}`);
 
@@ -59,7 +63,9 @@ export default async function RideDetailPage({
           <CardHeader className="bg-gradient-to-r from-ryda-accent/15 via-emerald-50 to-amber-50/30 border-b border-ryda-border/60 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-ryda-muted">Trip Summary</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-ryda-muted">
+                  Trip Summary
+                </p>
                 <CardTitle className="text-2xl font-display font-extrabold text-ryda-text mt-1">
                   {formatCurrency(ride.fareAmount, ride.currency)}
                 </CardTitle>
@@ -117,7 +123,9 @@ export default async function RideDetailPage({
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div className="p-3.5 rounded-2xl bg-ryda-elevated/40 border border-ryda-border">
                 <p className="text-[10px] uppercase font-bold text-ryda-muted">Time</p>
-                <p className="text-xs font-semibold text-ryda-text mt-1">{formatDate(ride.requestedAt)}</p>
+                <p className="text-xs font-semibold text-ryda-text mt-1">
+                  {formatDate(ride.requestedAt)}
+                </p>
               </div>
               <div className="p-3.5 rounded-2xl bg-ryda-elevated/40 border border-ryda-border">
                 <p className="text-[10px] uppercase font-bold text-ryda-muted">Payment</p>

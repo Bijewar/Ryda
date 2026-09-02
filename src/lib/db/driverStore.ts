@@ -107,9 +107,7 @@ export async function saveDriverRecord(driver: DriverRecord): Promise<void> {
 /**
  * Find driver by email or ID (checks memory then DB)
  */
-export async function findDriverByEmailOrId(
-  emailOrId: string,
-): Promise<DriverRecord | null> {
+export async function findDriverByEmailOrId(emailOrId: string): Promise<DriverRecord | null> {
   const query = emailOrId.toLowerCase().trim();
 
   // 1. Check memory store
@@ -137,16 +135,18 @@ export async function findDriverByEmailOrId(
     });
 
     if (dbDriver) {
-      const dbRidesHistory: DriverCompletedRide[] = ((dbDriver as any).rides || []).map((r: any) => ({
-        id: r.id,
-        pickupAddress: r.pickupAddress,
-        dropoffAddress: r.dropoffAddress,
-        fareAmount: r.fareAmount,
-        distanceKm: Number(r.distanceKm || 5.2),
-        passengerName: r.passenger?.name || 'Passenger',
-        paymentMethod: r.paymentMethod || 'UPI',
-        completedAt: r.completedAt ? new Date(r.completedAt) : new Date(r.requestedAt),
-      }));
+      const dbRidesHistory: DriverCompletedRide[] = ((dbDriver as any).rides || []).map(
+        (r: any) => ({
+          id: r.id,
+          pickupAddress: r.pickupAddress,
+          dropoffAddress: r.dropoffAddress,
+          fareAmount: r.fareAmount,
+          distanceKm: Number(r.distanceKm || 5.2),
+          passengerName: r.passenger?.name || 'Passenger',
+          paymentMethod: r.paymentMethod || 'UPI',
+          completedAt: r.completedAt ? new Date(r.completedAt) : new Date(r.requestedAt),
+        }),
+      );
 
       const record: DriverRecord = {
         id: dbDriver.id,

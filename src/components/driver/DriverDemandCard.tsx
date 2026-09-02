@@ -1,9 +1,17 @@
 'use client';
 
-import * as React from 'react';
-import { Flame, MapPin, Navigation, Sparkles, TrendingUp, X, ShieldAlert, ArrowRight, ExternalLink, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/utils';
+import {
+  ExternalLink,
+  MapPin,
+  Navigation,
+  ShieldAlert,
+  ShieldCheck,
+  Sparkles,
+  X,
+} from 'lucide-react';
+import * as React from 'react';
 import { toast } from 'sonner';
 
 export interface DriverDemandCardProps {
@@ -11,7 +19,10 @@ export interface DriverDemandCardProps {
   isOnline: boolean;
 }
 
-export function DriverDemandCard({ driverId, isOnline }: DriverDemandCardProps): React.ReactElement | null {
+export function DriverDemandCard({
+  driverId,
+  isOnline,
+}: DriverDemandCardProps): React.ReactElement | null {
   const [opportunity, setOpportunity] = React.useState<{
     available: boolean;
     isOuterDropoffZone: boolean;
@@ -68,7 +79,12 @@ export function DriverDemandCard({ driverId, isOnline }: DriverDemandCardProps):
   }
 
   // ── State 1: Dropoff is in an Outer / Low-Demand Area (Dead-Mileage Protection) ──
-  if (opportunity?.available && opportunity.isOuterDropoffZone && opportunity.zone && !isDismissed) {
+  if (
+    opportunity?.available &&
+    opportunity.isOuterDropoffZone &&
+    opportunity.zone &&
+    !isDismissed
+  ) {
     const { zone, distanceMeters = 8500, incentivePaise = 5500, dropoffAddress } = opportunity;
     const distanceKm = (distanceMeters / 1000).toFixed(1);
 
@@ -131,12 +147,19 @@ export function DriverDemandCard({ driverId, isOnline }: DriverDemandCardProps):
           <div className="flex items-start gap-2">
             <MapPin className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
             <div>
-              <span className="text-[10px] font-bold text-ryda-muted uppercase block">Outer Dropoff Location</span>
-              <span className="font-bold text-ryda-text">{dropoffAddress || 'Outer City / Peripheral Zone'}</span>
+              <span className="text-[10px] font-bold text-ryda-muted uppercase block">
+                Outer Dropoff Location
+              </span>
+              <span className="font-bold text-ryda-text">
+                {dropoffAddress || 'Outer City / Peripheral Zone'}
+              </span>
             </div>
           </div>
           <p className="text-[11px] text-amber-900 font-medium pt-1 border-t border-amber-100">
-            💡 Because this destination is in an outer area with fewer ride bookings, Ryda AI awards you a <strong className="text-emerald-700">+{formatCurrency(incentivePaise)} payout</strong> to drive back towards the central commercial core.
+            💡 Because this destination is in an outer area with fewer ride bookings, Ryda AI awards
+            you a{' '}
+            <strong className="text-emerald-700">+{formatCurrency(incentivePaise)} payout</strong>{' '}
+            to drive back towards the central commercial core.
           </p>
         </div>
 
@@ -145,8 +168,12 @@ export function DriverDemandCard({ driverId, isOnline }: DriverDemandCardProps):
           <div className="flex items-center gap-2 text-xs">
             <Navigation className="w-4 h-4 text-emerald-700" />
             <div>
-              <span className="text-[10px] uppercase font-bold text-emerald-800 block">Recommended Hotspot</span>
-              <span className="font-bold text-emerald-950">{zone.name} (~{distanceKm} km)</span>
+              <span className="text-[10px] uppercase font-bold text-emerald-800 block">
+                Recommended Hotspot
+              </span>
+              <span className="font-bold text-emerald-950">
+                {zone.name} (~{distanceKm} km)
+              </span>
             </div>
           </div>
           <div className="text-right">

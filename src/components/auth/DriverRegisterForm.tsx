@@ -1,18 +1,22 @@
 'use client';
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Car, CheckCircle2, FileText, Loader2, ShieldCheck, User } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
-import { driverRegisterSchema, type DriverRegisterInput } from '@/lib/validation/driver';
+import { type DriverRegisterInput, driverRegisterSchema } from '@/lib/validation/driver';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Car, CheckCircle2, FileText, Loader2, ShieldCheck, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
-const VEHICLE_TYPES: Array<{ value: DriverRegisterInput['vehicle']['type']; label: string; icon: string }> = [
+const VEHICLE_TYPES: Array<{
+  value: DriverRegisterInput['vehicle']['type'];
+  label: string;
+  icon: string;
+}> = [
   { value: 'BIKE', label: 'Bike', icon: '🏍️' },
   { value: 'AUTO', label: 'Auto (3-Wheeler)', icon: '🛺' },
   { value: 'SEDAN', label: 'Sedan Economy', icon: '🚗' },
@@ -101,10 +105,12 @@ export function DriverRegisterForm(): React.ReactElement {
           </div>
           <h2 className="font-display text-2xl font-bold text-ryda-text">Application Submitted!</h2>
           <p className="text-sm text-ryda-muted">
-            Thank you for registering to drive with Ryda in Bhopal. Your captain account has been recorded.
+            Thank you for registering to drive with Ryda in Bhopal. Your captain account has been
+            recorded.
           </p>
           <div className="rounded-2xl border border-ryda-border bg-ryda-surface p-4 text-xs text-ryda-muted">
-            You can now log in at <span className="font-bold text-ryda-accent-dim">/login</span> to access your <span className="font-bold text-ryda-text">Captain Portal</span>.
+            You can now log in at <span className="font-bold text-ryda-accent-dim">/login</span> to
+            access your <span className="font-bold text-ryda-text">Captain Portal</span>.
           </div>
           <Button
             type="button"
@@ -130,7 +136,9 @@ export function DriverRegisterForm(): React.ReactElement {
           <div className="space-y-1">
             <Label htmlFor="firstName">First name</Label>
             <Input id="firstName" placeholder="Shivam" {...register('firstName')} />
-            {errors.firstName && <p className="text-xs text-rose-500">{errors.firstName.message}</p>}
+            {errors.firstName && (
+              <p className="text-xs text-rose-500">{errors.firstName.message}</p>
+            )}
           </div>
           <div className="space-y-1">
             <Label htmlFor="lastName">Last name</Label>
@@ -141,7 +149,12 @@ export function DriverRegisterForm(): React.ReactElement {
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="shivam@example.com" {...register('email')} />
+            <Input
+              id="email"
+              type="email"
+              placeholder="shivam@example.com"
+              {...register('email')}
+            />
             {errors.email && <p className="text-xs text-rose-500">{errors.email.message}</p>}
           </div>
           <div className="space-y-1">
@@ -152,7 +165,12 @@ export function DriverRegisterForm(): React.ReactElement {
         </div>
         <div className="space-y-1">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" placeholder="At least 8 characters (1 letter + 1 number)" {...register('password')} />
+          <Input
+            id="password"
+            type="password"
+            placeholder="At least 8 characters (1 letter + 1 number)"
+            {...register('password')}
+          />
           {errors.password && <p className="text-xs text-rose-500">{errors.password.message}</p>}
         </div>
       </div>
@@ -166,7 +184,9 @@ export function DriverRegisterForm(): React.ReactElement {
         <div className="space-y-1">
           <Label htmlFor="licenseNumber">Driving License Number</Label>
           <Input id="licenseNumber" placeholder="MP0420230012345" {...register('licenseNumber')} />
-          {errors.licenseNumber && <p className="text-xs text-rose-500">{errors.licenseNumber.message}</p>}
+          {errors.licenseNumber && (
+            <p className="text-xs text-rose-500">{errors.licenseNumber.message}</p>
+          )}
         </div>
       </div>
 
@@ -200,26 +220,40 @@ export function DriverRegisterForm(): React.ReactElement {
               );
             })}
           </div>
-          {errors.vehicle?.type && <p className="text-xs text-rose-500">{errors.vehicle.type.message}</p>}
+          {errors.vehicle?.type && (
+            <p className="text-xs text-rose-500">{errors.vehicle.type.message}</p>
+          )}
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
             <Label htmlFor="make">Brand / Make</Label>
             <Input id="make" placeholder="e.g. Bajaj, Maruti, Hero" {...register('vehicle.make')} />
-            {errors.vehicle?.make && <p className="text-xs text-rose-500">{errors.vehicle.make.message}</p>}
+            {errors.vehicle?.make && (
+              <p className="text-xs text-rose-500">{errors.vehicle.make.message}</p>
+            )}
           </div>
           <div className="space-y-1">
             <Label htmlFor="model">Model</Label>
-            <Input id="model" placeholder="e.g. Pulsar, Dzire, Splendor" {...register('vehicle.model')} />
-            {errors.vehicle?.model && <p className="text-xs text-rose-500">{errors.vehicle.model.message}</p>}
+            <Input
+              id="model"
+              placeholder="e.g. Pulsar, Dzire, Splendor"
+              {...register('vehicle.model')}
+            />
+            {errors.vehicle?.model && (
+              <p className="text-xs text-rose-500">{errors.vehicle.model.message}</p>
+            )}
           </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-1">
             <Label htmlFor="licensePlate">Vehicle Number Plate</Label>
-            <Input id="licensePlate" placeholder="MP04BC1234" {...register('vehicle.licensePlate')} />
+            <Input
+              id="licensePlate"
+              placeholder="MP04BC1234"
+              {...register('vehicle.licensePlate')}
+            />
             {errors.vehicle?.licensePlate && (
               <p className="text-xs text-rose-500">{errors.vehicle.licensePlate.message}</p>
             )}
@@ -227,7 +261,9 @@ export function DriverRegisterForm(): React.ReactElement {
           <div className="space-y-1">
             <Label htmlFor="color">Color</Label>
             <Input id="color" placeholder="Black / White" {...register('vehicle.color')} />
-            {errors.vehicle?.color && <p className="text-xs text-rose-500">{errors.vehicle.color.message}</p>}
+            {errors.vehicle?.color && (
+              <p className="text-xs text-rose-500">{errors.vehicle.color.message}</p>
+            )}
           </div>
           <div className="space-y-1">
             <Label htmlFor="year">Manufacturing Year</Label>
@@ -237,14 +273,19 @@ export function DriverRegisterForm(): React.ReactElement {
               placeholder="2022"
               {...register('vehicle.year', { valueAsNumber: true })}
             />
-            {errors.vehicle?.year && <p className="text-xs text-rose-500">{errors.vehicle.year.message}</p>}
+            {errors.vehicle?.year && (
+              <p className="text-xs text-rose-500">{errors.vehicle.year.message}</p>
+            )}
           </div>
         </div>
       </div>
 
       <div className="flex items-start gap-2 text-xs text-ryda-muted">
         <ShieldCheck className="mt-0.5 h-4 w-4 text-ryda-accent shrink-0" />
-        <span>By submitting this application, you agree to Ryda&apos;s captain partner terms and safety policies in Bhopal.</span>
+        <span>
+          By submitting this application, you agree to Ryda&apos;s captain partner terms and safety
+          policies in Bhopal.
+        </span>
       </div>
 
       <Button

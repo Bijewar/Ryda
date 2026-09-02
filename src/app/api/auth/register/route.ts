@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
-import { db } from '@/lib/db/client';
-import { userRegisterSchema } from '@/lib/validation/user';
-import { hashPassword } from '@/lib/auth/password';
 import { generateEmailOtp } from '@/lib/auth/otp';
+import { hashPassword } from '@/lib/auth/password';
+import { db } from '@/lib/db/client';
 import { setDemoOtp } from '@/lib/demo-mode';
 import { sendOtpEmail } from '@/lib/notifications/email';
-import { ok, error, statusForCode } from '@/types/api';
 import { logger } from '@/lib/observability/logger';
+import { userRegisterSchema } from '@/lib/validation/user';
+import { error, ok, statusForCode } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 /**
  * POST /api/auth/register

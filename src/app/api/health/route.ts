@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/client';
 import { env } from '@/lib/env';
-import { ok, error, statusForCode } from '@/types/api';
+import { error, ok, statusForCode } from '@/types/api';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/health — liveness + readiness probe.
