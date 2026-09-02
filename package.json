@@ -5,11 +5,11 @@
   "description": "Production-grade ride-hailing platform for Bhopal — Next.js 16 + Postgres/PostGIS + Socket.IO + Redis. 100% free stack (no Mapbox, no Stripe, no Resend).",
   "license": "MIT",
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "next dev -p 3000",
     "dev:ws": "tsx watch workers/socket-server.ts",
     "dev:worker": "tsx watch workers/queue-worker.ts",
     "postinstall": "prisma generate",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "biome check src",
     "lint:fix": "biome check src --write",

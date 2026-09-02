@@ -18,11 +18,9 @@ export {
 /**
  * Recalculate a driver's reliability score (0-100) and update rewards status.
  *
- * Scoring factors:
- * - Completion rate: 40%
- * - Cancellation rate: 30%
- * - Customer rating: 15%
- * - Acceptance / Activity score: 15%
+ * RULES:
+ * 1. > 15 rejections/cancellations in a month -> Penalty fee applied (Base ₹50 + ₹25 increment).
+ * 2. <= 5 rejections/cancellations in a month -> Awarded Reliability Bonus (₹300 / month reward).
  */
 export async function calculateDriverReliability(driverId: string): Promise<DriverReliabilityStats> {
   const config = await getSystemSettings();
@@ -71,25 +69,18 @@ export async function calculateDriverReliability(driverId: string): Promise<Driv
   const completionRate = Math.min(100, (totalCompleted / effectiveAccepted) * 100);
 
   // Score formula (0 to 100)
-  // Completion weight: 40 points
   const completionComponent = (completionRate / 100) * 40;
-  // Cancellation weight: 30 points (decreases as cancellationRate rises above 0%)
-  const cancellationPenaltyRatio = Math.min(1, cancellationRate / 20); // 20% cancellation = 0 points
+  const cancellationPenaltyRatio = Math.min(1, cancellationRate / 20);
   const cancellationComponent = (1 - cancellationPenaltyRatio) * 30;
-  // Rating weight: 15 points
   const ratingComponent = (Math.min(5, driver.rating) / 5) * 15;
-  // Activity / Base weight: 15 points
   const activityComponent = Math.min(15, totalCompleted >= 10 ? 15 : totalCompleted * 1.5);
 
   let rawScore = Math.round(completionComponent + cancellationComponent + ratingComponent + activityComponent);
   rawScore = Math.max(10, Math.min(100, rawScore));
 
-  // Determine Reliable Driver Status
-  const isReliable =
-    rawScore >= 88 &&
-    cancellationRate <= config.cancellationRateThreshold &&
-    completionRate >= config.reliableDriverCompletionRate;
-
+  // Determine Reliable Driver & Bonus Eligibility (<= 5 rejections/month with active completions)
+  const isEligibleForBonus = cancellationsThisMonth <= config.rewardBonusThreshold;
+  const isReliable = rawScore >= 85 && isEligibleForBonus;
   const earningsBonusRate = isReliable ? config.reliableDriverBonusRate : 0.0;
 
   // Persist updated score
@@ -160,14 +151,12 @@ export async function processDriverCancellation(opts: {
   let isPenalized = false;
   let penaltyAmount = 0; // in paise
 
-  if (reasonMeta.isPenalizedByDefault) {
-    if (nextCount > config.freeCancellationsLimit) {
-      isPenalized = true;
-      const overLimitCount = nextCount - config.freeCancellationsLimit;
-      // Progressive penalty: Base + (excess * increment), capped at Max
-      const progressive = config.basePenaltyAmount + (overLimitCount - 1) * config.progressivePenaltyIncrement;
-      penaltyAmount = Math.min(config.maxPenaltyAmount, progressive);
-    }
+  // Rule: Exceeding 15 cancellations a month triggers penalty fee
+  if (reasonMeta.isPenalizedByDefault && nextCount > config.freeCancellationsLimit) {
+    isPenalized = true;
+    const overLimitCount = nextCount - config.freeCancellationsLimit;
+    const progressive = config.basePenaltyAmount + (overLimitCount - 1) * config.progressivePenaltyIncrement;
+    penaltyAmount = Math.min(config.maxPenaltyAmount, progressive);
   }
 
   // Record cancellation history
@@ -193,12 +182,12 @@ export async function processDriverCancellation(opts: {
       },
     });
 
-    // Notify driver about progressive penalty
+    // Notify driver about penalty fee
     await createNotification({
       driverId: opts.driverId,
       type: 'CANCELLATION_PENALTY',
-      title: 'Cancellation fee applied',
-      body: `You have exceeded your ${config.freeCancellationsLimit} monthly cancellation allowance. A fee of ${formatCurrency(penaltyAmount)} has been recorded.`,
+      title: 'Cancellation penalty applied',
+      body: `You have exceeded the monthly limit of ${config.freeCancellationsLimit} cancellations. A penalty fee of ${formatCurrency(penaltyAmount)} has been deducted.`,
       data: { rideId: opts.rideId, penaltyAmount, count: nextCount },
     });
   }
@@ -208,7 +197,9 @@ export async function processDriverCancellation(opts: {
 
   let warning: string | undefined;
   if (nextCount > config.freeCancellationsLimit - 3 && nextCount <= config.freeCancellationsLimit) {
-    warning = `Warning: You have used ${nextCount}/${config.freeCancellationsLimit} free monthly cancellations. Avoidable cancellations beyond ${config.freeCancellationsLimit} incur progressive fees.`;
+    warning = `Warning: You have used ${nextCount}/${config.freeCancellationsLimit} monthly cancellations. Cancellations beyond 15 incur penalty fees.`;
+  } else if (nextCount <= config.rewardBonusThreshold) {
+    warning = `Great performance! You have only ${nextCount}/${config.rewardBonusThreshold} cancellations this month and qualify for the ${formatCurrency(config.rewardBonusAmount)} Reliability Bonus!`;
   }
 
   logger.info(

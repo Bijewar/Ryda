@@ -6,10 +6,18 @@ export const vehicleTypeSchema = z.enum(['SEDAN', 'SUV', 'HATCHBACK', 'BIKE', 'A
 export const paymentMethodSchema = z.enum(['CARD', 'UPI', 'WALLET', 'CASH']);
 export const paymentProviderSchema = z.enum(['RAZORPAY']);
 
-/** Indian phone — `+91` followed by 10 digits. */
+/** Indian phone — handles raw 10 digits or `+91` prefix cleanly. */
 export const phoneSchema = z
   .string()
-  .regex(/^\+91\d{10}$/, 'Phone must be +91 followed by 10 digits');
+  .transform((val) => {
+    const cleaned = val.trim().replace(/[\s-]/g, '');
+    if (cleaned.startsWith('+91')) return cleaned;
+    if (cleaned.startsWith('91') && cleaned.length === 12) return `+${cleaned}`;
+    return `+91${cleaned.replace(/\D/g, '')}`;
+  })
+  .refine((val) => /^\+91\d{10}$/.test(val), {
+    message: 'Please enter a valid 10-digit mobile number',
+  });
 
 /** Strong password — 8+ chars, at least 1 letter + 1 number. */
 export const passwordSchema = z

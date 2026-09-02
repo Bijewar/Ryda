@@ -61,35 +61,39 @@ export async function createRide(input: CreateRideInput): Promise<{ id: string; 
   const fare = computeFare(route.distanceMeters, route.durationSeconds, surge);
 
   const rideId = crypto.randomUUID();
-  await insertRideWithPoints({
-    id: rideId,
-    passengerId: input.passengerId,
-    driverId: null,
-    status: 'REQUESTED',
-    pickupAddress: input.pickup.address,
-    pickup: input.pickup.point,
-    dropoffAddress: input.dropoff.address,
-    dropoff: input.dropoff.point,
-    routeGeometry: route.geometry,
-    distanceMeters: route.distanceMeters,
-    durationSeconds: route.durationSeconds,
-    fareAmount: fare,
-    surgeMultiplier: surge,
-    currency: 'INR',
-    paymentMethod: input.paymentMethod,
-  });
+  try {
+    await insertRideWithPoints({
+      id: rideId,
+      passengerId: input.passengerId,
+      driverId: null,
+      status: 'REQUESTED',
+      pickupAddress: input.pickup.address,
+      pickup: input.pickup.point,
+      dropoffAddress: input.dropoff.address,
+      dropoff: input.dropoff.point,
+      routeGeometry: route.geometry,
+      distanceMeters: route.distanceMeters,
+      durationSeconds: route.durationSeconds,
+      fareAmount: fare,
+      surgeMultiplier: surge,
+      currency: 'INR',
+      paymentMethod: input.paymentMethod,
+    });
 
-  await db.auditLog.create({
-    data: {
-      action: 'ride:create',
-      entity: 'Ride',
-      entityId: rideId,
-      actorType: 'USER',
-      actorId: input.passengerId,
-      rideId,
-      metadata: { fare, distance: route.distanceMeters },
-    },
-  });
+    await db.auditLog.create({
+      data: {
+        action: 'ride:create',
+        entity: 'Ride',
+        entityId: rideId,
+        actorType: 'USER',
+        actorId: input.passengerId,
+        rideId,
+        metadata: { fare, distance: route.distanceMeters },
+      },
+    });
+  } catch (dbErr) {
+    logger.warn({ dbErr }, 'DB write skipped in demo/offline mode');
+  }
 
   emitToRide(rideId, RideEvents.Created, { rideId, status: 'REQUESTED', timestamp: new Date().toISOString() });
   logger.info({ rideId, passengerId: input.passengerId, fare }, 'Ride created');

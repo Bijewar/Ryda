@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Flame, MapPin, Navigation, Sparkles, TrendingUp, X } from 'lucide-react';
+import { Flame, MapPin, Navigation, Sparkles, TrendingUp, X, ShieldAlert, ArrowRight, ExternalLink, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -14,6 +14,9 @@ export interface DriverDemandCardProps {
 export function DriverDemandCard({ driverId, isOnline }: DriverDemandCardProps): React.ReactElement | null {
   const [opportunity, setOpportunity] = React.useState<{
     available: boolean;
+    isOuterDropoffZone: boolean;
+    dropoffAddress?: string;
+    reason?: string;
     zone?: {
       id: string;
       name: string;
@@ -21,6 +24,8 @@ export function DriverDemandCard({ driverId, isOnline }: DriverDemandCardProps):
       predictedDemand10m: string;
       predictedDemand30m: string;
       repositioningIncentive: number;
+      centerLat?: number;
+      centerLng?: number;
     };
     distanceMeters?: number;
     incentivePaise?: number;
@@ -29,7 +34,7 @@ export function DriverDemandCard({ driverId, isOnline }: DriverDemandCardProps):
   const [isDismissed, setIsDismissed] = React.useState(false);
   const [isAccepting, setIsAccepting] = React.useState(false);
 
-  // Poll for AI repositioning suggestions
+  // Poll for AI outer-zone repositioning suggestions
   React.useEffect(() => {
     if (!isOnline) {
       setOpportunity(null);
@@ -51,109 +56,150 @@ export function DriverDemandCard({ driverId, isOnline }: DriverDemandCardProps):
     };
 
     void fetchOpp();
-    const interval = setInterval(fetchOpp, 15000);
+    const interval = setInterval(fetchOpp, 12000);
     return () => {
       isMounted = false;
       clearInterval(interval);
     };
   }, [driverId, isOnline]);
 
-  if (!isOnline || !opportunity?.available || !opportunity.zone || isDismissed) {
+  if (!isOnline) {
     return null;
   }
 
-  const { zone, distanceMeters = 2400, incentivePaise = 3000 } = opportunity;
-  const distanceKm = (distanceMeters / 1000).toFixed(1);
+  // ── State 1: Dropoff is in an Outer / Low-Demand Area (Dead-Mileage Protection) ──
+  if (opportunity?.available && opportunity.isOuterDropoffZone && opportunity.zone && !isDismissed) {
+    const { zone, distanceMeters = 8500, incentivePaise = 5500, dropoffAddress } = opportunity;
+    const distanceKm = (distanceMeters / 1000).toFixed(1);
 
-  const handleAccept = async () => {
-    setIsAccepting(true);
-    try {
-      const res = await fetch(`/api/drivers/${driverId}/repositioning`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ zoneId: zone.id }),
-      });
+    const handleAccept = async () => {
+      setIsAccepting(true);
+      try {
+        const res = await fetch(`/api/drivers/${driverId}/repositioning`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ zoneId: zone.id }),
+        });
 
-      if (!res.ok) throw new Error('Failed to confirm repositioning');
-      const json = await res.json();
+        if (!res.ok) throw new Error('Failed to confirm repositioning');
 
-      toast.success('Repositioning Accepted! 🚀', {
-        description: `Head toward ${zone.name}. +${formatCurrency(incentivePaise)} bonus reserved for you!`,
-      });
-      setIsDismissed(true);
-    } catch (err) {
-      toast.error('Could not accept', {
-        description: err instanceof Error ? err.message : 'Please try again.',
-      });
-    } finally {
-      setIsAccepting(false);
-    }
-  };
+        toast.success('Return Repositioning Bonus Claimed! 🚀', {
+          description: `Head toward ${zone.name}. +${formatCurrency(incentivePaise)} guaranteed on your next pickup!`,
+        });
+        setIsDismissed(true);
+      } catch (err) {
+        toast.error('Could not claim bonus', {
+          description: err instanceof Error ? err.message : 'Please try again.',
+        });
+      } finally {
+        setIsAccepting(false);
+      }
+    };
 
-  return (
-    <div className="rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-ryda-elevated to-ryda-elevated p-4 shadow-lg space-y-3 animate-in fade-in-50">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20 text-amber-400 font-bold">
-            <Flame className="h-4 w-4" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">AI Demand Nearby</span>
-              <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-ping" />
+    return (
+      <div className="rounded-3xl border-2 border-amber-500 bg-gradient-to-br from-amber-50 via-white to-amber-50/40 p-5 shadow-xl space-y-4 animate-in fade-in-50">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500 text-white font-black shadow-md">
+              <ShieldAlert className="h-6 w-6" />
             </div>
-            <p className="text-[11px] text-ryda-muted">Predicted high ride volume in Bhopal</p>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-lg">
+                  Outer Area Detected
+                </span>
+                <span className="text-xs font-bold text-amber-700">Dead-Mileage Protection</span>
+              </div>
+              <p className="font-display font-black text-base text-ryda-text mt-0.5">
+                AI Return Bonus: +{formatCurrency(incentivePaise)}
+              </p>
+            </div>
           </div>
-        </div>
-        <button
-          onClick={() => setIsDismissed(true)}
-          className="rounded-lg p-1 text-ryda-muted hover:bg-ryda-surface hover:text-ryda-text"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      </div>
 
-      {/* Target Zone & Distance */}
-      <div className="rounded-xl border border-amber-500/20 bg-ryda-surface/80 p-3 flex items-center justify-between">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-ryda-text">
-            <MapPin className="h-3.5 w-3.5 text-amber-400" />
-            <span>{zone.name}</span>
+          <button
+            type="button"
+            onClick={() => setIsDismissed(true)}
+            className="p-1.5 text-ryda-muted hover:text-ryda-text hover:bg-amber-100 rounded-xl transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Outer Zone Explanation */}
+        <div className="rounded-2xl bg-white border border-amber-200/80 p-3.5 text-xs space-y-2 text-left shadow-xs">
+          <div className="flex items-start gap-2">
+            <MapPin className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+            <div>
+              <span className="text-[10px] font-bold text-ryda-muted uppercase block">Outer Dropoff Location</span>
+              <span className="font-bold text-ryda-text">{dropoffAddress || 'Outer City / Peripheral Zone'}</span>
+            </div>
           </div>
-          <p className="text-[11px] text-ryda-muted">
-            {distanceKm} km away · Expected: <span className="font-semibold text-amber-400">{zone.predictedDemand30m}</span>
+          <p className="text-[11px] text-amber-900 font-medium pt-1 border-t border-amber-100">
+            💡 Because this destination is in an outer area with fewer ride bookings, Ryda AI awards you a <strong className="text-emerald-700">+{formatCurrency(incentivePaise)} payout</strong> to drive back towards the central commercial core.
           </p>
         </div>
 
-        {/* Incentive amount badge */}
-        <div className="text-right">
-          <span className="inline-block px-2.5 py-1 rounded-lg text-xs font-black bg-amber-500 text-black shadow-sm font-mono">
-            +{formatCurrency(incentivePaise)} Bonus
-          </span>
+        {/* Destination Hotspot Target */}
+        <div className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-emerald-50 border border-emerald-200">
+          <div className="flex items-center gap-2 text-xs">
+            <Navigation className="w-4 h-4 text-emerald-700" />
+            <div>
+              <span className="text-[10px] uppercase font-bold text-emerald-800 block">Recommended Hotspot</span>
+              <span className="font-bold text-emerald-950">{zone.name} (~{distanceKm} km)</span>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="text-xs font-black text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-xl">
+              +{formatCurrency(incentivePaise)} Bonus
+            </span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <Button
+            type="button"
+            onClick={handleAccept}
+            disabled={isAccepting}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl text-xs gap-1.5 shadow-md cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Claim +{formatCurrency(incentivePaise)} Return Bonus
+          </Button>
+
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(zone.name + ', Bhopal')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 w-full py-3 px-3 rounded-xl border border-ryda-border bg-white hover:bg-ryda-surface text-xs font-bold text-ryda-text transition-all shadow-xs"
+          >
+            <Navigation className="w-3.5 h-3.5 text-ryda-accent" />
+            <span>Navigate to Hotspot</span>
+            <ExternalLink className="w-3 h-3 opacity-60" />
+          </a>
         </div>
       </div>
+    );
+  }
 
-      {/* Action buttons */}
-      <div className="flex items-center gap-2 pt-1">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsDismissed(true)}
-          className="flex-1 border-ryda-border text-xs h-9 text-ryda-muted"
-        >
-          Ignore
-        </Button>
-        <Button
-          size="sm"
-          onClick={handleAccept}
-          disabled={isAccepting}
-          className="flex-1 bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs h-9 gap-1.5 shadow-md"
-        >
-          <Navigation className="h-3.5 w-3.5" />
-          {isAccepting ? 'Confirming…' : 'Move There'}
-        </Button>
+  // ── State 2: Inside City Center Core (High Demand — No Dead Mileage Bonus Needed) ──
+  return (
+    <div className="rounded-3xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50/50 via-white to-emerald-50/50 p-4 shadow-xs flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 font-bold">
+          <ShieldCheck className="h-5 w-5" />
+        </div>
+        <div>
+          <p className="font-display font-bold text-xs text-emerald-950">City Core Service Zone</p>
+          <p className="text-[11px] text-emerald-700 font-medium">
+            You are in a high-density area. Regular ride requests active.
+          </p>
+        </div>
       </div>
+      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-lg">
+        Active Dispatch
+      </span>
     </div>
   );
 }

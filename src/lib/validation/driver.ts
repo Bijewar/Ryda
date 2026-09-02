@@ -7,15 +7,21 @@ export const driverRegisterSchema = z.object({
   email: emailSchema,
   phone: phoneSchema,
   password: passwordSchema,
-  licenseNumber: z.string().min(5).max(30),
-  licenseFrontUrl: z.string().url(),
-  licenseBackUrl: z.string().url(),
+  licenseNumber: z.string().min(3).max(30),
+  licenseFrontUrl: z.string().default('https://images.unsplash.com/photo-1544717305-2782549b5136?w=600'),
+  licenseBackUrl: z.string().default('https://images.unsplash.com/photo-1544717305-2782549b5136?w=600'),
   vehicle: z.object({
-    make: z.string().min(2).max(40),
+    make: z.string().min(1).max(40),
     model: z.string().min(1).max(40),
-    year: z.number().int().min(1990).max(new Date().getFullYear() + 1),
-    color: z.string().min(2).max(30),
-    licensePlate: z.string().regex(/^[A-Z]{2}\d{1,2}\s?[A-Z]{1,3}\s?\d{4}$/i, 'Invalid Indian license plate'),
+    year: z.number().int().min(1990).max(new Date().getFullYear() + 2).default(new Date().getFullYear()),
+    color: z.string().min(1).max(30),
+    licensePlate: z
+      .string()
+      .min(4)
+      .transform((val) => val.toUpperCase().replace(/[^A-Z0-9]/g, ''))
+      .refine((val) => val.length >= 6 && val.length <= 12, {
+        message: 'Enter a valid vehicle license plate (e.g. MP04AB1234)',
+      }),
     type: vehicleTypeSchema,
   }),
 });

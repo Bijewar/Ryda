@@ -13,11 +13,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { driverRegisterSchema, type DriverRegisterInput } from '@/lib/validation/driver';
 
 const VEHICLE_TYPES: Array<{ value: DriverRegisterInput['vehicle']['type']; label: string; icon: string }> = [
-  { value: 'SEDAN', label: 'Sedan', icon: '🚗' },
-  { value: 'SUV', label: 'SUV', icon: '🚙' },
-  { value: 'HATCHBACK', label: 'Hatchback', icon: '🚘' },
-  { value: 'AUTO', label: 'Auto (3-Wheeler)', icon: '🛺' },
   { value: 'BIKE', label: 'Bike', icon: '🏍️' },
+  { value: 'AUTO', label: 'Auto (3-Wheeler)', icon: '🛺' },
+  { value: 'SEDAN', label: 'Sedan Economy', icon: '🚗' },
+  { value: 'SUV', label: 'SUV XL', icon: '🚙' },
+  { value: 'HATCHBACK', label: 'Hatchback', icon: '🚘' },
 ];
 
 export function DriverRegisterForm(): React.ReactElement {
@@ -28,6 +28,7 @@ export function DriverRegisterForm(): React.ReactElement {
     register,
     handleSubmit,
     setValue,
+    setError,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<DriverRegisterInput>({
@@ -47,7 +48,7 @@ export function DriverRegisterForm(): React.ReactElement {
         year: new Date().getFullYear(),
         color: '',
         licensePlate: '',
-        type: 'SEDAN',
+        type: 'BIKE',
       },
     },
   });
@@ -65,15 +66,24 @@ export function DriverRegisterForm(): React.ReactElement {
       const json = await res.json().catch(() => null);
 
       if (!res.ok || json?.error) {
+        const errorMsg = json?.error?.message ?? 'Please verify your details and try again.';
         toast.error('Registration failed', {
-          description: json?.error?.message ?? 'Please verify your details and try again.',
+          description: errorMsg,
         });
+
+        // Set field errors if provided
+        if (json?.error?.details?.fieldErrors) {
+          const fe = json.error.details.fieldErrors;
+          Object.keys(fe).forEach((key) => {
+            setError(key as any, { message: fe[key][0] });
+          });
+        }
         return;
       }
 
       setSuccess(true);
       toast.success('Registration submitted!', {
-        description: 'Your application is now under admin review.',
+        description: 'Your application is now submitted and active.',
       });
     } catch (err) {
       toast.error('Network error', {
@@ -84,22 +94,22 @@ export function DriverRegisterForm(): React.ReactElement {
 
   if (success) {
     return (
-      <Card className="border-ryda-accent/40 bg-ryda-elevated/80 p-6 text-center">
+      <Card className="border-ryda-accent/40 bg-ryda-elevated/80 p-6 text-center shadow-xl">
         <CardContent className="space-y-4 pt-4">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-ryda-accent/15 text-ryda-accent">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
             <CheckCircle2 className="h-8 w-8" />
           </div>
           <h2 className="font-display text-2xl font-bold text-ryda-text">Application Submitted!</h2>
           <p className="text-sm text-ryda-muted">
-            Thank you for registering to drive with Ryda in Bhopal. An admin will verify your driving license and vehicle registration.
+            Thank you for registering to drive with Ryda in Bhopal. Your captain account has been recorded.
           </p>
-          <div className="rounded-lg border border-ryda-border bg-ryda-bg/50 p-4 text-xs text-ryda-muted">
-            Once approved, you can log in at <span className="font-mono text-ryda-accent">/login</span> to go online and accept rides.
+          <div className="rounded-2xl border border-ryda-border bg-ryda-surface p-4 text-xs text-ryda-muted">
+            You can now log in at <span className="font-bold text-ryda-accent-dim">/login</span> to access your <span className="font-bold text-ryda-text">Captain Portal</span>.
           </div>
           <Button
             type="button"
             onClick={() => router.push('/login')}
-            className="w-full bg-ryda-accent text-ryda-bg hover:bg-ryda-accent-dim"
+            className="w-full bg-ryda-accent text-white font-bold hover:bg-ryda-accent-dim py-3 rounded-xl shadow-md"
           >
             Go to Login
           </Button>
@@ -111,150 +121,144 @@ export function DriverRegisterForm(): React.ReactElement {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
       {/* 1. Personal Information */}
-      <div className="space-y-3 rounded-xl border border-ryda-border bg-ryda-elevated/40 p-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-ryda-accent">
+      <div className="space-y-3 rounded-2xl border border-ryda-border bg-ryda-surface p-5 shadow-xs">
+        <div className="flex items-center gap-2 text-sm font-bold text-ryda-accent">
           <User className="h-4 w-4" />
           <span>1. Personal Information</span>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
             <Label htmlFor="firstName">First name</Label>
-            <Input id="firstName" placeholder="Imran" {...register('firstName')} />
-            {errors.firstName && <p className="text-xs text-destructive">{errors.firstName.message}</p>}
+            <Input id="firstName" placeholder="Shivam" {...register('firstName')} />
+            {errors.firstName && <p className="text-xs text-rose-500">{errors.firstName.message}</p>}
           </div>
           <div className="space-y-1">
             <Label htmlFor="lastName">Last name</Label>
-            <Input id="lastName" placeholder="Khan" {...register('lastName')} />
-            {errors.lastName && <p className="text-xs text-destructive">{errors.lastName.message}</p>}
+            <Input id="lastName" placeholder="Kumar" {...register('lastName')} />
+            {errors.lastName && <p className="text-xs text-rose-500">{errors.lastName.message}</p>}
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="imran@example.com" {...register('email')} />
-            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+            <Input id="email" type="email" placeholder="shivam@example.com" {...register('email')} />
+            {errors.email && <p className="text-xs text-rose-500">{errors.email.message}</p>}
           </div>
           <div className="space-y-1">
-            <Label htmlFor="phone">Phone (+91 format)</Label>
-            <Input id="phone" placeholder="+919826001234" {...register('phone')} />
-            {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
+            <Label htmlFor="phone">Mobile Number</Label>
+            <Input id="phone" placeholder="9826001234 or +919826001234" {...register('phone')} />
+            {errors.phone && <p className="text-xs text-rose-500">{errors.phone.message}</p>}
           </div>
         </div>
         <div className="space-y-1">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" placeholder="At least 8 characters" {...register('password')} />
-          {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+          <Input id="password" type="password" placeholder="At least 8 characters (1 letter + 1 number)" {...register('password')} />
+          {errors.password && <p className="text-xs text-rose-500">{errors.password.message}</p>}
         </div>
       </div>
 
       {/* 2. License Details */}
-      <div className="space-y-3 rounded-xl border border-ryda-border bg-ryda-elevated/40 p-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-ryda-accent">
+      <div className="space-y-3 rounded-2xl border border-ryda-border bg-ryda-surface p-5 shadow-xs">
+        <div className="flex items-center gap-2 text-sm font-bold text-ryda-accent">
           <FileText className="h-4 w-4" />
           <span>2. Driving License</span>
         </div>
         <div className="space-y-1">
           <Label htmlFor="licenseNumber">Driving License Number</Label>
-          <Input id="licenseNumber" placeholder="MP04-20220019281" {...register('licenseNumber')} />
-          {errors.licenseNumber && <p className="text-xs text-destructive">{errors.licenseNumber.message}</p>}
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1">
-            <Label htmlFor="licenseFrontUrl">License Front Photo URL</Label>
-            <Input id="licenseFrontUrl" placeholder="https://..." {...register('licenseFrontUrl')} />
-            {errors.licenseFrontUrl && <p className="text-xs text-destructive">{errors.licenseFrontUrl.message}</p>}
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="licenseBackUrl">License Back Photo URL</Label>
-            <Input id="licenseBackUrl" placeholder="https://..." {...register('licenseBackUrl')} />
-            {errors.licenseBackUrl && <p className="text-xs text-destructive">{errors.licenseBackUrl.message}</p>}
-          </div>
+          <Input id="licenseNumber" placeholder="MP0420230012345" {...register('licenseNumber')} />
+          {errors.licenseNumber && <p className="text-xs text-rose-500">{errors.licenseNumber.message}</p>}
         </div>
       </div>
 
       {/* 3. Vehicle Information */}
-      <div className="space-y-3 rounded-xl border border-ryda-border bg-ryda-elevated/40 p-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-ryda-accent">
+      <div className="space-y-3 rounded-2xl border border-ryda-border bg-ryda-surface p-5 shadow-xs">
+        <div className="flex items-center gap-2 text-sm font-bold text-ryda-accent">
           <Car className="h-4 w-4" />
           <span>3. Vehicle Information</span>
         </div>
 
-        {/* Vehicle Type Selection */}
+        {/* Vehicle type selector */}
         <div className="space-y-1.5">
           <Label>Vehicle Type</Label>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {VEHICLE_TYPES.map((t) => (
-              <button
-                key={t.value}
-                type="button"
-                onClick={() => setValue('vehicle.type', t.value, { shouldValidate: true })}
-                className={`flex items-center gap-2 rounded-lg border p-2.5 text-left text-xs transition-all ${
-                  selectedVehicleType === t.value
-                    ? 'border-ryda-accent bg-ryda-accent/15 text-ryda-text font-medium ring-1 ring-ryda-accent'
-                    : 'border-ryda-border bg-ryda-bg/40 text-ryda-muted hover:border-ryda-accent/40'
-                }`}
-              >
-                <span className="text-base">{t.icon}</span>
-                <span>{t.label}</span>
-              </button>
-            ))}
+            {VEHICLE_TYPES.map((vt) => {
+              const active = selectedVehicleType === vt.value;
+              return (
+                <button
+                  type="button"
+                  key={vt.value}
+                  onClick={() => setValue('vehicle.type', vt.value, { shouldValidate: true })}
+                  className={`flex items-center gap-2 rounded-xl border p-2.5 text-left text-xs font-bold transition-all cursor-pointer ${
+                    active
+                      ? 'border-ryda-accent bg-ryda-accent/10 text-ryda-accent-dim shadow-xs ring-1 ring-ryda-accent'
+                      : 'border-ryda-border bg-ryda-elevated/40 text-ryda-text hover:bg-ryda-elevated'
+                  }`}
+                >
+                  <span className="text-base">{vt.icon}</span>
+                  <span className="truncate">{vt.label}</span>
+                </button>
+              );
+            })}
           </div>
+          {errors.vehicle?.type && <p className="text-xs text-rose-500">{errors.vehicle.type.message}</p>}
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
-            <Label htmlFor="vehicleMake">Make (Manufacturer)</Label>
-            <Input id="vehicleMake" placeholder="Maruti Suzuki / Hyundai / Tata" {...register('vehicle.make')} />
-            {errors.vehicle?.make && <p className="text-xs text-destructive">{errors.vehicle.make.message}</p>}
+            <Label htmlFor="make">Brand / Make</Label>
+            <Input id="make" placeholder="e.g. Bajaj, Maruti, Hero" {...register('vehicle.make')} />
+            {errors.vehicle?.make && <p className="text-xs text-rose-500">{errors.vehicle.make.message}</p>}
           </div>
           <div className="space-y-1">
-            <Label htmlFor="vehicleModel">Model</Label>
-            <Input id="vehicleModel" placeholder="Dzire / WagonR / Creta" {...register('vehicle.model')} />
-            {errors.vehicle?.model && <p className="text-xs text-destructive">{errors.vehicle.model.message}</p>}
+            <Label htmlFor="model">Model</Label>
+            <Input id="model" placeholder="e.g. Pulsar, Dzire, Splendor" {...register('vehicle.model')} />
+            {errors.vehicle?.model && <p className="text-xs text-rose-500">{errors.vehicle.model.message}</p>}
           </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-1">
-            <Label htmlFor="vehicleYear">Year</Label>
+            <Label htmlFor="licensePlate">Vehicle Number Plate</Label>
+            <Input id="licensePlate" placeholder="MP04BC1234" {...register('vehicle.licensePlate')} />
+            {errors.vehicle?.licensePlate && (
+              <p className="text-xs text-rose-500">{errors.vehicle.licensePlate.message}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="color">Color</Label>
+            <Input id="color" placeholder="Black / White" {...register('vehicle.color')} />
+            {errors.vehicle?.color && <p className="text-xs text-rose-500">{errors.vehicle.color.message}</p>}
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="year">Manufacturing Year</Label>
             <Input
-              id="vehicleYear"
+              id="year"
               type="number"
               placeholder="2022"
               {...register('vehicle.year', { valueAsNumber: true })}
             />
-            {errors.vehicle?.year && <p className="text-xs text-destructive">{errors.vehicle.year.message}</p>}
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="vehicleColor">Color</Label>
-            <Input id="vehicleColor" placeholder="White / Silver / Black" {...register('vehicle.color')} />
-            {errors.vehicle?.color && <p className="text-xs text-destructive">{errors.vehicle.color.message}</p>}
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="licensePlate">License Plate</Label>
-            <Input id="licensePlate" placeholder="MP04 AB 1234" {...register('vehicle.licensePlate')} />
-            {errors.vehicle?.licensePlate && (
-              <p className="text-xs text-destructive">{errors.vehicle.licensePlate.message}</p>
-            )}
+            {errors.vehicle?.year && <p className="text-xs text-rose-500">{errors.vehicle.year.message}</p>}
           </div>
         </div>
+      </div>
+
+      <div className="flex items-start gap-2 text-xs text-ryda-muted">
+        <ShieldCheck className="mt-0.5 h-4 w-4 text-ryda-accent shrink-0" />
+        <span>By submitting this application, you agree to Ryda&apos;s captain partner terms and safety policies in Bhopal.</span>
       </div>
 
       <Button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-ryda-accent text-ryda-bg hover:bg-ryda-accent-dim py-6 text-base font-semibold"
+        className="w-full bg-ryda-accent text-white font-bold hover:bg-ryda-accent-dim py-4 rounded-2xl text-base shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
       >
         {isSubmitting ? (
           <>
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Submitting Application…
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Submitting application…
           </>
         ) : (
-          <>
-            <ShieldCheck className="mr-2 h-5 w-5" />
-            Submit Driver Application
-          </>
+          'Submit Captain Application'
         )}
       </Button>
     </form>

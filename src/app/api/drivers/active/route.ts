@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/client';
+import { memoryDrivers } from '@/lib/db/driverStore';
 import { ok, error } from '@/types/api';
 import { logger } from '@/lib/observability/logger';
-import { BHOPAL_POIS } from '@/lib/geo/pois';
 
 export interface ActiveDriverMarker {
   id: string;
@@ -12,20 +12,36 @@ export interface ActiveDriverMarker {
   lng: number;
   heading: number;
   vehicleModel?: string;
-  vehicleType?: string;
+  vehicleType: 'BIKE' | 'AUTO' | 'CAB_ECONOMY' | 'CAB_PREMIUM' | 'SUV' | string;
 }
 
-/**
- * GET /api/drivers/active
- *
- * Returns live coordinates of all currently approved & online drivers in Bhopal.
- * Used by passenger dashboard maps to render real-time vehicle markers.
- */
 export async function GET(): Promise<NextResponse> {
   try {
-    let onlineDrivers: any[] = [];
+    const activeMarkers: ActiveDriverMarker[] = [];
+
+    // 1. Check runtime memory store for real online approved drivers
+    const inMemList = Array.from(memoryDrivers.values());
+    for (const d of inMemList) {
+      if (d.isOnline && d.approvalStatus === 'APPROVED') {
+        const isDuplicate = activeMarkers.some((m) => m.id === d.id);
+        if (!isDuplicate) {
+          activeMarkers.push({
+            id: d.id,
+            firstName: d.firstName,
+            rating: d.rating ?? 5.0,
+            lat: d.lat ?? 23.2419,
+            lng: d.lng ?? 77.4321,
+            heading: d.heading ?? 45,
+            vehicleModel: d.vehicle ? `${d.vehicle.make} ${d.vehicle.model}` : 'Vehicle',
+            vehicleType: d.vehicle?.type ?? 'BIKE',
+          });
+        }
+      }
+    }
+
+    // 2. Query Postgres DB for active approved drivers
     try {
-      onlineDrivers = await db.$queryRaw<
+      const dbOnline = await db.$queryRaw<
         Array<{
           id: string;
           firstName: string;
@@ -53,24 +69,29 @@ export async function GET(): Promise<NextResponse> {
           AND d."currentLocation" IS NOT NULL
         LIMIT 50;
       `;
-    } catch (dbErr) {
-      logger.warn({ dbErr }, 'Failed querying active drivers from PostGIS');
+
+      if (dbOnline && Array.isArray(dbOnline)) {
+        for (const d of dbOnline) {
+          if (!activeMarkers.some((m) => m.id === d.id)) {
+            activeMarkers.push({
+              id: d.id,
+              firstName: d.firstName,
+              rating: d.rating ?? 5.0,
+              lat: Number(d.lat),
+              lng: Number(d.lng),
+              heading: Number(d.heading ?? 0),
+              vehicleModel: d.vehicleModel ?? undefined,
+              vehicleType: d.vehicleType ?? 'BIKE',
+            });
+          }
+        }
+      }
+    } catch (_dbErr) {
+      // Offline fallback
     }
 
-    const markers: ActiveDriverMarker[] = (onlineDrivers || [])
-      .filter((d) => d.lat && d.lng)
-      .map((d) => ({
-        id: d.id,
-        firstName: d.firstName,
-        rating: d.rating ?? 5.0,
-        lat: Number(d.lat),
-        lng: Number(d.lng),
-        heading: Number(d.heading ?? 0),
-        vehicleModel: d.vehicleModel ?? undefined,
-        vehicleType: d.vehicleType ?? 'SEDAN',
-      }));
-
-    return NextResponse.json(ok(markers));
+    // Return ONLY real active drivers (empty [] if 0 drivers are online)
+    return NextResponse.json(ok(activeMarkers));
   } catch (err) {
     logger.error({ err }, 'Error fetching active drivers');
     return NextResponse.json(error('INTERNAL_ERROR', 'Failed to fetch active drivers'), { status: 500 });

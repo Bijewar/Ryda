@@ -1,119 +1,128 @@
-"use client";
+'use client';
 
-import { Github, ExternalLink, MapPin, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import * as React from 'react';
+import Link from 'next/link';
+import { Logo } from './Logo';
+import { Twitter, Linkedin, Instagram, Facebook, Mail } from 'lucide-react';
+
+const FOOTER_LINKS = [
+  {
+    title: 'Company',
+    links: [
+      { label: 'About Ryda', href: '#' },
+      { label: 'Careers', href: '#' },
+      { label: 'Press', href: '#' },
+      { label: 'Blog', href: '#' },
+      { label: 'Investors', href: '#' },
+    ],
+  },
+  {
+    title: 'Rides',
+    links: [
+      { label: 'Bike Taxi', href: '#booking' },
+      { label: 'Auto Rickshaw', href: '#booking' },
+      { label: 'Cab Economy', href: '#booking' },
+      { label: 'Premium Sedan', href: '#booking' },
+      { label: 'Outstation', href: '#booking' },
+    ],
+  },
+  {
+    title: 'Drive',
+    links: [
+      { label: 'Sign up to drive', href: '/driver/register' },
+      { label: 'Driver app', href: '/driver/login' },
+      { label: 'Earnings calculator', href: '#drivers' },
+      { label: 'Driver FAQ', href: '#' },
+    ],
+  },
+  {
+    title: 'Support',
+    links: [
+      { label: 'Help center', href: '#' },
+      { label: 'Safety', href: '#safety' },
+      { label: 'Contact us', href: '#' },
+      { label: 'Lost & found', href: '#' },
+      { label: 'SOS', href: '#' },
+    ],
+  },
+];
 
 export function Footer() {
   return (
-    <footer
-      role="contentinfo"
-      className="mt-auto border-t border-ryda-border bg-ryda-bg"
-    >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr] gap-10 md:gap-16">
-          {/* Brand column */}
-          <div className="flex flex-col gap-4">
+    <footer id="about" className="relative mt-12 bg-ryda-text text-white scroll-mt-24">
+      {/* Top accent line */}
+      <div className="h-1 bg-gradient-to-r from-ryda-accent via-amber-300 to-ryda-accent" aria-hidden />
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 lg:py-16">
+        <div className="grid lg:grid-cols-12 gap-10">
+          {/* Brand */}
+          <div className="lg:col-span-4">
             <div className="flex items-center gap-2">
-              <span className="text-xl font-extrabold tracking-tight text-ryda-text">
-                RYDA
-              </span>
-              <span
-                aria-hidden="true"
-                className="size-2 rounded-full"
-                style={{
-                  background:
-                    "linear-gradient(135deg, var(--ryda-primary) 0%, var(--ryda-pink) 100%)",
-                  boxShadow: "0 0 10px rgba(255, 87, 34, 0.5)",
-                }}
-              />
-              <span
-                className="text-xs font-mono px-1.5 py-0.5 rounded-md"
-                style={{
-                  background: "linear-gradient(135deg, var(--ryda-primary-soft) 0%, #FCE7F3 100%)",
-                  color: "var(--ryda-primary)",
-                  border: "1px solid color-mix(in oklab, var(--ryda-primary) 30%, transparent)",
-                }}
-              >
-                v2
-              </span>
+              <Logo size="md" showWordmark onDark />
             </div>
-            <p className="text-sm text-ryda-muted leading-relaxed max-w-md">
-              Production-grade ride-hailing platform for Bhopal — light,
-              vibrant, and alive. Built as a freelance portfolio piece: a
-              full rewrite of an existing MVP into a typed, tested,
-              deployable system on a 100% free stack.
+            <p className="mt-4 text-sm text-white/70 leading-relaxed max-w-sm">
+              Ryda is India&apos;s premium ride-hailing app. Bikes, autos, cabs,
+              and outstation — one tap, transparent fares, calmer rides.
             </p>
-            <div className="flex flex-wrap items-center gap-2 pt-2">
-              <Button
-                size="sm"
-                asChild
-                className="ryda-btn-gradient font-semibold border-0"
-              >
+
+            <div className="mt-6 flex items-center gap-2">
+              {[Twitter, Linkedin, Instagram, Facebook, Mail].map((Icon, idx) => (
                 <a
-                  href="https://github.com/ryda-v2"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  key={idx}
+                  href="#"
+                  className="w-9 h-9 rounded-xl bg-white/10 hover:bg-ryda-accent hover:text-white transition-all flex items-center justify-center text-white/80 hover:scale-105"
+                  aria-label="social"
                 >
-                  <Github className="size-3.5" aria-hidden="true" />
-                  Get the code
-                  <ExternalLink className="size-3 opacity-70" aria-hidden="true" />
+                  <Icon className="w-4 h-4" />
                 </a>
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                asChild
-                className="text-ryda-muted hover:text-ryda-text hover:bg-ryda-bg-soft"
-              >
-                <a href="#bhopal">
-                  <MapPin className="size-3.5 text-ryda-primary" aria-hidden="true" />
-                  Live demo
-                </a>
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                asChild
-                className="text-ryda-muted hover:text-ryda-text hover:bg-ryda-bg-soft"
-              >
-                <a
-                  href="/download/RYDA-V2-IMPLEMENTATION-PLAN.md"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Sparkles className="size-3.5 text-ryda-accent" aria-hidden="true" />
-                  Implementation plan
-                </a>
-              </Button>
+              ))}
+            </div>
+
+            <div className="mt-6 inline-flex items-center gap-2 bg-white/5 px-3 py-2 rounded-xl">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ryda-accent opacity-60" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-ryda-accent" />
+              </span>
+              <span className="text-xs font-medium text-white/80">
+                All systems operational · Bhopal Network Active
+              </span>
             </div>
           </div>
 
-          {/* Attribution column */}
-          <div className="flex flex-col gap-3 text-xs text-ryda-muted leading-relaxed">
-            <h3 className="text-ryda-text font-semibold text-sm mb-1">
-              Attribution
-            </h3>
-            <p>
-              Bhopal boundary data ©{" "}
-              <a
-                href="https://www.openstreetmap.org/copyright"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-ryda-primary hover:underline underline-offset-2 font-medium"
-              >
-                OpenStreetMap contributors
-              </a>{" "}
-              (ODbL). Source: OSM relation 1976080, simplified to 465 vertices.
-            </p>
-            <p>
-              Demo mode uses mock data — no real payments, no real rides, no
-              API keys required. Driver markers, ETAs, and surge multipliers
-              shown here are simulated telemetry for portfolio purposes.
-            </p>
-            <p className="pt-3 border-t border-ryda-border mt-2 text-ryda-muted/70">
-              © {new Date().getFullYear()} Ryda v2. Built with Next.js 16,
-              Postgres + PostGIS, Socket.IO + Redis, MapLibre + OSM, Razorpay.
-            </p>
+          {/* Link columns */}
+          <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-6">
+            {FOOTER_LINKS.map((col) => (
+              <div key={col.title}>
+                <h4 className="font-display font-bold text-sm text-white mb-4 uppercase tracking-wider">
+                  {col.title}
+                </h4>
+                <ul className="space-y-3">
+                  {col.links.map((link) => (
+                    <li key={link.label}>
+                      <a
+                        href={link.href}
+                        className="text-sm text-white/60 hover:text-white transition-colors"
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-white/50">
+            © {new Date().getFullYear()} Ryda Technologies Pvt. Ltd. · Made for Bhopal &amp; India.
+          </p>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-white/50">
+            <a href="#" className="hover:text-white transition-colors">Privacy</a>
+            <a href="#" className="hover:text-white transition-colors">Terms</a>
+            <a href="#" className="hover:text-white transition-colors">Cookies</a>
+            <a href="#" className="hover:text-white transition-colors">Accessibility</a>
           </div>
         </div>
       </div>

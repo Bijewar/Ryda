@@ -168,7 +168,7 @@ export function BhopalMap() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/geo/bhopal-boundary-simplified.geojson")
+    fetch("/geo/RydaMap.geojson")
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json() as Promise<BhopalGeoJSON>;

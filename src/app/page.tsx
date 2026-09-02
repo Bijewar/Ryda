@@ -1,56 +1,63 @@
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { Logo } from '@/components/brand/Logo';
-import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/brand/ThemeToggle';
 import { auth } from '@/lib/auth/config';
+import { db } from '@/lib/db/client';
+import { NavBar } from '@/components/ryda/NavBar';
+import { Hero } from '@/components/ryda/Hero';
+import { BookingSection } from '@/components/ryda/BookingSection';
+import { ServicesSection } from '@/components/ryda/ServicesSection';
+import { StatsSection } from '@/components/ryda/StatsSection';
+import { FeaturesSection } from '@/components/ryda/FeaturesSection';
+import { DriversSection } from '@/components/ryda/DriversSection';
+import { Testimonials } from '@/components/ryda/Testimonials';
+import { AppDownloadCTA } from '@/components/ryda/AppDownloadCTA';
+import { Footer } from '@/components/ryda/Footer';
 
-/**
- * Landing route. If signed in, redirect to the role-appropriate dashboard;
- * otherwise show the marketing CTA.
- */
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const session = await auth();
+  let user: {
+    name?: string | null;
+    email?: string | null;
+    accountType?: string;
+    driverId?: string | null;
+  } | null = null;
+
   if (session?.user) {
-    const u = session.user as { accountType: 'PASSENGER' | 'ADMIN'; driverId?: string };
-    if (u.accountType === 'ADMIN') redirect('/admin');
-    if (u.driverId) redirect('/dashboard');
-    redirect('/dashboard');
+    let dbName = session.user.name;
+    try {
+      if (session.user.id) {
+        const dbUser = await db.user.findUnique({
+          where: { id: session.user.id },
+          select: { name: true },
+        });
+        if (dbUser?.name) dbName = dbUser.name;
+      }
+    } catch (_e) {
+      // Offline fallback
+    }
+
+    user = {
+      name: dbName || session.user.email?.split('@')[0] || 'User',
+      email: session.user.email,
+      accountType: (session.user as any).accountType,
+      driverId: (session.user as any).driverId,
+    };
   }
 
   return (
-    <main className="min-h-screen relative flex flex-col items-center justify-center px-6 text-center bg-ryda-bg text-ryda-text transition-colors duration-200">
-      <div className="absolute top-6 right-6 z-20">
-        <ThemeToggle />
-      </div>
-      <div className="max-w-2xl mx-auto flex flex-col items-center gap-8">
-        <Logo className="w-20 h-20" />
-        <div className="space-y-4">
-          <h1 className="font-display text-5xl md:text-6xl font-bold tracking-tight">
-            Ride-hailing, <span className="ryda-text-gradient">rebuilt for Bhopal.</span>
-          </h1>
-          <p className="text-ryda-muted text-lg max-w-md mx-auto">
-            Production-grade architecture. Real-time driver matching within the Bhopal geofence.
-            Razorpay payments. 100% free stack. Zero-config demo mode.
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
-          <Link href="/login" className="flex-1">
-            <Button className="w-full bg-ryda-accent text-ryda-bg hover:bg-ryda-accent-dim font-semibold">
-              Sign in
-            </Button>
-          </Link>
-          <Link href="/register" className="flex-1">
-            <Button variant="outline" className="w-full border-ryda-border text-ryda-text">
-              Create account
-            </Button>
-          </Link>
-        </div>
-        <p className="text-xs text-ryda-muted">
-          Demo logins: <code className="text-ryda-accent">admin@ryda.demo</code> ·{' '}
-          <code className="text-ryda-accent">aarav@example.com</code>
-        </p>
-      </div>
-    </main>
+    <div className="min-h-screen bg-background text-foreground selection:bg-ryda-accent/20 selection:text-ryda-accent-dim">
+      <NavBar user={user} />
+      <main>
+        <Hero />
+        <BookingSection />
+        <ServicesSection />
+        <StatsSection />
+        <FeaturesSection />
+        <DriversSection />
+        <Testimonials />
+        <AppDownloadCTA />
+      </main>
+      <Footer />
+    </div>
   );
 }

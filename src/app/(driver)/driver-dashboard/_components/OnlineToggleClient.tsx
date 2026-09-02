@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import { Loader2, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -14,15 +15,20 @@ export default function OnlineToggle({
   driverId,
   initialOnline,
 }: OnlineToggleProps): React.ReactElement {
+  const router = useRouter();
   const [online, setOnline] = React.useState(initialOnline);
   const [busy, setBusy] = React.useState(false);
   const watchIdRef = React.useRef<number | null>(null);
+
+  // Sync with prop updates
+  React.useEffect(() => {
+    setOnline(initialOnline);
+  }, [initialOnline]);
 
   // Helper to obtain current driver GPS coordinates
   const getCurrentCoordinates = (): Promise<{ lat: number; lng: number; heading?: number }> => {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
-        // Fallback to central Bhopal coordinate
         resolve({ lat: 23.2419, lng: 77.4321, heading: 0 });
         return;
       }
@@ -35,10 +41,9 @@ export default function OnlineToggle({
           });
         },
         () => {
-          // Fallback to central Bhopal coordinate if permission denied
           resolve({ lat: 23.2419, lng: 77.4321, heading: 0 });
         },
-        { timeout: 7000, enableHighAccuracy: true },
+        { timeout: 3000, enableHighAccuracy: true },
       );
     });
   };
@@ -93,10 +98,19 @@ export default function OnlineToggle({
     const previous = online;
     setOnline(next); // optimistic update
 
+    // Notify all components immediately
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('driver-online-toggle', { detail: { isOnline: next } }));
+    }
+
     try {
-      let location: { lat: number; lng: number } | undefined;
-      if (next) {
-        location = await getCurrentCoordinates();
+      let location: { lat: number; lng: number } = { lat: 23.2419, lng: 77.4321 };
+      try {
+        if (next) {
+          location = await getCurrentCoordinates();
+        }
+      } catch (_e) {
+        location = { lat: 23.2419, lng: 77.4321 };
       }
 
       const res = await fetch(`/api/drivers/${driverId}/status`, {
@@ -113,7 +127,7 @@ export default function OnlineToggle({
       if (next) {
         startLocationStreaming();
         toast.success('You are now Online', {
-          description: 'Nearby passengers in Bhopal can now see your vehicle and request rides.',
+          description: 'Nearby passengers in Bhopal can now request rides.',
         });
       } else {
         stopLocationStreaming();
@@ -121,9 +135,14 @@ export default function OnlineToggle({
           description: 'You will not receive new ride requests.',
         });
       }
+
+      router.refresh();
     } catch (err) {
       setOnline(previous); // rollback
       stopLocationStreaming();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('driver-online-toggle', { detail: { isOnline: previous } }));
+      }
       toast.error('Status update failed', {
         description: err instanceof Error ? err.message : 'Please check your connection and try again.',
       });
@@ -138,20 +157,18 @@ export default function OnlineToggle({
       onClick={() => void toggle()}
       disabled={busy}
       variant={online ? 'default' : 'outline'}
-      aria-pressed={online}
-      aria-label={online ? 'Go offline' : 'Go online'}
       className={
         online
-          ? 'bg-ryda-accent text-ryda-bg hover:bg-ryda-accent-dim font-medium shadow-md'
-          : 'border-ryda-border text-ryda-text hover:border-ryda-accent/40'
+          ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2 px-5 py-2.5 rounded-2xl shadow-md cursor-pointer transition-all'
+          : 'border-2 border-ryda-border hover:bg-ryda-surface text-ryda-muted font-bold gap-2 px-5 py-2.5 rounded-2xl cursor-pointer transition-all'
       }
     >
       {busy ? (
-        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />
+        <Loader2 className="w-4 h-4 animate-spin" />
       ) : (
-        <Power className="mr-1.5 h-4 w-4" aria-hidden="true" />
+        <Power className={`w-4 h-4 ${online ? 'text-white' : 'text-ryda-muted'}`} />
       )}
-      {online ? 'Online (Accepting Rides)' : 'Offline (Tap to Go Online)'}
+      <span>{online ? 'Online (Accepting Rides)' : 'Go Online'}</span>
     </Button>
   );
 }

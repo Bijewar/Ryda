@@ -10,24 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { userLoginSchema, type UserLoginInput } from '@/lib/validation/user';
-import { isDemoMode } from '@/lib/demo-mode';
 
-/**
- * LoginForm — email + password credentials login.
- *
- * Flow:
- *   1. Validate with Zod (`userLoginSchema`).
- *   2. `signIn('credentials', ...)` via NextAuth v5.
- *   3. On success: redirect to the `callbackUrl` query param or `/dashboard`.
- *   4. On error: show a toast + inline field errors.
- *
- * The form pre-fills the demo credentials when `DEMO_MODE=true` so a recruiter
- * can sign in with a single click.
- */
 export function LoginForm(): React.ReactElement {
   const router = useRouter();
   const params = useSearchParams();
-  const callbackUrl = params.get('callbackUrl') ?? '/dashboard';
 
   const {
     register,
@@ -51,20 +37,35 @@ export function LoginForm(): React.ReactElement {
 
   const onSubmit = async (values: UserLoginInput): Promise<void> => {
     try {
-      const { signIn } = await import('next-auth/react');
+      const { signIn, getSession } = await import('next-auth/react');
       const res = await signIn('credentials', {
         email: values.email,
         password: values.password,
         redirect: false,
       });
+
       if (res?.error) {
         toast.error('Sign in failed', {
           description: 'Please check your email and password.',
         });
         return;
       }
+
       toast.success('Welcome back!');
-      window.location.href = callbackUrl;
+
+      // Retrieve session to inspect real driverId and accountType
+      const session = await getSession();
+      const user = session?.user as any;
+      const email = values.email.toLowerCase().trim();
+
+      let targetUrl = '/';
+      if (email === 'bijewarmanas1@gmail.com' || user?.accountType === 'ADMIN') {
+        targetUrl = '/admin';
+      } else if (user?.driverId || email === 'bijewaru@gmail.com' || email.includes('driver') || email.includes('imran') || email.includes('shivam')) {
+        targetUrl = '/driver-dashboard';
+      }
+
+      window.location.href = targetUrl;
     } catch (err) {
       toast.error('Sign in error', {
         description: err instanceof Error ? err.message : 'Please try again.',
@@ -110,12 +111,12 @@ export function LoginForm(): React.ReactElement {
 
       <Button
         type="submit"
+        className="w-full bg-ryda-accent hover:bg-ryda-accent-dim text-white font-bold py-3 rounded-xl shadow-md transition-all ryda-accent-glow cursor-pointer"
         disabled={isSubmitting}
-        className="w-full bg-ryda-accent text-ryda-bg hover:bg-ryda-accent-dim"
       >
         {isSubmitting ? (
           <>
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Signing in…
           </>
         ) : (

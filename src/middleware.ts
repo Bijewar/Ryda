@@ -3,25 +3,15 @@ import { getToken } from 'next-auth/jwt';
 import { env } from '@/lib/env';
 
 /**
- * Ryda v2 — Edge middleware.
+ * Ryda v2 — Edge middleware with Strict Role Isolation.
  *
- * Responsibilities:
- *   1. Route protection — `/dashboard/*`, `/rides/*`, `/history/*`, `/receipts/*`,
- *      `/admin/*`, `/driver/*` require a session. Unauthenticated users are
- *      redirected to `/login?callbackUrl=...`.
- *   2. Role checks — `/admin/*` requires `accountType === 'ADMIN'`,
- *      `/driver/*` requires a driver session (`driverId` on the JWT).
- *      Wrong-role users are bounced to `/dashboard` instead of leaking the
- *      admin surface.
- *   3. Security headers — `X-Content-Type-Options`, `X-Frame-Options`,
- *      `Referrer-Policy`, `Permissions-Policy` are injected on every response
- *      so they cover static assets, API routes, and app routes uniformly.
- *   4. Demo-mode bypass — when `DEMO_MODE=true`, the auth checks are skipped
- *      so a recruiter can click through the app without logging in. The
- *      security headers still apply.
- *
- * The middleware runs on the Edge runtime. JWT decoding uses `AUTH_SECRET`
- * (HS256) — no DB call, no Prisma. That keeps cold-start under 50ms.
+ * Rules:
+ *   1. Admin (/admin/*) — ONLY accessible by bijewarmanas1@gmail.com (ADMIN).
+ *   2. Driver (/driver-dashboard, /earnings) — ONLY accessible when logged in as a DRIVER.
+ *   3. Driver Redirection — If a logged-in driver attempts to access passenger /dashboard,
+ *      they are automatically routed to /driver-dashboard.
+ *   4. Passenger — Allowed full access across the website (/, /dashboard, /rides/*, /history, /receipts/*),
+ *      but blocked from /admin and /driver-dashboard.
  */
 
 const PROTECTED_PATTERNS = [
@@ -36,6 +26,7 @@ const PROTECTED_PATTERNS = [
 
 const ADMIN_PATTERN = /^\/admin(\/.*)?$/;
 const DRIVER_PATTERN = /^\/(driver-dashboard|earnings)(\/.*)?$/;
+const PASSENGER_PATTERN = /^\/dashboard(\/.*)?$/;
 
 const SECURITY_HEADERS: Record<string, string> = {
   'X-Content-Type-Options': 'nosniff',
@@ -54,28 +45,18 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
 export async function middleware(req: NextRequest): Promise<NextResponse> {
   const { pathname, search } = req.nextUrl;
 
-  // Always allow public driver registration
+  // Always allow public driver registration and public assets
   if (pathname === '/driver/register' || pathname.startsWith('/driver/register/')) {
     return applySecurityHeaders(NextResponse.next());
   }
 
-  // Inject security headers on every response — including non-protected routes
-  // and static assets. We `next()` once and decorate the resulting response.
   const isProtected = PROTECTED_PATTERNS.some((re) => re.test(pathname));
-
-  // Demo-mode bypass: skip auth entirely so the app is click-through without
-  // credentials. Headers still apply.
-  if (env.DEMO_MODE) {
-    const res = NextResponse.next();
-    return applySecurityHeaders(res);
-  }
 
   if (!isProtected) {
     return applySecurityHeaders(NextResponse.next());
   }
 
-  // Decode the JWT from the httpOnly cookie. `next-auth/jwt` reads
-  // `next-auth.session-token` (or `__Secure-` variant in production) by default.
+  // Decode the JWT from the session cookie
   const token = await getToken({
     req,
     secret: env.AUTH_SECRET,
@@ -88,31 +69,49 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
     return applySecurityHeaders(NextResponse.redirect(loginUrl));
   }
 
+  const email = (token.email as string | undefined)?.toLowerCase();
   const accountType = token.accountType as 'PASSENGER' | 'ADMIN' | undefined;
   const driverId = token.driverId as string | undefined;
 
-  // Admin routes — require ADMIN.
-  if (ADMIN_PATTERN.test(pathname) && accountType !== 'ADMIN') {
-    const dashboardUrl = req.nextUrl.clone();
-    dashboardUrl.pathname = '/dashboard';
-    dashboardUrl.search = '';
-    return applySecurityHeaders(NextResponse.redirect(dashboardUrl));
+  // 1. ADMIN ROUTE ISOLATION: Strictly restricted ONLY to bijewarmanas1@gmail.com
+  if (ADMIN_PATTERN.test(pathname)) {
+    if (accountType !== 'ADMIN' || email !== 'bijewarmanas1@gmail.com') {
+      const redirectUrl = req.nextUrl.clone();
+      redirectUrl.pathname = driverId ? '/driver-dashboard' : '/dashboard';
+      redirectUrl.search = '';
+      return applySecurityHeaders(NextResponse.redirect(redirectUrl));
+    }
+    return applySecurityHeaders(NextResponse.next());
   }
 
-  // Driver routes — require a driver session. Passengers get bounced.
-  if (DRIVER_PATTERN.test(pathname) && !driverId && accountType !== 'ADMIN') {
-    const dashboardUrl = req.nextUrl.clone();
-    dashboardUrl.pathname = '/dashboard';
-    dashboardUrl.search = '';
-    return applySecurityHeaders(NextResponse.redirect(dashboardUrl));
+  // 2. DRIVER ROUTE ISOLATION: Only accessible by drivers or admin
+  if (DRIVER_PATTERN.test(pathname)) {
+    if (!driverId && email !== 'bijewarmanas1@gmail.com') {
+      const dashboardUrl = req.nextUrl.clone();
+      dashboardUrl.pathname = '/dashboard';
+      dashboardUrl.search = '';
+      return applySecurityHeaders(NextResponse.redirect(dashboardUrl));
+    }
+    return applySecurityHeaders(NextResponse.next());
+  }
+
+  // 3. PASSENGER ROUTE: Redirect /dashboard to / since / is the full booking app
+  if (PASSENGER_PATTERN.test(pathname)) {
+    if (driverId && email !== 'bijewarmanas1@gmail.com') {
+      const driverUrl = req.nextUrl.clone();
+      driverUrl.pathname = '/driver-dashboard';
+      driverUrl.search = '';
+      return applySecurityHeaders(NextResponse.redirect(driverUrl));
+    }
+    const homeUrl = req.nextUrl.clone();
+    homeUrl.pathname = '/';
+    homeUrl.search = '';
+    return applySecurityHeaders(NextResponse.redirect(homeUrl));
   }
 
   return applySecurityHeaders(NextResponse.next());
 }
 
 export const config = {
-  // Match every path except Next internals, static assets, and the API.
-  // Auth routes (`/login`, `/register`, etc.) are intentionally included so
-  // the security headers apply there too — the middleware short-circuits them.
   matcher: ['/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|geo|api/health).*)'],
 };

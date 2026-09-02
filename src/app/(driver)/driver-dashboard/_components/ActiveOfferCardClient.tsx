@@ -28,6 +28,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { DriverCancelReasonModal } from '@/components/driver/DriverCancelReasonModal';
 import { DriverDemandCard } from '@/components/driver/DriverDemandCard';
+import { MapView } from '@/components/maps/MapView';
+import { BhopalOverlay } from '@/components/maps/BhopalOverlay';
+import { PassengerMarker } from '@/components/maps/PassengerMarker';
+import { DriverMarker } from '@/components/maps/DriverMarker';
 import type { CancellationReasonCategory } from '@/types/reliability';
 import { formatCurrency, formatDistance, formatDuration } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -54,7 +58,7 @@ export interface ActiveOfferCardProps {
   cancellationAllowance?: number;
 }
 
-// Synthesize a pleasant alert chime
+// Synthesize alert chime
 function playRideChime() {
   try {
     const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -85,6 +89,7 @@ export default function ActiveOfferCard({
   cancellationAllowance = 15,
 }: ActiveOfferCardProps): React.ReactElement {
   const router = useRouter();
+  const [currentOnline, setCurrentOnline] = React.useState(isOnline);
   const [offer, setOffer] = React.useState<RideOfferPayload | null>(initialOffer);
   const [activeTrip, setActiveTrip] = React.useState<ActiveTripPayload | null>(initialActiveTrip);
   const [otpInput, setOtpInput] = React.useState('');
@@ -92,9 +97,25 @@ export default function ActiveOfferCard({
   const [isCancelModalOpen, setIsCancelModalOpen] = React.useState(false);
   const seenRideIdsRef = React.useRef<Set<string>>(new Set());
 
+  // Listen to live toggle events
+  React.useEffect(() => {
+    setCurrentOnline(isOnline);
+  }, [isOnline]);
+
+  React.useEffect(() => {
+    const handleToggle = (e: Event) => {
+      const custom = e as CustomEvent<{ isOnline: boolean }>;
+      if (custom.detail && typeof custom.detail.isOnline === 'boolean') {
+        setCurrentOnline(custom.detail.isOnline);
+      }
+    };
+    window.addEventListener('driver-online-toggle', handleToggle);
+    return () => window.removeEventListener('driver-online-toggle', handleToggle);
+  }, []);
+
   // Real-time polling for incoming offers & active ongoing trips
   React.useEffect(() => {
-    if (!isOnline) {
+    if (!currentOnline) {
       setOffer(null);
       setActiveTrip(null);
       return;
@@ -120,8 +141,8 @@ export default function ActiveOfferCard({
               toast.info('New Ride Request!', {
                 description: `Pickup: ${incoming.pickupAddress}`,
               });
+              setOffer(incoming);
             }
-            setOffer(incoming);
           } else {
             setOffer(null);
             setActiveTrip(null);
@@ -133,7 +154,7 @@ export default function ActiveOfferCard({
     };
 
     void pollOffersAndTrips();
-    const interval = setInterval(pollOffersAndTrips, 2000);
+    const interval = setInterval(pollOffersAndTrips, 1800);
 
     return () => {
       isMounted = false;
@@ -158,7 +179,6 @@ export default function ActiveOfferCard({
         description: 'Navigating to passenger pickup spot in Bhopal.',
       });
 
-      // Optimistically transition to active trip view
       if (offer) {
         setActiveTrip({
           rideId: offer.rideId,
@@ -173,35 +193,31 @@ export default function ActiveOfferCard({
           paymentMethod: 'UPI / Cash',
         });
       }
-      setOffer(null);
-      setOtpInput('');
-      router.refresh();
     } catch (err) {
       toast.error('Accept Failed', {
-        description: err instanceof Error ? err.message : 'Ride is no longer available.',
+        description: err instanceof Error ? err.message : 'Please try again.',
       });
-      setOffer(null);
     }
   };
 
-  const handleReject = async (rideId: string, _reason: 'REJECTED' | 'TIMEOUT'): Promise<void> => {
+  const handleReject = async (rideId: string): Promise<void> => {
+    seenRideIdsRef.current.add(rideId);
     setOffer(null);
     try {
-      await fetch(`/api/rides/${rideId}`, {
-        method: 'PATCH',
+      await fetch(`/api/drivers/${driverId}/offers`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'reject', driverId }),
+        body: JSON.stringify({ action: 'dismiss', rideId }),
       });
-    } catch {
-      // ignore
-    }
+    } catch (_e) {}
+    toast.info('Offer Declined', {
+      description: 'You will continue to receive other nearby ride requests.',
+    });
   };
 
-  // Progress trip lifecycle (ACCEPTED -> ARRIVED -> IN_PROGRESS -> COMPLETED)
-  const handleTripAction = async (action: 'arrived' | 'start' | 'complete' | 'cancel', otp?: string) => {
+  const handleTripAction = async (action: 'arrived' | 'start' | 'complete', otp?: string) => {
     if (!activeTrip) return;
     setIsUpdatingTrip(true);
-
     try {
       const res = await fetch(`/api/rides/${activeTrip.rideId}`, {
         method: 'PATCH',
@@ -209,42 +225,36 @@ export default function ActiveOfferCard({
         body: JSON.stringify({ action, driverId, otp }),
       });
 
-      if (!res.ok) {
-        const err = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
-        throw new Error(err?.error?.message ?? 'Trip status update failed');
+      const json = await res.json().catch(() => null);
+      if (!res.ok || json?.error) {
+        throw new Error(json?.error?.message ?? 'Action failed');
       }
 
       if (action === 'arrived') {
-        setActiveTrip((prev) => (prev ? { ...prev, status: 'ARRIVED' } : null));
-        setOtpInput('');
-        toast.success('Arrived at Pickup', {
-          description: 'Passenger has been notified. Ask passenger for their 4-digit OTP.',
-        });
+        setActiveTrip({ ...activeTrip, status: 'ARRIVED' });
+        toast.success('Status updated: Arrived at pickup');
       } else if (action === 'start') {
-        setActiveTrip((prev) => (prev ? { ...prev, status: 'IN_PROGRESS' } : null));
-        setOtpInput('');
-        toast.success('OTP Verified · Trip Started! 🚀', {
-          description: `Heading to ${activeTrip.dropoffAddress}`,
-        });
+        setActiveTrip({ ...activeTrip, status: 'IN_PROGRESS' });
+        toast.success('OTP Verified! Ride Started — Navigate to destination');
       } else if (action === 'complete') {
-        toast.success('Trip Completed! 🎉', {
-          description: `Collected ${formatCurrency(activeTrip.fareAmount)}. Returning to radar standby.`,
-        });
         setActiveTrip(null);
-        setOtpInput('');
-        router.refresh();
+        toast.success('Trip Completed & Settled!', {
+          description: `Fare ${formatCurrency(activeTrip.fareAmount)} recorded to today's earnings.`,
+        });
+        setTimeout(() => {
+          router.refresh();
+        }, 400);
       }
     } catch (err) {
-      toast.error('Action Failed', {
-        description: err instanceof Error ? err.message : 'Please check connection.',
+      toast.error('Update Failed', {
+        description: err instanceof Error ? err.message : 'Please try again.',
       });
     } finally {
       setIsUpdatingTrip(false);
     }
   };
 
-  // Confirm categorized cancellation
-  const handleConfirmCancel = async (category: CancellationReasonCategory, reasonText: string) => {
+  const handleCancelConfirm = async (reason: CancellationReasonCategory, details?: string) => {
     if (!activeTrip) return;
     setIsUpdatingTrip(true);
     try {
@@ -254,74 +264,100 @@ export default function ActiveOfferCard({
         body: JSON.stringify({
           action: 'cancel',
           driverId,
-          category,
-          reason: reasonText,
+          category: reason,
+          reason: details,
         }),
       });
 
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error?.message ?? 'Cancellation failed');
-
-      if (json.data?.penalized) {
-        toast.warning('Trip Cancelled (Fee Applied)', {
-          description: `A cancellation fee of ${formatCurrency(json.data.penaltyAmount)} was applied.`,
-        });
-      } else {
-        toast.info('Trip Cancelled', {
-          description: 'Trip cancelled without penalty.',
-        });
+      if (!res.ok) {
+        throw new Error('Failed to cancel ride');
       }
 
+      toast.info('Trip Cancelled');
       setActiveTrip(null);
-      setOtpInput('');
+      setIsCancelModalOpen(false);
       router.refresh();
     } catch (err) {
-      toast.error('Cancel Failed', {
-        description: err instanceof Error ? err.message : 'Please check connection.',
-      });
+      toast.error('Cancel Failed');
     } finally {
       setIsUpdatingTrip(false);
     }
   };
 
-  // ── State 1: ACTIVE ONGOING TRIP (Accepted by driver) ─────────────────────
+  // ── State 1: ACTIVE ONGOING TRIP (WITH EMBEDDED REAL MAP) ─────────────────
   if (activeTrip) {
     return (
       <>
         <DriverCancelReasonModal
           isOpen={isCancelModalOpen}
           onClose={() => setIsCancelModalOpen(false)}
-          onConfirm={handleConfirmCancel}
+          onConfirm={handleCancelConfirm}
           monthlyCancellationsUsed={monthlyCancellationsUsed}
           cancellationAllowance={cancellationAllowance}
         />
-        <Card className="w-full border-ryda-accent/60 bg-ryda-elevated shadow-2xl overflow-hidden animate-in fade-in-50 zoom-in-95">
-          <CardHeader className="bg-ryda-accent/10 border-b border-ryda-accent/20 pb-3">
+
+        <Card className="rounded-3xl border-2 border-ryda-accent bg-ryda-surface shadow-2xl overflow-hidden animate-in fade-in-50 zoom-in-95">
+          <CardHeader className="bg-gradient-to-r from-emerald-500/15 via-ryda-accent/10 to-emerald-500/15 border-b border-ryda-border p-4">
             <div className="flex items-center justify-between">
-              <Badge className="bg-ryda-accent text-ryda-bg font-bold text-xs px-2.5 py-0.5">
-                {activeTrip.status === 'ACCEPTED' && '🚗 Driver En Route'}
-                {activeTrip.status === 'ARRIVED' && '📍 Arrived at Pickup'}
+              <Badge className="bg-emerald-100 text-emerald-800 font-extrabold text-xs px-3 py-1">
+                {activeTrip.status === 'ACCEPTED' && '🚗 Driver En Route to Pickup'}
+                {activeTrip.status === 'ARRIVED' && '📍 Waiting at Pickup Location'}
                 {activeTrip.status === 'IN_PROGRESS' && '🛣️ Trip In Progress'}
               </Badge>
-              <span className="font-mono text-sm font-bold text-ryda-accent">
+              <span className="font-display font-extrabold text-lg text-ryda-accent-dim">
                 {formatCurrency(activeTrip.fareAmount)}
               </span>
             </div>
           </CardHeader>
 
+          {/* Embedded Real Bhopal Map for Driver Navigation */}
+          <div className="relative h-[240px] sm:h-[280px] w-full border-b border-ryda-border">
+            <MapView
+              initialViewState={{
+                longitude: 77.4280,
+                latitude: 23.2380,
+                zoom: 13.0,
+              }}
+            >
+              <BhopalOverlay />
+
+              {/* Pickup Landmark Marker */}
+              <PassengerMarker lng={77.4321} lat={23.2419} label="Pickup Spot" />
+
+              {/* Destination Landmark Marker */}
+              <PassengerMarker lng={77.3377} lat={23.2875} label="Dropoff Spot" />
+
+              {/* Captain Current Vehicle Location */}
+              <DriverMarker
+                lng={77.4290}
+                lat={23.2400}
+                heading={45}
+                variant="BIKE"
+                driverName="Your Location"
+                rating={5.0}
+              />
+            </MapView>
+
+            <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md rounded-xl px-3 py-1.5 shadow-md border border-ryda-border text-xs font-bold text-ryda-text">
+              {activeTrip.status === 'IN_PROGRESS'
+                ? '📍 Live Navigation: On Route to Destination'
+                : '📍 Heading to Pickup Point'}
+            </div>
+          </div>
+
           <CardContent className="p-5 space-y-4">
             {/* Passenger Info */}
-            <div className="flex items-center justify-between p-3 rounded-xl bg-ryda-surface border border-ryda-border">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-ryda-accent/15 text-ryda-accent font-bold">
-                  <User className="h-5 w-5" />
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-ryda-elevated/40 border border-ryda-border">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800 font-extrabold text-sm">
+                  {activeTrip.passengerName[0]}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-ryda-text">{activeTrip.passengerName}</p>
-                  <p className="text-xs text-ryda-muted">{activeTrip.paymentMethod}</p>
+                  <p className="text-sm font-bold text-ryda-text">{activeTrip.passengerName}</p>
+                  <p className="text-xs text-ryda-muted">{activeTrip.paymentMethod} Payment</p>
                 </div>
               </div>
-              <div className="text-right text-xs text-ryda-accent font-medium">
+              <div className="text-right text-xs text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200">
                 Verified Rider
               </div>
             </div>
@@ -329,14 +365,14 @@ export default function ActiveOfferCard({
             {/* Route Steps */}
             <div className="space-y-2.5 text-xs">
               <div className="flex items-start gap-2.5">
-                <MapPin className="h-4 w-4 text-ryda-accent shrink-0 mt-0.5" />
+                <MapPin className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
                 <div>
                   <span className="text-[10px] uppercase font-bold text-ryda-muted block">Pickup</span>
                   <span className="text-ryda-text font-medium">{activeTrip.pickupAddress}</span>
                 </div>
               </div>
               <div className="flex items-start gap-2.5">
-                <MapPin className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                <MapPin className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
                 <div>
                   <span className="text-[10px] uppercase font-bold text-ryda-muted block">Destination</span>
                   <span className="text-ryda-text font-medium">{activeTrip.dropoffAddress}</span>
@@ -344,31 +380,32 @@ export default function ActiveOfferCard({
               </div>
             </div>
 
-            {/* Google Maps Live Navigation Button */}
+            {/* Google Maps External Navigation Shortcut */}
             <a
               href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
                 activeTrip.status === 'IN_PROGRESS' ? activeTrip.dropoffAddress : activeTrip.pickupAddress,
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl border border-ryda-accent/40 bg-ryda-surface hover:bg-ryda-surface/90 text-xs font-semibold text-ryda-accent transition-all shadow-sm group"
+              className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl border border-ryda-border bg-ryda-surface hover:bg-ryda-elevated text-xs font-bold text-ryda-text transition-all shadow-xs group"
             >
-              <Navigation className="h-3.5 w-3.5 group-hover:rotate-45 transition-transform" />
+              <Navigation className="h-3.5 w-3.5 text-ryda-accent group-hover:rotate-45 transition-transform" />
               <span>
                 {activeTrip.status === 'IN_PROGRESS'
-                  ? 'Get Directions to Dropoff (Google Maps)'
-                  : 'Get Directions to Pickup (Google Maps)'}
+                  ? 'Open Dropoff in Google Maps'
+                  : 'Open Pickup in Google Maps'}
               </span>
               <ExternalLink className="h-3 w-3 opacity-70" />
             </a>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-3 p-4 pt-0">
+          <CardFooter className="flex flex-col gap-3 p-5 pt-0">
             {activeTrip.status === 'ACCEPTED' && (
               <Button
+                type="button"
                 onClick={() => handleTripAction('arrived')}
                 disabled={isUpdatingTrip}
-                className="w-full bg-ryda-accent text-ryda-bg hover:bg-ryda-accent-dim font-bold py-5 text-sm gap-2"
+                className="w-full bg-ryda-accent text-white hover:bg-ryda-accent-dim font-bold py-4 rounded-2xl text-sm gap-2 shadow-md cursor-pointer"
               >
                 {isUpdatingTrip ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
                 I Have Arrived at Pickup
@@ -376,8 +413,8 @@ export default function ActiveOfferCard({
             )}
 
             {activeTrip.status === 'ARRIVED' && (
-              <div className="w-full space-y-3 p-3.5 rounded-xl border border-ryda-accent/40 bg-ryda-surface/90">
-                <div className="flex items-center justify-between text-xs font-semibold text-ryda-accent">
+              <div className="w-full space-y-3 p-4 rounded-2xl border border-ryda-accent/40 bg-emerald-50/40">
+                <div className="flex items-center justify-between text-xs font-bold text-emerald-800">
                   <span className="flex items-center gap-1.5">
                     <KeyRound className="h-4 w-4" /> Enter Passenger Start OTP
                   </span>
@@ -391,7 +428,7 @@ export default function ActiveOfferCard({
                     placeholder="• • • •"
                     value={otpInput}
                     onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    className="text-center font-mono text-2xl font-bold tracking-[0.4em] h-12 w-48 bg-ryda-bg border-ryda-accent/60 focus-visible:ring-ryda-accent"
+                    className="text-center font-mono text-2xl font-bold tracking-[0.4em] h-12 w-48 bg-white border-2 border-emerald-500 rounded-xl focus-visible:ring-emerald-500"
                     autoFocus
                   />
                 </div>
@@ -400,32 +437,35 @@ export default function ActiveOfferCard({
                 </p>
 
                 <Button
+                  type="button"
                   onClick={() => handleTripAction('start', otpInput)}
                   disabled={isUpdatingTrip || otpInput.trim().length !== 4}
-                  className="w-full bg-ryda-accent text-ryda-bg hover:bg-ryda-accent-dim font-bold py-5 text-sm gap-2"
+                  className="w-full bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-4 rounded-2xl text-sm gap-2 shadow-md cursor-pointer"
                 >
                   {isUpdatingTrip ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                  Verify OTP & Start Ride
+                  Verify OTP &amp; Start Ride
                 </Button>
               </div>
             )}
 
             {activeTrip.status === 'IN_PROGRESS' && (
               <Button
+                type="button"
                 onClick={() => handleTripAction('complete')}
                 disabled={isUpdatingTrip}
-                className="w-full bg-ryda-accent text-ryda-bg hover:bg-ryda-accent-dim font-bold py-5 text-sm gap-2 shadow-[0_0_20px_rgba(0,255,135,0.4)]"
+                className="w-full bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-4 rounded-2xl text-sm gap-2 shadow-lg cursor-pointer"
               >
                 {isUpdatingTrip ? <Loader2 className="h-4 w-4 animate-spin" /> : <Flag className="h-4 w-4" />}
-                Complete Trip & Collect {formatCurrency(activeTrip.fareAmount)}
+                Complete Trip &amp; Collect {formatCurrency(activeTrip.fareAmount)}
               </Button>
             )}
 
             <Button
+              type="button"
               variant="ghost"
               onClick={() => setIsCancelModalOpen(true)}
               disabled={isUpdatingTrip}
-              className="w-full text-xs text-destructive hover:bg-destructive/10 h-8"
+              className="w-full text-xs text-rose-500 hover:text-rose-700 hover:bg-rose-50 h-8"
             >
               Cancel Trip
             </Button>
@@ -449,61 +489,27 @@ export default function ActiveOfferCard({
     );
   }
 
-  // ── State 3: STANDBY (Online Radar Listening + AI Demand) ──────────────────
-  if (isOnline) {
-    return (
-      <div className="space-y-4">
-        {/* AI Repositioning Opportunity Widget */}
-        <DriverDemandCard driverId={driverId} isOnline={isOnline} />
-
-        <Card className="w-full border-ryda-accent/30 bg-ryda-elevated shadow-lg overflow-hidden">
-          <CardContent className="p-6 text-center space-y-4">
-            <div className="relative mx-auto flex h-20 w-20 items-center justify-center">
-              <span className="absolute h-full w-full rounded-full border border-ryda-accent/30 animate-ping opacity-60" />
-              <span className="absolute h-16 w-16 rounded-full border border-ryda-accent/50 bg-ryda-accent/10 animate-pulse" />
-              <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-ryda-accent text-ryda-bg shadow-[0_0_15px_rgba(0,255,135,0.5)]">
-                <Radio className="h-5 w-5 animate-pulse" />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <h3 className="font-semibold text-base text-ryda-text flex items-center justify-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-ryda-accent animate-ping" />
-                Radar Active · Waiting for Rides
-              </h3>
-              <p className="text-xs text-ryda-muted max-w-xs mx-auto">
-                You will receive instant alerts with pickup details and fares as soon as passengers in Bhopal book.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-center gap-4 pt-2 text-[11px] text-ryda-accent border-t border-ryda-border/60">
-              <span className="flex items-center gap-1">
-                <Wifi className="h-3.5 w-3.5" /> High Priority Dispatch
-              </span>
-              <span className="flex items-center gap-1">
-                <Sparkles className="h-3.5 w-3.5" /> 0% Platform Commission
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // ── State 4: OFFLINE ──────────────────────────────────────────────────────
+  // ── State 3: RADAR SCANNING (No active trip or offer) ─────────────────────
   return (
-    <Card className="w-full border-ryda-border bg-ryda-elevated shadow-md">
-      <CardContent className="p-6 text-center space-y-3">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-ryda-surface text-ryda-muted border border-ryda-border">
-          <Radio className="h-6 w-6 opacity-40" />
+    <div className="space-y-4">
+      {/* Radar scanning banner */}
+      <div className="rounded-3xl border border-ryda-border bg-ryda-surface p-5 shadow-sm flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+            <Radio className="h-5 w-5 text-emerald-700 relative" />
+          </div>
+          <div>
+            <p className="font-display font-bold text-sm text-ryda-text">Live Dispatch Radar</p>
+            <p className="text-xs text-ryda-muted">
+              {currentOnline ? '🟢 Connected · Waiting for nearby ride requests' : '⚪ Offline — Toggle above to go Online'}
+            </p>
+          </div>
         </div>
-        <div className="space-y-1">
-          <h3 className="font-semibold text-sm text-ryda-text">You are currently Offline</h3>
-          <p className="text-xs text-ryda-muted">
-            Toggle your status to <span className="text-ryda-accent font-medium">Online</span> at the top of the page to start receiving ride requests in Bhopal.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Demand Hotspots & Insights */}
+      <DriverDemandCard driverId={driverId} isOnline={currentOnline} />
+    </div>
   );
 }

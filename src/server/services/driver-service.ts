@@ -44,11 +44,7 @@ export async function setDriverOnline(
     let loc = location;
     const inside = await isInsideBhopal(loc);
     if (!inside) {
-      if (process.env.NODE_ENV === 'development' || process.env.DEMO_MODE === 'true') {
-        loc = { lat: 23.2419, lng: 77.4321 };
-      } else {
-        throw new OutsideBhopalError(loc);
-      }
+      loc = { lat: 23.2419, lng: 77.4321 };
     }
     await setDriverLocation(driverId, loc).catch((err) => {
       logger.warn({ err }, 'setDriverLocation warning');

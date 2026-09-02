@@ -113,16 +113,18 @@ export interface BhopalZoneData {
 }
 
 export interface SystemConfig {
-  freeCancellationsLimit: number;
-  basePenaltyAmount: number;
-  progressivePenaltyIncrement: number;
+  freeCancellationsLimit: number; // 15
+  rewardBonusThreshold: number; // 5
+  rewardBonusAmount: number; // paise (e.g. 30000 = ₹300)
+  basePenaltyAmount: number; // paise (e.g. 5000 = ₹50)
+  progressivePenaltyIncrement: number; // paise (e.g. 2500 = ₹25)
   maxPenaltyAmount: number;
   cancellationRateThreshold: number;
   reliableDriverCompletionRate: number;
   reliableDriverBonusRate: number;
   reliableDriverCommissionDiscount: number;
-  customerCompensationBaseAmount: number;
-  customerCompensationMaxAmount: number;
+  customerCompensationBaseAmount: number; // 2500 paise (₹25)
+  customerCompensationMaxAmount: number; // 3000 paise (₹30)
   repositioningMinIncentive: number;
   repositioningMaxIncentive: number;
   repositioningDailyBudget: number;

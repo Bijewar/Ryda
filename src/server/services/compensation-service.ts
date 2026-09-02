@@ -15,8 +15,8 @@ export interface CompensationResult {
 }
 
 /**
- * Calculate customer inconvenience and issue automatic compensation when a driver cancels.
- * Automatically initiates seamless driver re-matching for the passenger.
+ * Issue automatic flat ₹20-₹30 compensation (default ₹25) to the passenger
+ * whenever a driver cancels their ride or if driver cancellations occur.
  */
 export async function handleDriverCancellationCompensation(opts: {
   rideId: string;
@@ -37,31 +37,13 @@ export async function handleDriverCancellationCompensation(opts: {
     return { issued: false, amount: 0, reason: 'Ride not found', autoReassigned: false };
   }
 
-  // 1. Calculate customer inconvenience factor
-  let waitMinutes = 0;
-  if (ride.acceptedAt) {
-    waitMinutes = Math.max(0, (Date.now() - new Date(ride.acceptedAt).getTime()) / 60000);
-  }
+  // Calculate flat compensation: ₹25.00 (2500 paise), bounded between ₹20 and ₹30
+  const compensationPaise = Math.min(
+    config.customerCompensationMaxAmount, // 3000 (₹30)
+    Math.max(2000, config.customerCompensationBaseAmount) // 2500 (₹25)
+  );
 
-  let inconvenienceMultiplier = 1.0;
-  if (waitMinutes > 10) {
-    inconvenienceMultiplier = 2.0;
-  } else if (waitMinutes > 5) {
-    inconvenienceMultiplier = 1.5;
-  } else if (waitMinutes < 2) {
-    inconvenienceMultiplier = 0.8;
-  }
-
-  // If driver was already marked ARRIVED, increase inconvenience multiplier
-  if (ride.driverArrivedAt) {
-    inconvenienceMultiplier += 0.5;
-  }
-
-  // Calculate compensation amount (in paise)
-  let compensationPaise = Math.round(config.customerCompensationBaseAmount * inconvenienceMultiplier);
-  compensationPaise = Math.min(config.customerCompensationMaxAmount, Math.max(2000, compensationPaise));
-
-  // 2. Issue compensation record and credit passenger wallet
+  // 1. Issue compensation record
   await db.customerCompensation.create({
     data: {
       passengerId: ride.passengerId,
@@ -69,13 +51,13 @@ export async function handleDriverCancellationCompensation(opts: {
       driverId: opts.driverId,
       amount: compensationPaise,
       type: 'RIDE_CREDIT',
-      reason: `Driver cancellation compensation (Waited ${waitMinutes.toFixed(0)} min)`,
-      inconvenienceScore: Number(inconvenienceMultiplier.toFixed(2)),
+      reason: `Driver cancellation inconvenience compensation`,
+      inconvenienceScore: 1.0,
       status: 'ISSUED',
     },
   });
 
-  // Credit user's wallet balance
+  // 2. Credit passenger's wallet balance
   await db.user.update({
     where: { id: ride.passengerId },
     data: {
@@ -85,62 +67,71 @@ export async function handleDriverCancellationCompensation(opts: {
 
   const formattedAmount = formatCurrency(compensationPaise);
 
-  // 3. Notify passenger with the compensation message
+  // 3. Notify passenger with compensation notice
   await createNotification({
     userId: ride.passengerId,
     type: 'DRIVER_CANCELED_COMPENSATION',
-    title: 'Driver cancelled your ride',
-    body: `We are automatically finding another driver for you. ${formattedAmount} ride credit has been added to your account for the inconvenience.`,
+    title: 'Driver cancelled — Compensation Credited',
+    body: `We apologize for the inconvenience. A flat ${formattedAmount} credit has been added to your Ryda wallet for your next ride. Finding you a new captain now...`,
     data: {
       rideId: ride.id,
       compensationAmount: compensationPaise,
-      waitMinutes: Math.round(waitMinutes),
     },
   });
 
-  // Emit live socket event to the passenger
-  emitToRide(ride.id, 'ride:driver_canceled_reassigning' as never, {
+  // 4. Emit realtime update
+  emitToRide(ride.id, 'ride_status_updated', {
     rideId: ride.id,
+    status: 'MATCHING',
+    previousStatus: ride.status,
+    compensationIssued: true,
     compensationAmount: compensationPaise,
-    formattedCompensation: formattedAmount,
-    message: `Driver cancelled. ${formattedAmount} credit added. Finding another driver…`,
-    timestamp: new Date().toISOString(),
+    message: `Driver cancelled. ${formattedAmount} added to your wallet. Re-matching...`,
   });
 
   logger.info(
     {
       rideId: ride.id,
       passengerId: ride.passengerId,
+      driverId: opts.driverId,
       compensationPaise,
-      waitMinutes,
     },
-    'Customer compensation issued and auto-reassign triggered',
+    'Customer automatic flat compensation credited',
   );
-
-  // 4. Seamlessly re-dispatch matching for the same ride in the background
-  // Extract coordinate points safely
-  const pickupPoint: Point = {
-    lat: 23.2419,
-    lng: 77.4321,
-  };
-
-  void offerRideToDrivers(
-    ride.id,
-    pickupPoint,
-    ride.passenger?.name ?? 'Passenger',
-    ride.pickupAddress,
-    ride.dropoffAddress,
-    ride.distanceMeters,
-    ride.durationSeconds,
-    ride.fareAmount,
-  ).catch((err) => {
-    logger.error({ err, rideId: ride.id }, 'Auto-reassign ride offer failed');
-  });
 
   return {
     issued: true,
     amount: compensationPaise,
-    reason: `Inconvenience compensation (${formattedAmount})`,
+    reason: `Driver cancellation compensation (${formattedAmount})`,
     autoReassigned: true,
   };
+}
+
+/**
+ * Check if a passenger has experienced multiple driver cancellations (> 10)
+ * and grant an automatic flat ₹25 loyalty recovery bonus.
+ */
+export async function checkAndCompensateFrequentCancellations(passengerId: string): Promise<boolean> {
+  const cancellationCount = await db.customerCompensation.count({
+    where: { passengerId },
+  });
+
+  if (cancellationCount >= 10) {
+    const loyaltyBonus = 2500; // Flat ₹25
+    await db.user.update({
+      where: { id: passengerId },
+      data: { rideCredits: { increment: loyaltyBonus } },
+    });
+
+    await createNotification({
+      userId: passengerId,
+      type: 'DRIVER_CANCELED_COMPENSATION',
+      title: 'Loyalty Compensation Bonus',
+      body: `You have received a flat ₹25 loyalty bonus credited to your wallet due to cumulative driver cancellations.`,
+      data: { compensationAmount: loyaltyBonus },
+    });
+    return true;
+  }
+
+  return false;
 }

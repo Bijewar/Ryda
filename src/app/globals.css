@@ -1,111 +1,247 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @import 'maplibre-gl/dist/maplibre-gl.css';
 
-:root {
-  --background: 0 0% 100%;
-  --foreground: 240 10% 4%;
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 4%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 4%;
-  --primary: 240 6% 10%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 240 5% 96%;
-  --secondary-foreground: 240 6% 10%;
-  --muted: 240 5% 96%;
-  --muted-foreground: 240 4% 46%;
-  --accent: 240 5% 96%;
-  --accent-foreground: 240 6% 10%;
-  --destructive: 0 72% 51%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 6% 90%;
-  --input: 240 6% 90%;
-  --ring: 152 100% 36%;
-  --radius: 0.625rem;
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
 
-  /* Ryda light theme tokens */
-  --ryda-bg: 0 0% 98%;
-  --ryda-surface: 0 0% 100%;
-  --ryda-elevated: 240 5% 96%;
-  --ryda-border: 240 6% 88%;
-  --ryda-text: 240 10% 4%;
-  --ryda-muted: 240 4% 46%;
-  --ryda-accent: 152 100% 36%;
-  --ryda-accent-dim: 152 100% 30%;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Ryda brand tokens */
+  --color-ryda-bg: var(--ryda-bg);
+  --color-ryda-surface: var(--ryda-surface);
+  --color-ryda-elevated: var(--ryda-elevated);
+  --color-ryda-border: var(--ryda-border);
+  --color-ryda-text: var(--ryda-text);
+  --color-ryda-muted: var(--ryda-muted);
+  --color-ryda-accent: var(--ryda-accent);
+  --color-ryda-accent-dim: var(--ryda-accent-dim);
+  --color-ryda-gold: var(--ryda-gold);
 }
 
-.dark {
-  --background: 240 6% 4%;
-  --foreground: 0 0% 96%;
-  --card: 240 5% 7%;
-  --card-foreground: 0 0% 96%;
-  --popover: 240 5% 7%;
-  --popover-foreground: 0 0% 96%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 240 6% 10%;
-  --secondary: 240 4% 14%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 240 4% 14%;
-  --muted-foreground: 240 5% 64%;
-  --accent: 240 4% 14%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 70% 50%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 4% 16%;
-  --input: 240 4% 16%;
-  --ring: 152 100% 50%;
+:root {
+  --radius: 0.75rem;
 
-  /* Ryda dark theme tokens */
-  --ryda-bg: 240 6% 4%;
-  --ryda-surface: 240 5% 7%;
-  --ryda-elevated: 240 5% 10%;
-  --ryda-border: 240 4% 17%;
-  --ryda-text: 240 5% 96%;
-  --ryda-muted: 240 4% 56%;
-  --ryda-accent: 152 100% 50%;
-  --ryda-accent-dim: 152 100% 40%;
+  /* Base light theme tokens */
+  --background: oklch(0.99 0.005 145);
+  --foreground: oklch(0.18 0.02 250);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.02 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.02 250);
+  --primary: oklch(0.18 0.02 250);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.96 0.01 145);
+  --secondary-foreground: oklch(0.18 0.02 250);
+  --muted: oklch(0.96 0.005 145);
+  --muted-foreground: oklch(0.45 0.02 250);
+  --accent: oklch(0.94 0.03 145);
+  --accent-foreground: oklch(0.18 0.02 250);
+  --destructive: oklch(0.58 0.22 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.9 0.01 145);
+  --input: oklch(0.92 0.01 145);
+  --ring: oklch(0.7 0.18 152);
+
+  --chart-1: oklch(0.65 0.2 152);
+  --chart-2: oklch(0.7 0.15 200);
+  --chart-3: oklch(0.45 0.1 250);
+  --chart-4: oklch(0.78 0.18 80);
+  --chart-5: oklch(0.65 0.25 16);
+
+  --sidebar: oklch(0.99 0 0);
+  --sidebar-foreground: oklch(0.18 0.02 250);
+  --sidebar-primary: oklch(0.7 0.18 152);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.94 0.03 145);
+  --sidebar-accent-foreground: oklch(0.18 0.02 250);
+  --sidebar-border: oklch(0.9 0.01 145);
+  --sidebar-ring: oklch(0.7 0.18 152);
+
+  /* Ryda premium light tokens */
+  --ryda-bg: oklch(0.99 0.005 145);
+  --ryda-surface: oklch(1 0 0);
+  --ryda-elevated: oklch(0.97 0.005 145);
+  --ryda-border: oklch(0.9 0.01 145);
+  --ryda-text: oklch(0.18 0.02 250);
+  --ryda-muted: oklch(0.45 0.02 250);
+  --ryda-accent: oklch(0.7 0.18 152);
+  --ryda-accent-dim: oklch(0.62 0.18 152);
+  --ryda-gold: oklch(0.78 0.16 70);
 }
 
 @layer base {
   * {
-    border-color: hsl(var(--border));
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
   }
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-feature-settings: 'rlig' 1, 'calt' 1;
+    @apply bg-background text-foreground;
+    font-feature-settings: 'cv11', 'ss01';
   }
 }
 
 /* ── Ryda brand utilities ───────────────────────────────────────────────── */
 .ryda-glass {
-  background: rgba(24, 24, 29, 0.6);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(38, 38, 46, 0.8);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06);
 }
+
+.ryda-glass-strong {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+}
+
+.ryda-glass-elevated {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 16px 48px -8px rgba(15, 23, 42, 0.08);
+}
+
 .ryda-accent-glow {
-  box-shadow: 0 0 24px -4px rgba(0, 255, 135, 0.35);
+  box-shadow: 0 0 32px -8px oklch(0.7 0.18 152 / 0.45);
 }
+
+.ryda-amber-glow {
+  box-shadow: 0 0 32px -8px oklch(0.78 0.18 80 / 0.45);
+}
+
 .ryda-text-gradient {
-  background: linear-gradient(135deg, #00ff87 0%, #00cc6a 100%);
+  background: linear-gradient(135deg, oklch(0.7 0.18 152) 0%, oklch(0.62 0.18 152) 50%, oklch(0.45 0.1 250) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
+
+.ryda-text-gold {
+  background: linear-gradient(135deg, oklch(0.82 0.18 75) 0%, oklch(0.7 0.18 50) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .ryda-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 .ryda-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(0, 255, 135, 0.25);
+  background: oklch(0.7 0.18 152 / 0.3);
   border-radius: 3px;
 }
-
-/* ── Mapbox overrides for dark theme ────────────────────────────────────── */
-.maplibregl-canvas {
-  outline: none;
+.ryda-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
-.maplibregl-ctrl-attrib {
-  background: rgba(10, 10, 11, 0.6) !important;
-  color: #8a8a95 !important;
+
+/* ── Premium animations ─────────────────────────────────────────────────── */
+@keyframes ryda-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes ryda-pulse-ring {
+  0% { transform: scale(0.6); opacity: 0.7; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes ryda-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes ryda-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes ryda-blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -30px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+.ryda-animate-float { animation: ryda-float 6s ease-in-out infinite; }
+.ryda-animate-blob { animation: ryda-blob 18s ease-in-out infinite; }
+.ryda-animate-marquee { animation: ryda-marquee 30s linear infinite; }
+.ryda-shimmer-bg {
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: ryda-shimmer 2.5s linear infinite;
+}
+
+.ryda-gradient-mesh {
+  background:
+    radial-gradient(at 20% 20%, oklch(0.85 0.18 152 / 0.15) 0px, transparent 50%),
+    radial-gradient(at 80% 30%, oklch(0.78 0.18 75 / 0.12) 0px, transparent 50%),
+    radial-gradient(at 50% 80%, oklch(0.85 0.15 200 / 0.12) 0px, transparent 50%),
+    radial-gradient(at 90% 90%, oklch(0.7 0.18 152 / 0.1) 0px, transparent 50%);
+}
+
+.ryda-card-hover {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ryda-card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.12);
+}
+
+.ryda-pulse-dot {
+  position: relative;
+}
+.ryda-pulse-dot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: inherit;
+  animation: ryda-pulse-ring 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

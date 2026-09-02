@@ -2,89 +2,55 @@
 
 import * as React from 'react';
 import { Source, Layer, type LayerProps } from 'react-map-gl/maplibre';
-import type { FeatureCollection, Polygon, MultiPolygon } from 'geojson';
 
 /**
- * BhopalOverlay — renders the Bhopal municipal boundary as a styled
- * GeoJSON layer on top of the parent `<MapView>`.
- *
- * Fetches `/geo/bhopal-boundary-simplified.geojson` (the 465-vertex simplified
- * polygon shipped as a static asset) on mount, then renders:
- *   - A line layer: 2px electric-green at 60% opacity (the outline)
- *   - A fill layer: dark fill at 5% opacity (the service-area tint)
- *
- * Both layers sit above the base map but below markers so pins/routes drawn
- * later remain visible.
- *
- * The fetch is cached on a module-level ref so multiple map views on the same
- * page share a single network request.
+ * BhopalOverlay — renders the Bhopal municipal boundary from `/geo/RydaMap.geojson`.
  */
-type BhopalFeatureCollection = FeatureCollection<Polygon | MultiPolygon>;
 
-interface BhopalProperties {
-  name: string;
-  bbox: number[];
-  centroid: number[];
-  areaKm2?: number;
-}
+let cached: Promise<GeoJSON.FeatureCollection | null> | null = null;
 
-let cached: Promise<BhopalFeatureCollection | null> | null = null;
-
-function fetchBhopal(): Promise<BhopalFeatureCollection | null> {
+function fetchBhopalGeoJSON(): Promise<GeoJSON.FeatureCollection | null> {
   if (cached) return cached;
-  cached = fetch('/geo/bhopal-boundary-simplified.geojson')
-    .then((r) => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json() as Promise<BhopalFeatureCollection>;
+  cached = fetch('/geo/RydaMap.geojson')
+    .then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
     })
     .catch((err) => {
-      console.error('Failed to load Bhopal boundary', err);
+      console.warn('Failed to load /geo/RydaMap.geojson:', err);
       cached = null;
       return null;
     });
   return cached;
 }
 
-const LINE_STYLE: LayerProps = {
+const LINE_LAYER: LayerProps = {
   id: 'bhopal-boundary-line',
   type: 'line',
   paint: {
-    'line-color': '#00FF87',
+    'line-color': '#10B981',
     'line-width': 2,
-    'line-opacity': 0.6,
-  },
-  layout: {
-    'line-join': 'round',
-    'line-cap': 'round',
+    'line-opacity': 0.7,
+    'line-dasharray': [3, 2],
   },
 };
 
-const FILL_STYLE: LayerProps = {
+const FILL_LAYER: LayerProps = {
   id: 'bhopal-boundary-fill',
   type: 'fill',
   paint: {
-    'fill-color': '#0A0A0B',
+    'fill-color': '#10B981',
     'fill-opacity': 0.05,
   },
 };
 
-export interface BhopalOverlayProps {
-  /** Toggle the fill layer (default: on). */
-  showFill?: boolean;
-  /** Toggle the line layer (default: on). */
-  showLine?: boolean;
-}
-
-export function BhopalOverlay({
-  showFill = true,
-  showLine = true,
-}: BhopalOverlayProps): React.ReactElement | null {
-  const [data, setData] = React.useState<BhopalFeatureCollection | null>(null);
+export function BhopalOverlay(): React.ReactElement | null {
+  const [data, setData] = React.useState<GeoJSON.FeatureCollection | null>(null);
 
   React.useEffect(() => {
     let mounted = true;
-    void fetchBhopal().then((fc) => {
-      if (mounted && fc) setData(fc);
+    fetchBhopalGeoJSON().then((geojson) => {
+      if (mounted && geojson) setData(geojson);
     });
     return () => {
       mounted = false;
@@ -95,34 +61,20 @@ export function BhopalOverlay({
 
   return (
     <Source id="bhopal-boundary" type="geojson" data={data}>
-      {showFill && <Layer {...FILL_STYLE} />}
-      {showLine && <Layer {...LINE_STYLE} />}
+      <Layer {...FILL_LAYER} />
+      <Layer {...LINE_LAYER} />
     </Source>
   );
 }
 
-/** Centroid + bbox of the Bhopal polygon — useful for setting the initial viewport. */
-export function useBhopalViewport():
-  | { longitude: number; latitude: number; zoom: number }
-  | null {
-  const [viewport, setViewport] = React.useState<{
-    longitude: number;
-    latitude: number;
-    zoom: number;
-  } | null>(null);
-
-  React.useEffect(() => {
-    void fetchBhopal().then((fc) => {
-      if (!fc || fc.features.length === 0) return;
-      const props = fc.features[0]?.properties as BhopalProperties | undefined;
-      if (!props?.centroid || props.centroid.length < 2) return;
-      setViewport({
-        longitude: props.centroid[0] ?? 77.4321,
-        latitude: props.centroid[1] ?? 23.2419,
-        zoom: 11,
-      });
-    });
-  }, []);
-
-  return viewport;
+export function useBhopalViewport(): {
+  longitude: number;
+  latitude: number;
+  zoom: number;
+} {
+  return {
+    longitude: 77.4126,
+    latitude: 23.2599,
+    zoom: 12.2,
+  };
 }
