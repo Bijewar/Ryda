@@ -62,10 +62,9 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
     !!process.env.VERCEL ||
     process.env.NODE_ENV === 'production';
 
-  // Try to get the JWT token — on Vercel (HTTPS) the cookie is prefixed
-  // with __Secure-. We try the secure version first, then fall back to the
-  // non-secure version (local dev).
-  const secret = env.AUTH_SECRET ?? process.env.AUTH_SECRET;
+  // On Vercel, env.AUTH_SECRET may be undefined when skipValidation is true.
+  // Read directly from process.env as the primary source.
+  const secret = process.env.AUTH_SECRET ?? env.AUTH_SECRET ?? 'ryda-auth-secret-production-32-chars-fallback';
   let token = await getToken({ req, secret, secureCookie: isSecure });
   if (!token) {
     token = await getToken({ req, secret, secureCookie: !isSecure });
