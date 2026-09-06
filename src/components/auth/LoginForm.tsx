@@ -53,13 +53,37 @@ export function LoginForm(): React.ReactElement {
 
       toast.success('Welcome back!');
 
-      // Retrieve session to inspect real driverId and accountType
-      const session = await getSession();
-      const user = session?.user as any;
+      // In production (Vercel), the session cookie may not be immediately
+      // available after signIn() due to edge network propagation delays.
+      // Retry getSession() with increasing delays to ensure we get the
+      // session data needed for role-based redirects.
+      let user: any = null;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        try {
+          if (attempt > 0) {
+            await new Promise((r) => setTimeout(r, attempt * 500));
+          }
+          const session = await getSession();
+          if (session?.user) {
+            user = session.user;
+            break;
+          }
+        } catch {
+          // Session fetch failed, will retry
+        }
+      }
+
       const email = values.email.toLowerCase().trim();
+      const callbackParam = params.get('callbackUrl');
 
       let targetUrl = '/';
-      if (email === 'bijewarmanas1@gmail.com' || user?.accountType === 'ADMIN') {
+      if (
+        callbackParam &&
+        !callbackParam.includes('/login') &&
+        (callbackParam.startsWith('/') || callbackParam.startsWith(window.location.origin))
+      ) {
+        targetUrl = callbackParam.startsWith('/') ? callbackParam : new URL(callbackParam).pathname;
+      } else if (email === 'bijewarmanas1@gmail.com' || user?.accountType === 'ADMIN') {
         targetUrl = '/admin';
       } else if (
         user?.driverId ||
@@ -71,7 +95,16 @@ export function LoginForm(): React.ReactElement {
         targetUrl = '/driver-dashboard';
       }
 
-      window.location.href = targetUrl;
+      // Use router.push first for Next.js client-side navigation,
+      // then force a full page reload as fallback to ensure the
+      // server sees the new session cookie.
+      router.push(targetUrl);
+      // Give router.push a moment to start, then force reload if still on login
+      setTimeout(() => {
+        if (window.location.pathname.includes('/login')) {
+          window.location.href = targetUrl;
+        }
+      }, 1000);
     } catch (err) {
       toast.error('Sign in error', {
         description: err instanceof Error ? err.message : 'Please try again.',

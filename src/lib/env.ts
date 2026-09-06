@@ -94,7 +94,6 @@ export const env = createEnv({
     !!process.env.SKIP_ENV_VALIDATION ||
     process.env.npm_lifecycle_event === 'lint' ||
     process.env.npm_lifecycle_event === 'build' ||
-    process.env.NODE_ENV === 'test' ||
-    !!process.env.VERCEL,
+    process.env.NODE_ENV === 'test',
   emptyStringAsUndefined: true,
 });

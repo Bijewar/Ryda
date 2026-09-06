@@ -56,11 +56,20 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
     return applySecurityHeaders(NextResponse.next());
   }
 
-  // Decode the JWT from the session cookie
-  const token = await getToken({
-    req,
-    secret: env.AUTH_SECRET,
-  });
+  const isSecure =
+    req.nextUrl.protocol === 'https:' ||
+    req.headers.get('x-forwarded-proto') === 'https' ||
+    !!process.env.VERCEL ||
+    process.env.NODE_ENV === 'production';
+
+  // Try to get the JWT token — on Vercel (HTTPS) the cookie is prefixed
+  // with __Secure-. We try the secure version first, then fall back to the
+  // non-secure version (local dev).
+  const secret = env.AUTH_SECRET ?? process.env.AUTH_SECRET;
+  let token = await getToken({ req, secret, secureCookie: isSecure });
+  if (!token) {
+    token = await getToken({ req, secret, secureCookie: !isSecure });
+  }
 
   if (!token) {
     const loginUrl = req.nextUrl.clone();
