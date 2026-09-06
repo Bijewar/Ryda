@@ -50,8 +50,7 @@ export function TwoFactorForm(): React.ReactElement {
         return;
       }
       toast.success('Signed in!');
-      router.push('/dashboard');
-      router.refresh();
+      window.location.replace('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error');
     } finally {

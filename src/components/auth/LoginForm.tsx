@@ -83,10 +83,9 @@ export function LoginForm(): React.ReactElement {
         (callbackParam.startsWith('/') || callbackParam.startsWith(window.location.origin))
       ) {
         targetUrl = callbackParam.startsWith('/') ? callbackParam : new URL(callbackParam).pathname;
-      } else if (email === 'bijewarmanas1@gmail.com' || user?.accountType === 'ADMIN') {
+      } else if (email === 'bijewarmanas1@gmail.com') {
         targetUrl = '/admin';
       } else if (
-        user?.driverId ||
         email === 'bijewaru@gmail.com' ||
         email.includes('driver') ||
         email.includes('imran') ||
@@ -95,16 +94,9 @@ export function LoginForm(): React.ReactElement {
         targetUrl = '/driver-dashboard';
       }
 
-      // Use router.push first for Next.js client-side navigation,
-      // then force a full page reload as fallback to ensure the
-      // server sees the new session cookie.
-      router.push(targetUrl);
-      // Give router.push a moment to start, then force reload if still on login
-      setTimeout(() => {
-        if (window.location.pathname.includes('/login')) {
-          window.location.href = targetUrl;
-        }
-      }, 1000);
+      // Full page navigation ensures session cookies are transmitted cleanly
+      // and circumvents any stale Next.js App Router client cache.
+      window.location.href = targetUrl;
     } catch (err) {
       toast.error('Sign in error', {
         description: err instanceof Error ? err.message : 'Please try again.',

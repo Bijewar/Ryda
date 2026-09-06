@@ -32,10 +32,27 @@ const providers: NextAuthConfig['providers'] = [
 
       // 1. Check Admin Account (Only Manas)
       if (normalizedEmail === ADMIN_EMAIL) {
+        let dbAdminUser: any = null;
+        try {
+          dbAdminUser = await db.user.upsert({
+            where: { email: ADMIN_EMAIL },
+            update: { accountType: 'ADMIN' },
+            create: {
+              email: ADMIN_EMAIL,
+              phone: '+919826999998',
+              name: 'Manas Bijewar (Admin)',
+              accountType: 'ADMIN',
+              emailVerifiedAt: new Date(),
+            },
+          });
+        } catch (dbErr) {
+          logger.warn({ dbErr }, 'Admin DB record upsert note');
+        }
+
         return {
-          id: 'admin-manas-bijewar',
+          id: dbAdminUser?.id ?? 'admin-manas-bijewar',
           email: ADMIN_EMAIL,
-          name: 'Manas Bijewar (Admin)',
+          name: dbAdminUser?.name ?? 'Manas Bijewar (Admin)',
           accountType: 'ADMIN',
         } as SessionUser;
       }
@@ -105,8 +122,8 @@ if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
 
 export const config = {
   session: { strategy: 'jwt' },
-  secret: env.AUTH_SECRET,
-  trustHost: env.AUTH_TRUST_HOST,
+  secret: process.env.AUTH_SECRET ?? env.AUTH_SECRET ?? 'GR0wxXJGdsRGIxEP9d+Nldc7UMnY303ZucpyRrJP4eg=',
+  trustHost: true,
   pages: {
     signIn: '/login',
     error: '/login',
@@ -121,12 +138,17 @@ export const config = {
         token.accountType = u.accountType ?? 'PASSENGER';
         if (u.driverId) token.driverId = u.driverId;
       }
+      if (token.email?.toLowerCase() === ADMIN_EMAIL) {
+        token.accountType = 'ADMIN';
+      }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        (session.user as any).accountType = token.accountType as 'PASSENGER' | 'ADMIN';
+        (session.user as any).accountType =
+          (token.accountType as 'PASSENGER' | 'ADMIN') ??
+          (session.user.email?.toLowerCase() === ADMIN_EMAIL ? 'ADMIN' : 'PASSENGER');
         if (token.driverId) {
           (session.user as any).driverId = token.driverId as string;
         }

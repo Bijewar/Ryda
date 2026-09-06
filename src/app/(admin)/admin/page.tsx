@@ -25,7 +25,8 @@ export default async function AdminPage(): Promise<React.ReactElement> {
     | undefined;
 
   if (!user) redirect('/login?callbackUrl=/admin');
-  if (user.accountType !== 'ADMIN' || user.email?.toLowerCase() !== 'bijewarmanas1@gmail.com') {
+  const isManas = user.email?.toLowerCase() === 'bijewarmanas1@gmail.com';
+  if (!isManas && user.accountType !== 'ADMIN') {
     redirect('/');
   }
 
