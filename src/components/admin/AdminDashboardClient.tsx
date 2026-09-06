@@ -17,6 +17,7 @@ import {
   LocateFixed,
   Mail,
   Phone,
+  RotateCw,
   Search,
   Settings2,
   ShieldCheck,
@@ -53,6 +54,51 @@ export function AdminDashboardClient({
   const [surgeMultiplier, setSurgeMultiplier] = React.useState<number>(1.0);
   const [busyDriverId, setBusyDriverId] = React.useState<string | null>(null);
 
+  // Fetch latest drivers from database
+  const fetchDrivers = React.useCallback(async () => {
+    try {
+      setIsRefreshing(true);
+      const res = await fetch('/api/drivers');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data && Array.isArray(json.data)) {
+          const mapped: DriversTableDriver[] = json.data.map((d: any) => ({
+            id: d.id,
+            firstName: d.firstName,
+            lastName: d.lastName,
+            email: d.email,
+            phone: d.phone,
+            approvalStatus: d.approvalStatus,
+            rejectionReason: d.rejectionReason,
+            isOnline: d.isOnline ?? false,
+            rating: d.rating ?? 5.0,
+            totalRides: d.totalRides ?? 0,
+            totalEarnings: d.totalEarnings ?? 0,
+            createdAt:
+              typeof d.createdAt === 'string'
+                ? d.createdAt
+                : d.createdAt?.toISOString?.() || new Date().toISOString(),
+            vehicle: d.vehicle
+              ? {
+                  make: d.vehicle.make,
+                  model: d.vehicle.model,
+                  year: d.vehicle.year,
+                  color: d.vehicle.color,
+                  licensePlate: d.vehicle.licensePlate,
+                  type: d.vehicle.type,
+                }
+              : null,
+          }));
+          setDrivers(mapped);
+        }
+      }
+    } catch (_e) {
+      // Ignore
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
+
   // Poll active online drivers on Bhopal map
   const fetchFleet = React.useCallback(async () => {
     try {
@@ -70,9 +116,14 @@ export function AdminDashboardClient({
 
   React.useEffect(() => {
     fetchFleet();
-    const interval = setInterval(fetchFleet, 5000);
-    return () => clearInterval(interval);
-  }, [fetchFleet]);
+    fetchDrivers();
+    const fleetInterval = setInterval(fetchFleet, 5000);
+    const driversInterval = setInterval(fetchDrivers, 6000);
+    return () => {
+      clearInterval(fleetInterval);
+      clearInterval(driversInterval);
+    };
+  }, [fetchFleet, fetchDrivers]);
 
   // Handle live driver approval / rejection
   const handleUpdateDriverStatus = async (
@@ -303,15 +354,32 @@ export function AdminDashboardClient({
           </button>
         </div>
 
-        {/* Action button */}
-        <Button
-          type="button"
-          onClick={handleCreateTestRide}
-          className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl px-3.5 py-2 shadow-sm flex items-center gap-1.5 cursor-pointer ml-auto"
-        >
-          <Zap className="w-3.5 h-3.5" />
-          <span>Dispatch Test Ride</span>
-        </Button>
+        {/* Action buttons */}
+        <div className="flex items-center gap-2 ml-auto">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isRefreshing}
+            onClick={() => {
+              fetchDrivers();
+              fetchFleet();
+              toast.info('Refreshing driver fleet and bookings...');
+            }}
+            className="text-xs font-semibold rounded-xl px-3 py-2 flex items-center gap-1.5 cursor-pointer border-ryda-border hover:bg-ryda-elevated"
+          >
+            <RotateCw className={cn('w-3.5 h-3.5', isRefreshing && 'animate-spin')} />
+            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+          </Button>
+
+          <Button
+            type="button"
+            onClick={handleCreateTestRide}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl px-3.5 py-2 shadow-sm flex items-center gap-1.5 cursor-pointer"
+          >
+            <Zap className="w-3.5 h-3.5" />
+            <span>Dispatch Test Ride</span>
+          </Button>
+        </div>
       </div>
 
       {/* TAB 1: LIVE FLEET RADAR MAP */}

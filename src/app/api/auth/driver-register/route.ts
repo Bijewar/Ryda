@@ -69,10 +69,18 @@ export async function POST(req: Request): Promise<NextResponse> {
     // Save to shared driver store
     await saveDriverRecord(driverRecord);
 
-    // Try saving to DB if Postgres is connected
+    // Persist to Postgres database
     try {
       const existing = await db.driver.findFirst({
-        where: { OR: [{ email: normalizedEmail }, { phone }, { licenseNumber }] },
+        where: {
+          OR: [
+            { email: normalizedEmail },
+            { phone },
+            { licenseNumber },
+            { vehicle: { licensePlate: normalizedPlate } },
+          ],
+        },
+        include: { vehicle: true },
       });
 
       if (existing) {
@@ -81,8 +89,34 @@ export async function POST(req: Request): Promise<NextResponse> {
           data: {
             firstName,
             lastName,
+            email: normalizedEmail,
+            phone,
             passwordHash,
+            licenseNumber,
+            licenseFrontUrl,
+            licenseBackUrl,
             approvalStatus: 'PENDING',
+            vehicle: existing.vehicle
+              ? {
+                  update: {
+                    make: vehicle.make,
+                    model: vehicle.model,
+                    year: vehicle.year,
+                    color: vehicle.color,
+                    licensePlate: normalizedPlate,
+                    type: vehicle.type,
+                  },
+                }
+              : {
+                  create: {
+                    make: vehicle.make,
+                    model: vehicle.model,
+                    year: vehicle.year,
+                    color: vehicle.color,
+                    licensePlate: normalizedPlate,
+                    type: vehicle.type,
+                  },
+                },
           },
         });
       } else {
@@ -113,7 +147,15 @@ export async function POST(req: Request): Promise<NextResponse> {
         });
       }
     } catch (dbErr) {
-      logger.warn({ dbErr }, 'DB insert notice — driver saved to memory registry');
+      console.error('CRITICAL: DB driver registration failed:', dbErr);
+      logger.error({ dbErr }, 'DB driver registration failed');
+      return NextResponse.json(
+        error(
+          'INTERNAL_ERROR',
+          `Could not save driver to database: ${dbErr instanceof Error ? dbErr.message : 'Unknown database error'}. Please check that DATABASE_URL is configured.`,
+        ),
+        { status: 500 },
+      );
     }
 
     logger.info({ driverId, email: normalizedEmail }, 'New driver registered (PENDING approval)');

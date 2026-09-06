@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function AdminPage(): Promise<React.ReactElement> {
   const session = await auth();
@@ -41,7 +42,10 @@ export default async function AdminPage(): Promise<React.ReactElement> {
           take: 50,
           include: { vehicle: true },
         })
-        .catch(() => []),
+        .catch((err) => {
+          console.error('AdminPage db.driver.findMany error:', err);
+          return [];
+        }),
       db.ride
         .findMany({
           orderBy: { requestedAt: 'desc' },
@@ -51,13 +55,16 @@ export default async function AdminPage(): Promise<React.ReactElement> {
             driver: { select: { firstName: true, lastName: true } },
           },
         })
-        .catch(() => []),
+        .catch((err) => {
+          console.error('AdminPage db.ride.findMany error:', err);
+          return [];
+        }),
     ]);
 
     allDrivers = results[0] || [];
     recentRides = results[1] || [];
-  } catch (_e) {
-    // Offline/demo fallback
+  } catch (err) {
+    console.error('AdminPage DB query error:', err);
   }
 
   // Include runtime registered drivers from memory store (e.g. bijewaru@gmail.com, etc.)
