@@ -114,8 +114,8 @@ export function DriverRegisterForm(): React.ReactElement {
           </div>
           <Button
             type="button"
-            onClick={() => router.push('/login')}
-            className="w-full bg-ryda-accent text-white font-bold hover:bg-ryda-accent-dim py-3 rounded-xl shadow-md"
+            onClick={() => router.push('/login?callbackUrl=/driver-dashboard')}
+            className="w-full bg-ryda-accent text-white font-bold hover:bg-ryda-accent-dim py-3 rounded-xl shadow-md cursor-pointer"
           >
             Go to Login
           </Button>

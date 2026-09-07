@@ -76,22 +76,46 @@ export function LoginForm(): React.ReactElement {
       const email = values.email.toLowerCase().trim();
       const callbackParam = params.get('callbackUrl');
 
+      // Check direct session endpoint if driverId is not yet loaded on user object
+      if (!user?.driverId) {
+        try {
+          const sRes = await fetch('/api/auth/session');
+          const sData = await sRes.json().catch(() => null);
+          if (sData?.user) {
+            user = { ...user, ...sData.user };
+          }
+        } catch {
+          // Ignore
+        }
+      }
+
       let targetUrl = '/';
-      if (
+
+      const isDriver =
+        !!user?.driverId ||
+        email === 'bijewaru@gmail.com' ||
+        email.includes('driver') ||
+        email.includes('imran') ||
+        email.includes('shivam');
+
+      const isAdmin =
+        user?.accountType === 'ADMIN' ||
+        email === 'bijewarmanas1@gmail.com';
+
+      if (isAdmin) {
+        targetUrl = '/admin';
+      } else if (isDriver) {
+        targetUrl = '/driver-dashboard';
+      } else if (
         callbackParam &&
+        callbackParam !== '/' &&
+        callbackParam !== '/dashboard' &&
         !callbackParam.includes('/login') &&
         (callbackParam.startsWith('/') || callbackParam.startsWith(window.location.origin))
       ) {
         targetUrl = callbackParam.startsWith('/') ? callbackParam : new URL(callbackParam).pathname;
-      } else if (email === 'bijewarmanas1@gmail.com') {
-        targetUrl = '/admin';
-      } else if (
-        email === 'bijewaru@gmail.com' ||
-        email.includes('driver') ||
-        email.includes('imran') ||
-        email.includes('shivam')
-      ) {
-        targetUrl = '/driver-dashboard';
+      } else {
+        targetUrl = '/';
       }
 
       // Full page navigation ensures session cookies are transmitted cleanly

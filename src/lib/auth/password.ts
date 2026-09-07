@@ -10,20 +10,28 @@ import { compare, hash } from 'bcryptjs';
 const BCRYPT_ROUNDS = 12;
 
 export async function hashPassword(plaintext: string): Promise<string> {
-  return argon2.hash(plaintext, {
-    type: argon2.argon2id,
-    memoryCost: 65_536, // 64 MiB
-    timeCost: 3,
-    parallelism: 1,
-  });
+  try {
+    return await argon2.hash(plaintext, {
+      type: argon2.argon2id,
+      memoryCost: 65_536, // 64 MiB
+      timeCost: 3,
+      parallelism: 1,
+    });
+  } catch (_e) {
+    return hash(plaintext, BCRYPT_ROUNDS);
+  }
 }
 
-export async function verifyPassword(plaintext: string, hash: string): Promise<boolean> {
-  if (hash.startsWith('$argon2')) {
-    return argon2.verify(hash, plaintext);
+export async function verifyPassword(plaintext: string, hashStr: string): Promise<boolean> {
+  if (hashStr.startsWith('$argon2')) {
+    try {
+      return await argon2.verify(hashStr, plaintext);
+    } catch {
+      return false;
+    }
   }
-  if (hash.startsWith('$2')) {
-    return compare(plaintext, hash);
+  if (hashStr.startsWith('$2')) {
+    return compare(plaintext, hashStr);
   }
   return false;
 }

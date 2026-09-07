@@ -146,8 +146,15 @@ export async function POST(req: Request): Promise<NextResponse> {
           },
         });
       }
-    } catch (dbErr) {
-      logger.warn({ dbErr }, 'DB driver registration write failed — persisted to memory store');
+    } catch (dbErr: any) {
+      logger.error({ dbErr, email: normalizedEmail }, 'DB driver registration write failed');
+      return NextResponse.json(
+        error(
+          'INTERNAL_ERROR',
+          `Could not save driver to database: ${dbErr?.message || 'Database error'}`,
+        ),
+        { status: 500 },
+      );
     }
 
     logger.info({ driverId, email: normalizedEmail }, 'New driver registered (PENDING approval)');
