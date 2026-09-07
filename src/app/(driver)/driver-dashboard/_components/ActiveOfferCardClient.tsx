@@ -154,7 +154,7 @@ export default function ActiveOfferCard({
       isMounted = false;
       clearInterval(interval);
     };
-  }, [driverId, isOnline]);
+  }, [driverId, currentOnline]);
 
   const handleAccept = async (rideId: string): Promise<void> => {
     try {
