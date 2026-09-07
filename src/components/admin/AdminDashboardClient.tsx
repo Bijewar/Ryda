@@ -61,7 +61,7 @@ export function AdminDashboardClient({
       const res = await fetch('/api/drivers');
       if (res.ok) {
         const json = await res.json();
-        if (json.data && Array.isArray(json.data)) {
+        if (json.data && Array.isArray(json.data) && json.data.length > 0) {
           const mapped: DriversTableDriver[] = json.data.map((d: any) => ({
             id: d.id,
             firstName: d.firstName,
@@ -91,9 +91,12 @@ export function AdminDashboardClient({
           }));
           setDrivers(mapped);
         }
+        // If json.data is empty array, keep existing state (SSR data)
+      } else {
+        console.warn('GET /api/drivers returned', res.status, '— keeping existing driver list');
       }
     } catch (_e) {
-      // Ignore
+      console.warn('fetchDrivers failed — keeping existing driver list');
     } finally {
       setIsRefreshing(false);
     }
