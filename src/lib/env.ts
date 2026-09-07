@@ -23,6 +23,26 @@ import { z } from 'zod';
  *   - PostHog (product analytics, free tier)
  *   - OpenTelemetry → any free OTLP collector
  */
+function cleanDbUrl(url?: string): string | undefined {
+  if (!url) return undefined;
+  let cleaned = url.trim().replace(/^["']|["']$/g, '').trim();
+  if (cleaned.includes('postgresql://')) {
+    const idx = cleaned.indexOf('postgresql://');
+    cleaned = cleaned.substring(idx).split(/[\r\n\s"']/)[0] ?? '';
+  } else if (cleaned.includes('postgres://')) {
+    const idx = cleaned.indexOf('postgres://');
+    cleaned = cleaned.substring(idx).split(/[\r\n\s"']/)[0] ?? '';
+  }
+  return cleaned.trim() || undefined;
+}
+
+if (process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = cleanDbUrl(process.env.DATABASE_URL);
+}
+if (process.env.DIRECT_URL) {
+  process.env.DIRECT_URL = cleanDbUrl(process.env.DIRECT_URL);
+}
+
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url().default('postgresql://postgres:postgres@localhost:5432/ryda'),
