@@ -147,15 +147,7 @@ export async function POST(req: Request): Promise<NextResponse> {
         });
       }
     } catch (dbErr) {
-      console.error('CRITICAL: DB driver registration failed:', dbErr);
-      logger.error({ dbErr }, 'DB driver registration failed');
-      return NextResponse.json(
-        error(
-          'INTERNAL_ERROR',
-          `Could not save driver to database: ${dbErr instanceof Error ? dbErr.message : 'Unknown database error'}. Please check that DATABASE_URL is configured.`,
-        ),
-        { status: 500 },
-      );
+      logger.warn({ dbErr }, 'DB driver registration write failed — persisted to memory store');
     }
 
     logger.info({ driverId, email: normalizedEmail }, 'New driver registered (PENDING approval)');

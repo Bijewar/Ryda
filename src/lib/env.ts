@@ -26,6 +26,7 @@ import { z } from 'zod';
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url().default('postgresql://postgres:postgres@localhost:5432/ryda'),
+    DIRECT_URL: z.string().url().optional(),
     SHADOW_DATABASE_URL: z.string().url().optional(),
     REDIS_URL: z.string().url().default('redis://localhost:6379'),
     AUTH_SECRET: z.string().min(16).default('ryda-auth-secret-production-32-chars-fallback'),
